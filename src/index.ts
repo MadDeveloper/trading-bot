@@ -1,7 +1,15 @@
 import './rxjs.extensions'
 import Trader from './vendor/trader/index';
 import GdaxMarket from './markets/gdax';
+import config from './config';
 
-const trader = new Trader(new GdaxMarket())
+// Markets
+const gdax = new GdaxMarket()
 
-trader.trade()
+gdax.sandbox = true
+gdax.init()
+
+// Traders
+const bot = new Trader(gdax)
+
+bot.trade()

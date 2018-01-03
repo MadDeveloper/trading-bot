@@ -15,17 +15,26 @@ class GdaxService implements Market {
     channels: string[]
     price$: BehaviorSubject<number> = new BehaviorSubject(null)
     lastPrice: number
+    sandbox: boolean
 
-    constructor(currency = Currency.BTC_EUR, channels = ['ticker']) {
-        this.channels = ['ticker']
+    constructor(currency = Currency.BTC_EUR, channels = ['ticker'], sandbox = false) {
         this.currency = currency
-        this.publicClient = new Gdax.PublicClient(config.api.uri)
-        this.client = new Gdax.AuthenticatedClient(config.api.key, config.api.secret, config.api.passphrase, config.api.uri)
-        this.socket = new Gdax.WebsocketClient([currency], config.api.websocketURI, {
+        this.channels = channels
+        this.sandbox = sandbox
+    }
+
+    init() {
+        const restURI = this.sandbox ? config.api.sandboxURI : config.api.uri
+        const websocketURI = this.sandbox ? config.api.websocketURI : config.api.sandboxWebsocketURI
+        const websocketAuth = this.sandbox ? null : {
             key: config.api.key,
             secret: config.api.secret,
             passphrase: config.api.passphrase
-        }, { channels: this.channels })
+        }
+
+        this.publicClient = new Gdax.PublicClient(restURI)
+        this.client = new Gdax.AuthenticatedClient(config.api.key, config.api.secret, config.api.passphrase, restURI)
+        this.socket = new Gdax.WebsocketClient([this.currency], websocketURI, websocketAuth, { channels: this.channels })
 
         this.listenSocketErrors()
         this.orders = new Orders(this.client, this.publicClient)

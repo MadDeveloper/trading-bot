@@ -21,11 +21,13 @@ class Trader implements Trading {
     }
 
     watchMarketPrice() {
+        console.log('watch market price')
         this.market.watchCurrencyPrice()
         this.priceObserver = this
             .market
             .price$
             .subscribe(price => {
+                console.log('kikou', price)
                 if (null !== price) {
                     console.log(`BTC: ${price}€`)
                 }

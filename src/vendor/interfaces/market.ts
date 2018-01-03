@@ -6,6 +6,7 @@ export default interface Market {
     price$: BehaviorSubject<number>
     currency: Currency
     orders: Orders
-    
+
+    init(): void
     watchCurrencyPrice(): void
 }
