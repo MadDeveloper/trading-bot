@@ -5,10 +5,12 @@ import { Currency } from '../../vendor/interfaces/currency.enum';
 import Market from '../../vendor/interfaces/market';
 import { BehaviorSubject } from 'rxjs';
 import Orders from '../../vendor/market/orders';
+import Accounts from '../../vendor/market/accounts';
 
 class GdaxService implements Market {
     currency: Currency
     orders: Orders
+    accounts: Accounts
     publicClient: Gdax.PublicClient
     client: Gdax.AuthenticatedClient
     socket: Gdax.WebsocketClient
@@ -38,6 +40,7 @@ class GdaxService implements Market {
 
         this.listenSocketErrors()
         this.orders = new Orders(this.client, this.publicClient)
+        this.accounts = new Accounts(this.client)
     }
 
     watchCurrencyPrice() {

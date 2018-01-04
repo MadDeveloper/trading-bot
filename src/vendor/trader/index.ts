@@ -2,14 +2,18 @@ import Market from '../interfaces/market';
 import Trading from '../interfaces/trader'
 import { Subscription } from 'rxjs/Subscription'
 import Order from '../interfaces/order';
+import Accounts from '../market/accounts';
+import { Currency } from '../interfaces/currency.enum';
 
 class Trader implements Trading {
     market: Market
+    accounts: Accounts
 
     private priceObserver: Subscription
 
     constructor(market: Market) {
         this.market = market
+        this.accounts = market.accounts
     }
 
     async trade() {
@@ -20,18 +24,23 @@ class Trader implements Trading {
         this.watchMarketPrice()
     }
 
-    watchMarketPrice() {
-        console.log('watch market price')
+    async watchMarketPrice() {
         this.market.watchCurrencyPrice()
         this.priceObserver = this
             .market
             .price$
-            .subscribe(price => {
-                console.log('kikou', price)
+            .subscribe(async price => {
                 if (null !== price) {
-                    console.log(`BTC: ${price}€`)
+                    // console.log(`BTC: ${price}€`)
                 }
             })
+
+        console.log(await this.accounts.accounts())
+
+        const paymentMethod = await this.accounts.paymentMethodByCurrency(Currency.EUR)
+        console.log(await this.accounts.deposit(100, paymentMethod))
+
+        console.log(await this.accounts.accounts())
     }
 
     async buy() {

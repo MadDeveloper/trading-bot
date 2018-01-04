@@ -11,6 +11,13 @@ export enum Currency {
     // Litecoin
     LTC_EUR = 'LTC-EUR',
     LTC_USD = 'LTC-USD',
-    LTC_BTC = 'LTC-BTC'
+    LTC_BTC = 'LTC-BTC',
 
+    // Sample currencies
+    USD = 'USD',
+    EUR = 'EUR',
+    BTC = 'BTC',
+    LTC = 'LTC',
+    ETH = 'ETH',
+    BCH = 'BCH'
 }
