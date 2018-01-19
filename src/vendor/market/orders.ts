@@ -51,7 +51,7 @@ class Orders {
         return this.pending.filter(order => order.side === OrderType.SELL)
     }
 
-    async buy(currency: Currency, quantity: number, price: number, instant = false): Promise<any> {
+    async buy(currency: Currency, quantity: number, price: number): Promise<any> {
         this.lastOrder = <Order>await this
             .client
             .placeOrder({
@@ -59,8 +59,7 @@ class Orders {
                 side: 'buy',
                 price: price.toFixed(2),
                 size: quantity.toFixed(8),
-                product_id: currency,
-                post_only: !instant
+                product_id: currency
             })
 
         this.pending.push(this.lastOrder)
@@ -68,7 +67,7 @@ class Orders {
         return this.lastOrder
     }
 
-    async sell(currency: Currency, quantity: number, price: number, instant = false) {
+    async sellLimit(currency: Currency, quantity: number, price: number) {
         this.lastOrder = <Order>await this
             .client
             .placeOrder({
@@ -77,8 +76,41 @@ class Orders {
                 side: 'sell',
                 price: price.toFixed(5),
                 size: quantity.toFixed(8),
-                product_id: currency,
-                post_only: !instant
+                product_id: currency
+            })
+
+        this.pending.push(this.lastOrder)
+
+        return this.lastOrder
+    }
+
+    async sellMarket(currency: Currency, funds: number) {
+        this.lastOrder = <Order>await this
+            .client
+            .placeOrder({
+                client_oid: this.lastOrder.id,
+                type: 'market',
+                side: 'sell',
+                size: null,
+                funds: funds.toFixed(8),
+                product_id: currency
+            })
+
+        this.pending.push(this.lastOrder)
+
+        return this.lastOrder
+    }
+
+    async sellStop(currency: Currency, price: number, funds: number = null) {
+        this.lastOrder = <Order>await this
+            .client
+            .placeOrder({
+                client_oid: this.lastOrder.id,
+                type: 'stop',
+                side: 'sell',
+                size: null,
+                funds: funds.toFixed(8),
+                product_id: currency
             })
 
         this.pending.push(this.lastOrder)

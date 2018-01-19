@@ -10,7 +10,10 @@ export default interface Market {
     accounts: Accounts
     client: any
     publicClient: any
+    lastTicker: any
+    initialized: boolean
 
     init(): void
     watchCurrencyPrice(): void
+    getCurrencyPrice(): Promise<number>
 }

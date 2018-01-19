@@ -8,6 +8,9 @@ const config: Config = {
         sandboxWebsocketURI: 'wss://ws-feed-public.sandbox.gdax.com',
         sandboxURI: 'https://api-public.sandbox.gdax.com',
         sandbox: true
+    },
+    trader: {
+        tickerInterval: 1000 // ms
     }
 }
 

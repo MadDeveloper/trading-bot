@@ -18,6 +18,8 @@ class GdaxService implements Market {
     price$: BehaviorSubject<number> = new BehaviorSubject(null)
     lastPrice: number
     sandbox: boolean
+    lastTicker: Gdax.ProductTicker
+    initialized: boolean
 
     constructor(currency = Currency.BTC_EUR, channels = ['ticker'], sandbox = false) {
         this.currency = currency
@@ -37,13 +39,18 @@ class GdaxService implements Market {
         this.publicClient = new Gdax.PublicClient(restURI)
         this.client = new Gdax.AuthenticatedClient(config.api.key, config.api.secret, config.api.passphrase, restURI)
         this.socket = new Gdax.WebsocketClient([this.currency], websocketURI, websocketAuth, { channels: this.channels })
-
-        this.listenSocketErrors()
         this.orders = new Orders(this.client, this.publicClient)
         this.accounts = new Accounts(this.client)
+        
+        this.listenSocketErrors()
+        this.initialized = true
     }
 
     watchCurrencyPrice() {
+        if (!this.initialized) {
+            throw new Error('Gdax market watchCurrencyPrice() cannot be used without being initialized')
+        }
+
         this.socket.on('message', (data: any) => {
             if (data && 'ticker' === data.type) {
                 const price = parseFloat(data.price)
@@ -52,6 +59,16 @@ class GdaxService implements Market {
                 this.price$.next(price)
             }
         })
+    }
+
+    async getCurrencyPrice() {
+        if (!this.initialized) {
+            throw new Error('Gdax market getCurrencyPrice() cannot be used without being initialized')
+        }
+
+        this.lastTicker = await this.publicClient.getProductTicker(this.currency)
+
+        return parseFloat(this.lastTicker.price)
     }
 
     private listenSocketErrors() {

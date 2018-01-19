@@ -8,5 +8,8 @@ declare interface Config {
         sandboxWebsocketURI: string;
         sandboxURI: string;
         sandbox: boolean;
+    },
+    trader: {
+        tickerInterval: number // ms
     }
 }

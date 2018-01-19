@@ -6,7 +6,7 @@ import config from './config';
 // Markets
 const gdax = new GdaxMarket()
 
-gdax.sandbox = true
+gdax.sandbox = false
 gdax.init()
 
 // Traders
