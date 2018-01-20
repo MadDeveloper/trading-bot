@@ -1,10 +1,12 @@
 import { Currency } from "./currency.enum";
-import { BehaviorSubject } from "rxjs/BehaviorSubject";
+import { Subject } from "rxjs/Subject";
 import Orders from '../market/orders';
 import Accounts from '../market/accounts';
 
 export default interface Market {
-    price$: BehaviorSubject<number>
+    lastPrice: number
+    price: number
+    price$: Subject<number>
     currency: Currency
     orders: Orders
     accounts: Accounts

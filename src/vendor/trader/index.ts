@@ -6,11 +6,13 @@ import Accounts from '../market/accounts';
 import { Currency } from '../interfaces/currency.enum';
 import config from '../../config';
 import ChartWorker from '../chart/chart-worker';
+import { Trend } from '../chart/trend.enum';
 
 class Trader implements Trading {
     market: Market
     accounts: Accounts
     chartWorker: ChartWorker
+    trendObserver: Subscription
 
     private priceObserver: Subscription
 
@@ -25,19 +27,17 @@ class Trader implements Trading {
             throw new Error('Currency is not set, stopping trading.')
         }
 
-        // this.watchMarketPrice()
+        this.market.watchCurrencyPrice()
         this.chartWorker.workOnPriceTicker()
+        this.watchTrend()
     }
 
     async watchMarketPrice() {
-        // this.market.watchCurrencyPrice()
         // this.priceObserver = this
         //     .market
         //     .price$
         //     .subscribe(async price => {
-        //         if (null !== price) {
-        //             console.log(`BTC: ${price}€`)
-        //         }
+        //         console.log(`BTC: ${price}€`)
         //     })
 
         
@@ -46,6 +46,28 @@ class Trader implements Trading {
         // const paymentMethod = await this.accounts.paymentMethodByCurrency(Currency.EUR)
         // console.log(await this.accounts.deposit(100, paymentMethod))
         // console.log(await this.accounts.accounts())
+    }
+
+    async watchTrend() {
+        this.trendObserver = this.chartWorker.trend$.subscribe(trend => {
+            console.log('current trend', trend)
+            console.log('last trend', this.chartWorker.lastTrend)
+            switch (trend) {
+                case Trend.DOWNWARD:
+                    if (this.chartWorker.lastTrend !== trend) {
+                        console.log('Tendance a la baisse.')
+                    }
+                    break;
+            
+                case Trend.UPWARD:
+                    if (this.chartWorker.lastTrend !== trend) {
+                        console.log('Tendance a la hausse.')
+                    }
+                    break;
+            }
+
+            console.log(`Ancien prix: ${this.market.lastPrice}, nouveau prix: ${this.market.price}`)
+        })
     }
 
     async buy() {
@@ -88,6 +110,10 @@ class Trader implements Trading {
     killWatchers() {
         if (this.priceObserver) {
             this.priceObserver.unsubscribe()
+        }
+
+        if (this.trendObserver) {
+            this.trendObserver.unsubscribe()
         }
     }
 }

@@ -3,9 +3,9 @@ import config from '../../config';
 import { Subscription } from 'rxjs/Subscription';
 import { Currency } from '../../vendor/interfaces/currency.enum';
 import Market from '../../vendor/interfaces/market';
-import { BehaviorSubject } from 'rxjs';
 import Orders from '../../vendor/market/orders';
 import Accounts from '../../vendor/market/accounts';
+import { Subject } from 'rxjs/Subject';
 
 class GdaxService implements Market {
     currency: Currency
@@ -15,8 +15,9 @@ class GdaxService implements Market {
     client: Gdax.AuthenticatedClient
     socket: Gdax.WebsocketClient
     channels: string[]
-    price$: BehaviorSubject<number> = new BehaviorSubject(null)
+    price$: Subject<number>
     lastPrice: number
+    price: number
     sandbox: boolean
     lastTicker: Gdax.ProductTicker
     initialized: boolean
@@ -25,16 +26,17 @@ class GdaxService implements Market {
         this.currency = currency
         this.channels = channels
         this.sandbox = sandbox
+        this.price$ = new Subject()
     }
 
     init() {
         const restURI = this.sandbox ? config.api.sandboxURI : config.api.uri
         const websocketURI = this.sandbox ? config.api.websocketURI : config.api.sandboxWebsocketURI
-        const websocketAuth = this.sandbox ? null : {
+        const websocketAuth = null/*this.sandbox ? null : {
             key: config.api.key,
             secret: config.api.secret,
             passphrase: config.api.passphrase
-        }
+        }*/
 
         this.publicClient = new Gdax.PublicClient(restURI)
         this.client = new Gdax.AuthenticatedClient(config.api.key, config.api.secret, config.api.passphrase, restURI)
@@ -53,10 +55,12 @@ class GdaxService implements Market {
 
         this.socket.on('message', (data: any) => {
             if (data && 'ticker' === data.type) {
-                const price = parseFloat(data.price)
+                if (Number.isFinite(this.price)) {
+                    this.lastPrice = this.price    
+                }
 
-                this.lastPrice = price
-                this.price$.next(price)
+                this.price = parseFloat(data.price)
+                this.price$.next(this.price)
             }
         })
     }
