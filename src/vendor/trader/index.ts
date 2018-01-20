@@ -7,12 +7,19 @@ import { Currency } from '../interfaces/currency.enum';
 import config from '../../config';
 import ChartWorker from '../chart/chart-worker';
 import { Trend } from '../chart/trend.enum';
+import { ChartWork } from '../chart/chart-work';
 
 class Trader implements Trading {
     market: Market
     accounts: Accounts
     chartWorker: ChartWorker
     trendObserver: Subscription
+    lastPrice: number
+    currentPrice: number
+    lastBuyPrice: number
+    lastSellPrice: number
+    currentTrend: Trend
+    lastTrend: Trend
 
     private priceObserver: Subscription
 
@@ -27,46 +34,13 @@ class Trader implements Trading {
             throw new Error('Currency is not set, stopping trading.')
         }
 
-        this.market.watchCurrencyPrice()
+        this.watchChartWorker()
         this.chartWorker.workOnPriceTicker()
-        this.watchTrend()
     }
 
-    async watchMarketPrice() {
-        // this.priceObserver = this
-        //     .market
-        //     .price$
-        //     .subscribe(async price => {
-        //         console.log(`BTC: ${price}€`)
-        //     })
-
-        
-
-        // console.log(await this.accounts.accounts())
-        // const paymentMethod = await this.accounts.paymentMethodByCurrency(Currency.EUR)
-        // console.log(await this.accounts.deposit(100, paymentMethod))
-        // console.log(await this.accounts.accounts())
-    }
-
-    async watchTrend() {
-        this.trendObserver = this.chartWorker.trend$.subscribe(trend => {
-            console.log('current trend', trend)
-            console.log('last trend', this.chartWorker.lastTrend)
-            switch (trend) {
-                case Trend.DOWNWARD:
-                    if (this.chartWorker.lastTrend !== trend) {
-                        console.log('Tendance a la baisse.')
-                    }
-                    break;
-            
-                case Trend.UPWARD:
-                    if (this.chartWorker.lastTrend !== trend) {
-                        console.log('Tendance a la hausse.')
-                    }
-                    break;
-            }
-
-            console.log(`Ancien prix: ${this.market.lastPrice}, nouveau prix: ${this.market.price}`)
+    async watchChartWorker() {
+        this.trendObserver = this.chartWorker.work$.subscribe((work: ChartWork) => {
+            console.log(work)
         })
     }
 

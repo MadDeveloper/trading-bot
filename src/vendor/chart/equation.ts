@@ -1,7 +1,11 @@
-import Point from './point'
+import Point from './point';
 
 class Equation {
     static findLineLeadingCoefficient(pointA: Point, pointB: Point): number {
+        if (!Equation.isValidPoint(pointA) || !Equation.isValidPoint(pointB)) {
+            return null
+        }
+
         return Equation.findLineEquation(pointA, pointB).a
     }
 
@@ -13,6 +17,10 @@ class Equation {
             a,
             b
         }
+    }
+
+    static isValidPoint(point: Point) {
+        return point && Number.isFinite(point.x) && Number.isFinite(point.y)
     }
 }
 

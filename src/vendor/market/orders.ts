@@ -51,7 +51,7 @@ class Orders {
         return this.pending.filter(order => order.side === OrderType.SELL)
     }
 
-    async buy(currency: Currency, quantity: number, price: number): Promise<any> {
+    async buyLimit(currency: Currency, quantity: number, price: number, allowTaker = false): Promise<any> {
         this.lastOrder = <Order>await this
             .client
             .placeOrder({
@@ -59,6 +59,24 @@ class Orders {
                 side: 'buy',
                 price: price.toFixed(2),
                 size: quantity.toFixed(8),
+                product_id: currency,
+                post_only: !allowTaker
+            })
+
+        this.pending.push(this.lastOrder)
+
+        return this.lastOrder
+    }
+
+    async buyMarket(currency: Currency, funds: number) {
+        this.lastOrder = <Order>await this
+            .client
+            .placeOrder({
+                client_oid: this.lastOrder.id,
+                type: 'market',
+                side: 'sell',
+                size: null,
+                funds: funds.toFixed(8),
                 product_id: currency
             })
 
@@ -67,7 +85,24 @@ class Orders {
         return this.lastOrder
     }
 
-    async sellLimit(currency: Currency, quantity: number, price: number) {
+    async buyStop(currency: Currency, price: number, funds: number = null) {
+        this.lastOrder = <Order>await this
+            .client
+            .placeOrder({
+                client_oid: this.lastOrder.id,
+                type: 'stop',
+                side: 'sell',
+                size: null,
+                funds: funds.toFixed(8),
+                product_id: currency
+            })
+
+        this.pending.push(this.lastOrder)
+
+        return this.lastOrder
+    }
+
+    async sellLimit(currency: Currency, quantity: number, price: number, allowTaker = false) {
         this.lastOrder = <Order>await this
             .client
             .placeOrder({
@@ -76,7 +111,8 @@ class Orders {
                 side: 'sell',
                 price: price.toFixed(5),
                 size: quantity.toFixed(8),
-                product_id: currency
+                product_id: currency,
+                post_only: !allowTaker
             })
 
         this.pending.push(this.lastOrder)
