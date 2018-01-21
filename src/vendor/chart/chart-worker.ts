@@ -42,7 +42,7 @@ class ChartWorker {
         const newPoint = this.chart.createPoint(time, this.price)
 
         this.computeTrend(lastPoint, newPoint)
-        this.notifyWork()
+        this.notifyWork(time)
 
         this.tickerTimeout = setTimeout(() => this.priceTickerWork(time + config.trader.tickerInterval), config.trader.tickerInterval)
     }
@@ -54,12 +54,13 @@ class ChartWorker {
         this.trend = this.determineTrend(leadingCoefficient)
     }
 
-    notifyWork() {
+    notifyWork(time: number) {
         this.work$.next({
             lastPrice: this.lastPrice,
             price: this.price,
             lastTrend: this.lastTrend,
-            trend: this.trend
+            trend: this.trend,
+            time
         })
     }
 

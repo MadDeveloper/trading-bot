@@ -13,3 +13,6 @@ gdax.init()
 const bot = new Trader(gdax)
 
 bot.trade()
+
+process.once('SIGTERM', () => bot.logDebug())
+process.once('SIGINT', () => bot.logDebug())

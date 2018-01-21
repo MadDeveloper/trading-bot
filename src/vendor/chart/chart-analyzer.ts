@@ -9,11 +9,11 @@ class ChartAnalyzer {
         let upwardTrendConfirmed = false
 
         works.forEach(work => {
-            if (downwardTrendConfirmed && work.lastTrend === Trend.UPWARD && work.trend === Trend.UPWARD) {
+            if (downwardTrendConfirmed && work.lastTrend !== Trend.DOWNWARD && work.trend !== Trend.DOWNWARD) {
                 if (work.price >= this.computePriceWithThresholdToApproveUpward(work.lastPrice)) {
                     upwardTrendConfirmed = true
                 }
-            } else if (!downwardTrendConfirmed && work.lastTrend === Trend.DOWNWARD && work.trend === Trend.DOWNWARD) {
+            } else if (!downwardTrendConfirmed && work.lastTrend !== Trend.UPWARD && work.trend !== Trend.UPWARD) {
                 if (work.price <= this.computePriceWithThresholdToApproveDownward(work.lastPrice)) {
                     downwardTrendConfirmed = true
                 }
@@ -28,11 +28,11 @@ class ChartAnalyzer {
         let downwardTrendConfirmed = false
 
         works.forEach(work => {
-            if (upwardTrendConfirmed && work.lastTrend === Trend.DOWNWARD && work.trend === Trend.DOWNWARD) {
+            if (upwardTrendConfirmed && work.lastTrend !== Trend.UPWARD && work.trend !== Trend.UPWARD) {
                 if (work.price <= this.computePriceWithThresholdToApproveDownward(work.lastPrice)) {
                     downwardTrendConfirmed = true
                 }
-            } else if (!upwardTrendConfirmed && work.lastTrend === Trend.UPWARD && work.trend === Trend.UPWARD) {
+            } else if (!upwardTrendConfirmed && work.lastTrend !== Trend.DOWNWARD && work.trend !== Trend.DOWNWARD) {
                 if (work.price >= this.computePriceWithThresholdToApproveUpward(work.lastPrice)) {
                     upwardTrendConfirmed = true
                 }

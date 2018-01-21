@@ -5,4 +5,5 @@ export interface ChartWork {
     lastTrend: Trend
     lastPrice: number
     price: number
+    time: number
 }

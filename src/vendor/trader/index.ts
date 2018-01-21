@@ -24,6 +24,10 @@ class Trader implements Trading {
     fiatCurrencyAmountAvailable: number // €, $, £, etc.
     currencyAmountAvailable: number // BTC, ETH, LTC, etc.
 
+    // Debug properties
+    allWorksStored: ChartWork[]
+    tradingActionsWork: ChartWork[]
+
     private priceObserver: Subscription
 
     constructor(market: Market) {
@@ -31,6 +35,8 @@ class Trader implements Trading {
         this.accounts = market.accounts
         this.chartWorker = new ChartWorker(market)
         this.worksStored = []
+        this.allWorksStored = []
+        this.tradingActionsWork = []
         this.state = TraderState.WAITING_TO_BUY
         this.chartAnalyzer = new ChartAnalyzer()
         this.fiatCurrencyAmountAvailable = 100
@@ -38,16 +44,110 @@ class Trader implements Trading {
 
     async trade() {
         if (!this.market.currency) {
-            throw new Error('Currency is not set, stopping trading.')
+            console.error('Currency is not set, stopping trading.')
+            this.stop()
         }
 
         this.watchChartWorker()
         this.chartWorker.workOnPriceTicker()
+
+        const worksContainingHollow: ChartWork[] = [
+            {
+                lastPrice: 1,
+                lastTrend: Trend.DOWNWARD,
+                price: .9,
+                trend: Trend.DOWNWARD,
+                time: 0
+            },
+            {
+                lastPrice: .9,
+                lastTrend: Trend.DOWNWARD,
+                price: .8,
+                trend: Trend.DOWNWARD,
+                time: 1000
+            },
+            {
+                lastPrice: .8,
+                lastTrend: Trend.DOWNWARD,
+                price: .8,
+                trend: Trend.FLAT,
+                time: 2000
+            },
+            {
+                lastPrice: .8,
+                lastTrend: Trend.FLAT,
+                price: .9,
+                trend: Trend.UPWARD,
+                time: 3000
+            },
+            {
+                lastPrice: .9,
+                lastTrend: Trend.UPWARD,
+                price: 1,
+                trend: Trend.UPWARD,
+                time: 4000
+            },
+            {
+                lastPrice: 1,
+                lastTrend: Trend.UPWARD,
+                price: 1.1,
+                trend: Trend.UPWARD,
+                time: 5000
+            }
+        ]
+        const worksContainingBump: ChartWork[] = [
+            {
+                lastPrice: 1,
+                lastTrend: Trend.UPWARD,
+                price: 1.1,
+                trend: Trend.UPWARD,
+                time: 0
+            },
+            {
+                lastPrice: 1.1,
+                lastTrend: Trend.UPWARD,
+                price: 1.2,
+                trend: Trend.UPWARD,
+                time: 1000
+            },
+            {
+                lastPrice: 1.2,
+                lastTrend: Trend.DOWNWARD,
+                price: 1.2,
+                trend: Trend.FLAT,
+                time: 2000
+            },
+            {
+                lastPrice: 1.2,
+                lastTrend: Trend.FLAT,
+                price: 1.1,
+                trend: Trend.DOWNWARD,
+                time: 3000
+            },
+            {
+                lastPrice: 1.1,
+                lastTrend: Trend.DOWNWARD,
+                price: 1,
+                trend: Trend.DOWNWARD,
+                time: 4000
+            },
+            {
+                lastPrice: 1,
+                lastTrend: Trend.DOWNWARD,
+                price: .9,
+                trend: Trend.DOWNWARD,
+                time: 5000
+            }
+        ]
+
+        // console.log(this.chartAnalyzer.containsHollow(worksContainingHollow))
+        // console.log(this.chartAnalyzer.containsBump(worksContainingBump))
     }
 
     async watchChartWorker() {
         this.workObserver = this.chartWorker.work$.subscribe((work: ChartWork) => {
             this.worksStored.push(work)
+            this.allWorksStored.push(work)
             this.analyzeWorks()
         })
     }
@@ -122,6 +222,7 @@ class Trader implements Trading {
             console.log(`on achète au prix de ${this.chartWorker.lastPrice}`)
             this.state = TraderState.WAITING_TO_SELL
             this.lastSellPrice = this.chartWorker.lastPrice
+            this.tradingActionsWork.push(this.allWorksStored[this.allWorksStored.length - 1])
 
             // await this
             //     .market
@@ -146,6 +247,7 @@ class Trader implements Trading {
             console.log(`on vend au prix de ${this.chartWorker.lastPrice}`)
             this.state = TraderState.WAITING_TO_BUY
             this.lastBuyPrice = this.chartWorker.lastPrice
+            this.tradingActionsWork.push(this.allWorksStored[this.allWorksStored.length - 1])
 
             // await this
             //     .market
@@ -184,6 +286,19 @@ class Trader implements Trading {
 
         if (this.workObserver) {
             this.workObserver.unsubscribe()
+        }
+    }
+
+    logDebug() {
+        console.log('Trader work retrieved:')
+        console.log(this.allWorksStored)
+        console.log(this.tradingActionsWork)
+    }
+
+    getDebug() {
+        return {
+            allWorkdsStored: this.allWorksStored,
+            tradingActionsWork: this.tradingActionsWork
         }
     }
 }
