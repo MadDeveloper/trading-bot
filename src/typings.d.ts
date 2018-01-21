@@ -10,6 +10,13 @@ declare interface Config {
         sandbox: boolean;
     },
     trader: {
-        tickerInterval: number // ms
+        tickerInterval: number, // ms
+        thresholdDifferenceBetweenLastSellPrieAndNewBuyPrice: number
+    },
+    market: {
+        instantOrderFees: number
+    },
+    chart: {
+        thresholdDifferenceToApproveVariation: number
     }
 }
