@@ -158,7 +158,7 @@ class Trader implements Trading {
         const lastPrice = this.chartWorker.lastPrice
         const thresholdDifferenceBetweenPrice = config.trader.thresholdDifferenceBetweenLastSellPrieAndNewBuyPrice
 
-        console.log('on Analyse le travail')
+        console.log('\non Analyse le travail')
 
         if (TraderState.WAITING_TO_BUY === this.state) {
             console.log('Trader wants to buy...')
@@ -240,7 +240,7 @@ class Trader implements Trading {
                 time: lastWork.time,
                 benefits: -funds,
                 type: TradeType.BUY,
-                quantity: this.currencyAmountAvailable
+                quantity: funds / lastWork.price
             }
 
             this.trades.push(this.lastTrade)
@@ -279,7 +279,7 @@ class Trader implements Trading {
                 time: lastWork.time,
                 benefits: (this.chartWorker.lastPrice * funds) - (this.lastTrade.quantity * this.lastTrade.price),
                 type: TradeType.SELL,
-                quantity: this.currencyAmountAvailable
+                quantity: funds
             }
 
             this.trades.push(this.lastTrade)
