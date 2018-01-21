@@ -10,14 +10,14 @@ import { Subscription } from 'rxjs/Subscription';
 import { TraderState } from './trader-state';
 import { Trend } from '../chart/trend.enum';
 import ChartAnalyzer from '../chart/chart-analyzer';
+import { Trade } from './trade';
+import { TradeType } from './trade-type';
 
 class Trader implements Trading {
     market: Market
     accounts: Accounts
     chartWorker: ChartWorker
     workObserver: Subscription
-    lastBuyPrice: number
-    lastSellPrice: number
     worksStored: ChartWork[]
     state: TraderState
     chartAnalyzer: ChartAnalyzer
@@ -26,7 +26,8 @@ class Trader implements Trading {
 
     // Debug properties
     allWorksStored: ChartWork[]
-    tradingActionsWork: ChartWork[]
+    trades: Trade[]
+    lastTrade: Trade
 
     private priceObserver: Subscription
 
@@ -36,10 +37,11 @@ class Trader implements Trading {
         this.chartWorker = new ChartWorker(market)
         this.worksStored = []
         this.allWorksStored = []
-        this.tradingActionsWork = []
+        this.trades = []
         this.state = TraderState.WAITING_TO_BUY
         this.chartAnalyzer = new ChartAnalyzer()
         this.fiatCurrencyAmountAvailable = 100
+        this.trades = []
     }
 
     async trade() {
@@ -159,37 +161,48 @@ class Trader implements Trading {
         console.log('on Analyse le travail')
 
         if (TraderState.WAITING_TO_BUY === this.state) {
+            console.log('Trader wants to buy...')
+
             /*
              * Trader is waiting to buy
              * we will try to know if we are in a hollow case
              */
             if (this.chartAnalyzer.containsHollow(this.worksStored)) {
+                console.log('hollow detected!')
                 /*
                  * We found a hollow, do we have already sold?
                  * If yes: we will buy only if the price is under the last sell price (we want a negative enough pct difference)
                  * If no: we can just buy at the current price
                  */
-                if (!Number.isFinite(this.lastSellPrice) || (Number.isFinite(this.lastSellPrice) && this.differenceBetweenPricePct(this.lastSellPrice, lastPrice) < -thresholdDifferenceBetweenPrice)) {
+                if (!this.lastTrade || Number.isFinite(this.lastTrade.price) && this.differenceBetweenPricePct(this.lastTrade.price, lastPrice) < -thresholdDifferenceBetweenPrice) {
+                    console.log('we will buy!')
                     // We have sold, and the current price is below since the last price we sold so we can buy
                     this.buy(this.fiatCurrencyAmountAvailable)
                     this.clearWorks()
                 }
+            } else {
+                console.log('waiting for an hollow...')
             }
         } else if (TraderState.WAITING_TO_SELL === this.state) {
+            console.log('Trader wants to sell...')
             /*
              * Trader is waiting to sell
              * we will try to know if we are in a bump case
              */
             if (this.chartAnalyzer.containsBump(this.worksStored)) {
+                console.log('Bump detected!')
                 /*
                  * We found a bump, do we have already bought?
                  * If yes: we will buy only if the price is under the last sell price
                  * If no: we do nothing, we wait an hollow to buy first
                  */
-                if (Number.isFinite(this.lastBuyPrice) && this.isProfitable(this.lastBuyPrice, this.chartWorker.lastPrice)) {
+                if (this.lastTrade && Number.isFinite(this.lastTrade.price) && this.isProfitable(this.lastTrade.price, this.chartWorker.lastPrice)) {
+                    console.log('we will sell!')
                     this.sell(this.currencyAmountAvailable)
                     this.clearWorks()
                 }
+            } else {
+                console.log('waiting for a bump...')
             }
         } else {
             console.error(`Trader.state does not match any action: ${this.state}`)
@@ -219,10 +232,20 @@ class Trader implements Trading {
                 throw new Error(`Cannot buy, funds are invalid: ${funds}`)
             }
 
-            console.log(`on achète au prix de ${this.chartWorker.lastPrice}`)
+            const lastWork = this.allWorksStored[this.allWorksStored.length - 1]
+
             this.state = TraderState.WAITING_TO_SELL
-            this.lastSellPrice = this.chartWorker.lastPrice
-            this.tradingActionsWork.push(this.allWorksStored[this.allWorksStored.length - 1])
+            this.lastTrade = {
+                price: this.chartWorker.lastPrice,
+                time: lastWork.time,
+                benefits: -funds,
+                type: TradeType.BUY,
+                quantity: this.currencyAmountAvailable
+            }
+
+            this.trades.push(this.lastTrade)
+            
+            console.log(`Bought! Last trade: ${this.lastTrade}`)
 
             // await this
             //     .market
@@ -244,10 +267,24 @@ class Trader implements Trading {
                 throw new Error(`Cannot sell, funds are invalid: ${funds}`)
             }
 
-            console.log(`on vend au prix de ${this.chartWorker.lastPrice}`)
+            if (this.lastTrade.type !== TradeType.BUY) {
+                throw new Error('Trying to sell but last trade is not of type BUY.')
+            }
+
+            const lastWork = this.allWorksStored[this.allWorksStored.length - 1]
+
             this.state = TraderState.WAITING_TO_BUY
-            this.lastBuyPrice = this.chartWorker.lastPrice
-            this.tradingActionsWork.push(this.allWorksStored[this.allWorksStored.length - 1])
+            this.lastTrade = {
+                price: this.chartWorker.lastPrice,
+                time: lastWork.time,
+                benefits: (this.chartWorker.lastPrice * funds) - (this.lastTrade.quantity * this.lastTrade.price),
+                type: TradeType.SELL,
+                quantity: this.currencyAmountAvailable
+            }
+
+            this.trades.push(this.lastTrade)
+
+            console.log(`Sold! Last trade: ${this.lastTrade}`)
 
             // await this
             //     .market
@@ -292,13 +329,13 @@ class Trader implements Trading {
     logDebug() {
         console.log('Trader work retrieved:')
         console.log(this.allWorksStored)
-        console.log(this.tradingActionsWork)
+        console.log(this.trades)
     }
 
     getDebug() {
         return {
-            allWorkdsStored: this.allWorksStored,
-            tradingActionsWork: this.tradingActionsWork
+            allWorksStored: this.allWorksStored,
+            trades: this.trades
         }
     }
 }

@@ -20,6 +20,9 @@ class ChartAnalyzer {
             }
         })
 
+        console.log(`downwardTrendConfirmed: ${downwardTrendConfirmed}`)
+        console.log(`upwardTrendConfirmed: ${upwardTrendConfirmed}`)
+
         return downwardTrendConfirmed && upwardTrendConfirmed
     }
 
@@ -38,6 +41,9 @@ class ChartAnalyzer {
                 }
             }
         })
+
+        console.log(`upwardTrendConfirmed: ${upwardTrendConfirmed}`)
+        console.log(`downwardTrendConfirmed: ${downwardTrendConfirmed}`)
 
         return upwardTrendConfirmed && downwardTrendConfirmed
     }
