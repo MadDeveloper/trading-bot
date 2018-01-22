@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Chart</title>
+  <style>
+    html,
+    body,
+    #myChart {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="myChart"></canvas>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
+  <script>
+    const works = []
+    const filteredWorks = []
+    const trades = []
+
+    async function extractPoints() {
+      const { allWorksStored, allWorksSmoothed, trades } = await loadData()
+
+      allWorksStored.forEach(rawPoint => {
+        works.push({
+          time: rawPoint.time,
+          price: rawPoint.price
+        })
+      })
+
+      allWorksSmoothed.forEach(rawPoint => {
+        filteredWorks.push({
+          time: rawPoint.time,
+          price: rawPoint.price
+        })
+      })
+    }
+
+    function drawChart() {
+      const context = document.querySelector("#myChart").getContext('2d')
+      const newChart = new Chart(context, {
+        type: 'line',
+        data: {
+          labels: works.map(work => work.time / 1000),
+          datasets: [
+            {
+              label: 'Currency prices',
+              backgroundColor: 'rgba(255, 99, 132, .5)',
+              borderColor: 'rgb(255, 99, 132)',
+              data: works.map(work => work.price)
+            },
+            {
+              label: 'Filtered currency prices',
+              backgroundColor: 'rgba(41, 128, 185, .5)',
+              borderColor: 'rgb(41, 128, 185)',
+              data: filteredWorks.map(work => work.price)
+            },
+            {
+              label: 'Trades',
+              backgroundColor: 'transparent',
+              borderColor: 'green',
+              data: []
+            }
+          ]
+        }
+      })
+    }
+
+    function readTextFile(file) {
+      return new Promise(resolve => {
+        const rawFile = new XMLHttpRequest()
+
+        rawFile.overrideMimeType("application/json")
+        rawFile.open("GET", file, true)
+        rawFile.onreadystatechange = () => {
+          if (rawFile.readyState === 4 && rawFile.status == "200") {
+            resolve(rawFile.responseText)
+          }
+        }
+        rawFile.send(null)
+      })
+    }
+
+    async function loadData() {
+      return JSON.parse(await readTextFile('data.json'))
+    }
+
+    window.onload = async () => {
+      await extractPoints()
+      drawChart()
+    }
+  </script>
+</body>
+
+</html>

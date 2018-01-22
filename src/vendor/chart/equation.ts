@@ -22,6 +22,10 @@ class Equation {
     static isValidPoint(point: Point) {
         return point && Number.isFinite(point.x) && Number.isFinite(point.y)
     }
+
+    static rateBetweenValues(a, b): number {
+        return 100 * ((b / a) - 1) // from: a * (1 + t/100) = b <=> t = 100(b/a - 1)
+    }
 }
 
 export default Equation

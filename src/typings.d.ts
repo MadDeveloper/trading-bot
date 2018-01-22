@@ -17,6 +17,8 @@ declare interface Config {
         instantOrderFees: number
     },
     chart: {
-        thresholdDifferenceToApproveVariation: number
+        rateToApproveVariation: number,
+        thresholdRateToApproveInversion: number,
+        minPriceDifferenceToApproveNewPoint: number
     }
 }

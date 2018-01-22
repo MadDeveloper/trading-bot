@@ -18,13 +18,18 @@ class ChartWorker {
     work$: Subject<ChartWork>
     tickerTimeout: NodeJS.Timer
     started: boolean
+    lastId: number
+    works: ChartWork[]
+    lastWork: ChartWork
 
     constructor(market: Market) {
         this.market = market
         this.chart = new Chart()
         this.trend$ = new Subject()
+        this.works = []
         this.work$ = new Subject()
         this.started = false
+        this.lastId = 0
     }
 
     workOnPriceTicker() {
@@ -55,17 +60,45 @@ class ChartWorker {
     }
 
     notifyWork(time: number) {
-        this.work$.next({
+        this.lastWork = {
+            id: this.lastId++,
             lastPrice: this.lastPrice,
             price: this.price,
             lastTrend: this.lastTrend,
             trend: this.trend,
             time
-        })
+        }
+
+        this.works.push(this.lastWork)
+        this.work$.next(this.lastWork)
     }
 
     notifyTrend() {
         this.trend$.next(this.trend)
+    }
+
+    filterNoise(works: ChartWork[]): ChartWork[] {
+        return this.smoothCurve(this.removeIsolatedBumpAndHollow(works))
+    }
+
+    smoothCurve(works: ChartWork[]): ChartWork[] {
+        return works.filter(work => Math.abs(Equation.rateBetweenValues(work.lastPrice, work.price)) > config.chart.minPriceDifferenceToApproveNewPoint)
+    }
+
+    removeIsolatedBumpAndHollow(works: ChartWork[]): ChartWork[] {
+        const worksLength = works.length
+
+        return works.filter((work, index) => {
+            if (index === 0 || index === worksLength - 1) {
+                return true // we keep the first and the last point
+            }
+
+            const nextWork = works[index + 1]
+            const isolatedBump = work.trend === Trend.UPWARD && nextWork.trend === Trend.DOWNWARD
+            const isolatedHollow = work.trend === Trend.DOWNWARD && nextWork.trend === Trend.UPWARD
+
+            return !isolatedBump && !isolatedHollow
+        })
     }
 
     stopWorking() {
@@ -74,6 +107,22 @@ class ChartWorker {
         }
 
         this.started = false
+    }
+
+    copyWorks(): ChartWork[] {
+        return this.works.slice().map(work => Object.assign({}, work))
+    }
+
+    findPreviousWork(work: ChartWork): ChartWork {
+        let previousWork: ChartWork = null
+
+        this.works.forEach(current => {
+            if (current.id === work.id) {
+                previousWork = current
+            }
+        })
+
+        return previousWork
     }
 
     private determineTrend(leadingCoefficient: number): Trend {
