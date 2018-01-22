@@ -1,4 +1,7 @@
 declare interface Config {
+    app: {
+        debug: boolean
+    }
     api: {
         key: string;
         secret: string;

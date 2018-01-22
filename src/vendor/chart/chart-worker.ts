@@ -20,6 +20,7 @@ class ChartWorker {
     started: boolean
     lastId: number
     works: ChartWork[]
+    allWorks: ChartWork[] // only different from .works property in debug mode
     lastWork: ChartWork
 
     constructor(market: Market) {
@@ -27,6 +28,7 @@ class ChartWorker {
         this.chart = new Chart()
         this.trend$ = new Subject()
         this.works = []
+        this.allWorks = []
         this.work$ = new Subject()
         this.started = false
         this.lastId = 0
@@ -101,6 +103,15 @@ class ChartWorker {
         })
     }
 
+    recreateIds(works: ChartWork[]): ChartWork[] {
+        let id = 0
+
+        return works.map(work => ({
+            ...work,
+            id: id++
+        }))
+    }
+
     stopWorking() {
         if (this.tickerTimeout) {
             clearTimeout(this.tickerTimeout)
@@ -113,16 +124,36 @@ class ChartWorker {
         return this.works.slice().map(work => Object.assign({}, work))
     }
 
+    clearWorks() {
+        if (config.app.debug) {
+            this.allWorks = this.allWorks.concat(this.works)
+        }
+
+        this.works = []
+    }
+
     findPreviousWork(work: ChartWork): ChartWork {
         let previousWork: ChartWork = null
 
-        this.works.forEach(current => {
-            if (current.id === work.id) {
-                previousWork = current
+        this.works.forEach((current, index) => {
+            if (current.id === work.id && index > 0) {
+                previousWork = this.works[index - 1]
             }
         })
 
         return previousWork
+    }
+
+    findWork(work: ChartWork): ChartWork {
+        let workFound: ChartWork = null
+
+        this.works.forEach(current => {
+            if (current.id === work.id) {
+                workFound = current
+            }
+        })
+
+        return workFound
     }
 
     private determineTrend(leadingCoefficient: number): Trend {

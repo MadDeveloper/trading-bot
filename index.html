@@ -22,22 +22,29 @@
   <script>
     const works = []
     const filteredWorks = []
-    const trades = []
+    const allTrades = []
 
     async function extractPoints() {
       const { allWorksStored, allWorksSmoothed, trades } = await loadData()
 
-      allWorksStored.forEach(rawPoint => {
+      allWorksStored.forEach(work => {
         works.push({
-          time: rawPoint.time,
-          price: rawPoint.price
+          x: work.time / 1000,
+          y: work.price
         })
       })
 
-      allWorksSmoothed.forEach(rawPoint => {
+      allWorksSmoothed.forEach(work => {
         filteredWorks.push({
-          time: rawPoint.time,
-          price: rawPoint.price
+          x: work.time / 1000,
+          y: work.price
+        })
+      })
+
+      trades.forEach(trade => {
+        allTrades.push({
+          x: trade.time / 1000,
+          y: trade.price
         })
       })
     }
@@ -45,27 +52,28 @@
     function drawChart() {
       const context = document.querySelector("#myChart").getContext('2d')
       const newChart = new Chart(context, {
-        type: 'line',
+        type: 'scatter',
         data: {
-          labels: works.map(work => work.time / 1000),
+          labels: works.map(work => work.x / 1000),
           datasets: [
             {
-              label: 'Currency prices',
-              backgroundColor: 'rgba(255, 99, 132, .5)',
-              borderColor: 'rgb(255, 99, 132)',
-              data: works.map(work => work.price)
+              label: 'Trades',
+              backgroundColor: 'transparent',
+              borderColor: 'green',
+              borderWidth: 3,
+              data: allTrades
             },
             {
               label: 'Filtered currency prices',
               backgroundColor: 'rgba(41, 128, 185, .5)',
               borderColor: 'rgb(41, 128, 185)',
-              data: filteredWorks.map(work => work.price)
+              data: filteredWorks
             },
             {
-              label: 'Trades',
-              backgroundColor: 'transparent',
-              borderColor: 'green',
-              data: []
+              label: 'Currency prices',
+              backgroundColor: 'rgba(255, 99, 132, .2)',
+              borderColor: 'rgb(255, 99, 132)',
+              data: works
             }
           ]
         }

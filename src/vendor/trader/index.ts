@@ -1122,12 +1122,12 @@ class Trader implements Trading {
 
     async watchChartWorker() {
         this.workObserver = this.chartWorker.work$.subscribe((work: ChartWork) => {
-            this.worksStored = this.chartWorker.copyWorks()
             this.analyzeWorks()
         })
     }
 
     analyzeWorks() {
+        const works = this.chartWorker.filterNoise(this.chartWorker.copyWorks())
         const lastPrice = this.chartWorker.lastPrice
         const thresholdDifferenceBetweenPrice = config.trader.thresholdDifferenceBetweenLastSellPrieAndNewBuyPrice
 
@@ -1140,7 +1140,7 @@ class Trader implements Trading {
              * Trader is waiting to buy
              * we will try to know if we are in a hollow case
              */
-            if (this.chartAnalyzer.containsHollow(this.worksStored)) {
+            if (this.chartAnalyzer.containsHollow(works)) {
                 console.log('hollow detected!')
                 /*
                  * We found a hollow, do we have already sold?
@@ -1154,7 +1154,7 @@ class Trader implements Trading {
                 }
 
                 // Hollow was not enough down in order to buy, but we clear works in order to avoid to loop through it later in analyzer
-                this.clearWorks()
+                this.prepareForNewTrade()
             } else {
                 console.log('waiting for an hollow...')
             }
@@ -1164,7 +1164,7 @@ class Trader implements Trading {
              * Trader is waiting to sell
              * we will try to know if we are in a bump case
              */
-            if (this.chartAnalyzer.containsBump(this.worksStored)) {
+            if (this.chartAnalyzer.containsBump(works)) {
                 console.log('Bump detected!')
                 /*
                  * We found a bump, do we have already bought?
@@ -1177,7 +1177,7 @@ class Trader implements Trading {
                 }
 
                 // Bump was not enough up in order to sell, but we clear works in order to avoid to loop through it later in analyzer
-                this.clearWorks()
+                this.prepareForNewTrade()
             } else {
                 console.log('waiting for a bump...')
             }
@@ -1195,8 +1195,8 @@ class Trader implements Trading {
         return priceB > (priceA / (Math.pow(multiplierFeesIncluded, 2)))
     }
 
-    clearWorks() {
-        this.worksStored = []
+    prepareForNewTrade() {
+        this.chartWorker.clearWorks()
     }
 
     async buy(funds: number) {
@@ -1209,7 +1209,7 @@ class Trader implements Trading {
 
             this.state = TraderState.WAITING_TO_SELL
             this.lastTrade = {
-                price: this.chartWorker.lastPrice,
+                price: lastWork.price,
                 time: lastWork.time,
                 benefits: -funds,
                 type: TradeType.BUY,
@@ -1299,16 +1299,10 @@ class Trader implements Trading {
         }
     }
 
-    logDebug() {
-        console.log('Trader work retrieved:')
-        console.log(this.chartWorker.works)
-        console.log(this.trades)
-    }
-
     getDebug() {
         return {
-            allWorksStored: this.chartWorker.works,
-            allWorksSmoothed: this.chartWorker.filterNoise(this.chartWorker.works),
+            allWorksStored: this.chartWorker.allWorks,
+            allWorksSmoothed: this.chartWorker.filterNoise(this.chartWorker.allWorks),
             trades: this.trades
         }
     }

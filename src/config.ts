@@ -1,6 +1,9 @@
 import keys from './keys'
 
 const config: Config = {
+    app: {
+        debug: true,
+    },
     api: {
         ...keys,
         uri: 'https://api.gdax.com',
