@@ -71,7 +71,6 @@ class ChartWorker {
 
     notifyWork(work: ChartWork) {
         this.works.push(this.lastWork)
-        this.allWorks.push(this.lastWork)
         this.work$.next(this.lastWork)
     }
 

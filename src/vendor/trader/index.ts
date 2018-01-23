@@ -331,7 +331,15 @@ class Trader implements Trading {
 
             this.trades.push({ ... this.lastTrade })
 
-            console.log(`Bought! Last trade: ${JSON.stringify(this.lastTrade, null, 2)}`)
+            console.log(`
+             ____ ____ ____ 
+            ||B |||U |||Y ||
+            ||__|||__|||__||
+            |/__\\|/__\\|/__\\|            
+            
+            `)
+            console.log(`Last trade: ${JSON.stringify(this.lastTrade, null, 2)}`)
+            console.log(`Would be able to sell when the price will be above ${this.thresholdPriceOfProbitability(this.lastTrade.price).toFixed(2)}€`)
 
             // await this
             //     .market
@@ -371,7 +379,14 @@ class Trader implements Trading {
 
             this.trades.push({ ...this.lastTrade })
 
-            console.log(`Sold! Last trade: ${JSON.stringify(this.lastTrade, null, 2)}`)
+            console.log(`
+             ____ ____ ____ ____ 
+            ||S |||e |||l |||l ||
+            ||__|||__|||__|||__||
+            |/__\\|/__\\|/__\\|/__\\|
+            
+            `)
+            console.log(`Last trade: ${JSON.stringify(this.lastTrade, null, 2)}`)
 
             // await this
             //     .market
