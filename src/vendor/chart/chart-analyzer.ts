@@ -17,16 +17,14 @@ class ChartAnalyzer {
         let upwardTrendConfirmed = false
 
         works.forEach(work => {
-            if (downwardTrendConfirmed && this.isUpwardTrendConfirmed(work)) {
-                if (work.price >= this.computePriceWithRateToApproveUpward(work.lastPrice)) {
+            if (downwardTrendConfirmed && !upwardTrendConfirmed && this.isUpwardTrendConfirmed(work)) {
+                // if (work.price >= this.computePriceWithRateToApproveUpward(work.lastPrice)) {
                     upwardTrendConfirmed = true
-                    console.log(work)
-                }
+                // }
             } else if (!downwardTrendConfirmed && this.isDownwardTrendConfirmed(work)) {
-                if (work.price <= this.computePriceWithRateToApproveDownward(work.lastPrice)) {
+                // if (work.price <= this.computePriceWithRateToApproveDownward(work.lastPrice)) {
                     downwardTrendConfirmed = true
-                    console.log(work)
-                }
+                // }
             }
         })
 
@@ -41,14 +39,14 @@ class ChartAnalyzer {
         let downwardTrendConfirmed = false
 
         works.forEach(work => {
-            if (upwardTrendConfirmed && this.isDownwardTrendConfirmed(work)) {
-                if (work.price <= this.computePriceWithRateToApproveDownward(work.lastPrice)) {
+            if (upwardTrendConfirmed && !downwardTrendConfirmed && this.isDownwardTrendConfirmed(work)) {
+                // if (work.price <= this.computePriceWithRateToApproveDownward(work.lastPrice)) {
                     downwardTrendConfirmed = true
-                }
+                // }
             } else if (!upwardTrendConfirmed && this.isUpwardTrendConfirmed(work)) {
-                if (work.price >= this.computePriceWithRateToApproveUpward(work.lastPrice)) {
+                // if (work.price >= this.computePriceWithRateToApproveUpward(work.lastPrice)) {
                     upwardTrendConfirmed = true
-                }
+                // }
             }
         })
 
@@ -59,11 +57,11 @@ class ChartAnalyzer {
     }
 
     isDownwardTrendConfirmed(work: ChartWork): boolean {
-        return this.rateBetweenPricesConfirmTrend(work.lastPrice, work.price) || this.trendsConfirmDownward(work)
+        return (work.trend === Trend.DOWNWARD && this.rateBetweenPricesConfirmTrend(work.lastPrice, work.price)) || this.trendsConfirmDownward(work)
     }
 
     isUpwardTrendConfirmed(work: ChartWork): boolean {
-        return this.rateBetweenPricesConfirmTrend(work.lastPrice, work.price) || this.trendsConfirmUpward(work)
+        return (work.trend === Trend.UPWARD && this.rateBetweenPricesConfirmTrend(work.lastPrice, work.price)) || this.trendsConfirmUpward(work)
     }
 
     trendsConfirmDownward(work: ChartWork): boolean {
@@ -85,13 +83,13 @@ class ChartAnalyzer {
         return Math.abs(Equation.rateBetweenValues(priceA, priceB)) >= config.chart.thresholdRateToApproveInversion
     }
 
-    private computePriceWithRateToApproveDownward(price) {
-        return price * (1 - config.chart.rateToApproveVariation)
-    }
+    // private computePriceWithRateToApproveDownward(price) {
+    //     return price * (1 - config.chart.rateToApproveVariation)
+    // }
 
-    private computePriceWithRateToApproveUpward(price) {
-        return price * (1 + config.chart.rateToApproveVariation)
-    }
+    // private computePriceWithRateToApproveUpward(price) {
+    //     return price * (1 + config.chart.rateToApproveVariation)
+    // }
 }
 
 export default ChartAnalyzer

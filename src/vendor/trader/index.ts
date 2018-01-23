@@ -48,110 +48,167 @@ class Trader implements Trading {
             this.stop()
         }
 
-        this.watchChartWorker()
-        this.chartWorker.workOnPriceTicker()
+        // this.watchChartWorker()
+        // this.chartWorker.workOnPriceTicker()
 
         const worksContainingHollow: ChartWork[] = [
             {
-                id: 1,
-                lastPrice: 1,
-                lastTrend: Trend.DOWNWARD,
-                price: .9,
-                trend: Trend.DOWNWARD,
-                time: 0
+                "id": 7,
+                "lastPrice": 8447.48,
+                "price": 8450.8,
+                "lastTrend": 1,
+                "trend": 0,
+                "time": 105000
             },
             {
-                id: 2,
-                lastPrice: .9,
-                lastTrend: Trend.DOWNWARD,
-                price: .8,
-                trend: Trend.DOWNWARD,
-                time: 1000
+                "id": 9,
+                "lastPrice": 8450.8,
+                "price": 8463.38,
+                "lastTrend": 0,
+                "trend": 0,
+                "time": 135000
             },
             {
-                id: 3,
-                lastPrice: .8,
-                lastTrend: Trend.DOWNWARD,
-                price: .8,
-                trend: Trend.FLAT,
-                time: 2000
+                "id": 10,
+                "lastPrice": 8463.38,
+                "price": 8459.55,
+                "lastTrend": 0,
+                "trend": 1,
+                "time": 150000
             },
             {
-                id: 4,
-                lastPrice: .8,
-                lastTrend: Trend.FLAT,
-                price: .9,
-                trend: Trend.UPWARD,
-                time: 3000
+                "id": 14,
+                "lastPrice": 8459.55,
+                "price": 8436.69,
+                "lastTrend": 1,
+                "trend": 1,
+                "time": 210000
             },
             {
-                id: 5,
-                lastPrice: .9,
-                lastTrend: Trend.UPWARD,
-                price: 1,
-                trend: Trend.UPWARD,
-                time: 4000
+                "id": 20,
+                "lastPrice": 8436.69,
+                "price": 8477,
+                "lastTrend": 1,
+                "trend": 0,
+                "time": 300000
             },
             {
-                id: 6,
-                lastPrice: 1,
-                lastTrend: Trend.UPWARD,
-                price: 1.1,
-                trend: Trend.UPWARD,
-                time: 5000
+                "id": 23,
+                "lastPrice": 8477,
+                "price": 8478.31,
+                "lastTrend": 0,
+                "trend": 0,
+                "time": 345000
+            },
+            {
+                "id": 26,
+                "lastPrice": 8478.31,
+                "price": 8477.05,
+                "lastTrend": 0,
+                "trend": 1,
+                "time": 390000
             }
         ]
         const worksContainingBump: ChartWork[] = [
             {
-                id: 1,
-                lastPrice: 1,
-                lastTrend: Trend.UPWARD,
-                price: 1.1,
-                trend: Trend.UPWARD,
-                time: 0
+                "id": 38,
+                "lastPrice": 8478.31,
+                "price": 8477.01,
+                "lastTrend": 0,
+                "trend": 1,
+                "time": 570000
             },
             {
-                id: 2,
-                lastPrice: 1.1,
-                lastTrend: Trend.UPWARD,
-                price: 1.2,
-                trend: Trend.UPWARD,
-                time: 1000
+                "id": 49,
+                "lastPrice": 8477.01,
+                "price": 8478.31,
+                "lastTrend": 1,
+                "trend": 0,
+                "time": 735000
             },
             {
-                id: 3,
-                lastPrice: 1.2,
-                lastTrend: Trend.DOWNWARD,
-                price: 1.2,
-                trend: Trend.FLAT,
-                time: 2000
+                "id": 50,
+                "lastPrice": 8478.31,
+                "price": 8488,
+                "lastTrend": 0,
+                "trend": 0,
+                "time": 750000
             },
             {
-                id: 4,
-                lastPrice: 1.2,
-                lastTrend: Trend.FLAT,
-                price: 1.1,
-                trend: Trend.DOWNWARD,
-                time: 3000
+                "id": 51,
+                "lastPrice": 8488,
+                "price": 8492.27,
+                "lastTrend": 0,
+                "trend": 0,
+                "time": 765000
             },
             {
-                id: 5,
-                lastPrice: 1.1,
-                lastTrend: Trend.DOWNWARD,
-                price: 1,
-                trend: Trend.DOWNWARD,
-                time: 4000
+                "id": 52,
+                "lastPrice": 8492.27,
+                "price": 8523.51,
+                "lastTrend": 0,
+                "trend": 0,
+                "time": 780000
             },
             {
-                id: 6,
-                lastPrice: 1,
-                lastTrend: Trend.DOWNWARD,
-                price: .9,
-                trend: Trend.DOWNWARD,
-                time: 5000
+                "id": 54,
+                "lastPrice": 8523.51,
+                "price": 8531.42,
+                "lastTrend": 0,
+                "trend": 0,
+                "time": 810000
+            },
+            {
+                "id": 56,
+                "lastPrice": 8531.42,
+                "price": 8537.28,
+                "lastTrend": 0,
+                "trend": 0,
+                "time": 840000
+            },
+            {
+                "id": 61,
+                "lastPrice": 8537.28,
+                "price": 8538,
+                "lastTrend": 0,
+                "trend": 0,
+                "time": 915000
+            },
+            {
+                "id": 65,
+                "lastPrice": 8538,
+                "price": 8535.97,
+                "lastTrend": 0,
+                "trend": 1,
+                "time": 975000
+            },
+            {
+                "id": 66,
+                "lastPrice": 8535.97,
+                "price": 8532.42,
+                "lastTrend": 1,
+                "trend": 1,
+                "time": 990000
+            },
+            {
+                "id": 69,
+                "lastPrice": 8532.42,
+                "price": 8535.89,
+                "lastTrend": 1,
+                "trend": 0,
+                "time": 1035000
+            },
+            {
+                "id": 76,
+                "lastPrice": 8535.89,
+                "price": 8538.2,
+                "lastTrend": 0,
+                "trend": 0,
+                "time": 1140000
             }
         ]
-        
+
+        // console.log(this.chartAnalyzer.containsHollow(worksContainingHollow))
         // console.log(this.chartAnalyzer.containsBump(worksContainingBump))
     }
 
@@ -242,7 +299,7 @@ class Trader implements Trading {
                 throw new Error(`Cannot buy, funds are invalid: ${funds}`)
             }
 
-            const lastWork = this.chartWorker.lastWork // FIXME: be sure that's the work we want buy on it
+            const lastWork = Object.assign({}, this.chartWorker.lastWork)
 
             this.state = TraderState.WAITING_TO_SELL
             this.lastTrade = {
@@ -253,7 +310,7 @@ class Trader implements Trading {
                 quantity: funds / lastWork.price
             }
 
-            this.trades.push(this.lastTrade)
+            this.trades.push({ ... this.lastTrade })
 
             console.log(`Bought! Last trade: ${JSON.stringify(this.lastTrade, null, 2)}`)
 
@@ -281,7 +338,7 @@ class Trader implements Trading {
                 throw new Error('Trying to sell but last trade is not of type BUY.')
             }
 
-            const lastWork = this.chartWorker.lastWork // FIXME: be sure that's the work we want buy on it
+            const lastWork = Object.assign({}, this.chartWorker.lastWork)
 
             this.state = TraderState.WAITING_TO_BUY
             this.lastTrade = {
@@ -292,7 +349,7 @@ class Trader implements Trading {
                 quantity: funds
             }
 
-            this.trades.push(this.lastTrade)
+            this.trades.push({ ...this.lastTrade })
 
             console.log(`Sold! Last trade: ${this.lastTrade}`)
 

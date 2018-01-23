@@ -89,7 +89,7 @@ class ChartWorker {
         return works.filter((work, index) => {
             if (index === 0 || !lastWorkKept) {
                 // First point, we keep it
-                lastWorkKept = work
+                lastWorkKept = Object.assign({}, work)
 
                 return true
             }
@@ -102,7 +102,7 @@ class ChartWorker {
                 work.lastTrend = lastWorkKept.trend
                 work.trend = newTrend
                 work.lastPrice = lastWorkKept.price
-                lastWorkKept = work
+                lastWorkKept = Object.assign({}, work)
 
                 return true
             }
@@ -134,13 +134,20 @@ class ChartWorker {
         }
     }
 
-    recreateIds(works: ChartWork[]): ChartWork[] {
+    recreateWorksTimeline(works: ChartWork[]): ChartWork[] {
         let id = 0
+        let time = 0
 
-        return works.map(work => ({
-            ...work,
-            id: id++
-        }))
+        return works.map(work => {
+            const newWork = Object.assign({}, work, {
+                id: id++,
+                time: time
+            })
+
+            time += config.trader.tickerInterval
+
+            return newWork
+        })
     }
 
     stopWorking() {
@@ -157,7 +164,7 @@ class ChartWorker {
 
     clearWorks() {
         if (config.app.debug) {
-            this.allWorks = this.allWorks.concat(this.works)
+            this.allWorks = this.recreateWorksTimeline(this.allWorks.concat(this.copyWorks()))
         }
 
         this.works = []
