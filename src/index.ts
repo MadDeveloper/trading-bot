@@ -15,8 +15,8 @@ const bot = new Trader(gdax)
 
 bot.trade()
 
-// process.once('SIGTERM', () => writeDebug)
-// process.once('SIGINT', writeDebug)
+process.once('SIGTERM', () => writeDebug)
+process.once('SIGINT', writeDebug)
 
 function writeDebug() {
     const debug = bot.getDebug()
