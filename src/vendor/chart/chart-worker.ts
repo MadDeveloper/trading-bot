@@ -85,13 +85,23 @@ class ChartWorker {
     }
 
     smoothCurve(works: ChartWork[]): ChartWork[] {
-        return works.filter(work => {
-            if (!Number.isFinite(work.lastPrice)) {
+        let lastWorkKept: ChartWork
+
+        return works.filter((work, index) => {
+            if (index === 0 || !lastWorkKept) {
                 // First point, we keep it
+                lastWorkKept = work
+
                 return true
             }
 
-            return Math.abs(Equation.rateBetweenValues(work.lastPrice, work.price)) > config.chart.minPriceDifferenceToApproveNewPoint
+            if (Math.abs(Equation.rateBetweenValues(lastWorkKept.price, work.price)) > config.chart.minPriceDifferenceToApproveNewPoint) {
+                lastWorkKept = work
+
+                return true
+            }
+
+            return false
         })
     }
 
