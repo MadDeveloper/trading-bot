@@ -14,16 +14,11 @@
   "license": "ISC",
   "dependencies": {
     "gdax": "github:coinbase/gdax-node",
-    "request": "^2.83.0",
-    "request-promise": "^4.2.2",
-    "rxjs": "^5.5.6",
-    "socket.io": "^2.0.4",
-    "uuid": "^3.1.0"
+    "rxjs": "^5.5.6"
   },
   "devDependencies": {
     "@types/node": "^8.5.2",
     "@types/rx": "^4.1.1",
-    "concurrently": "^3.5.1",
     "tsc-watch": "^1.0.13"
   }
 }

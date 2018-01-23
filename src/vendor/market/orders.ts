@@ -1,5 +1,4 @@
 import * as Gdax from 'gdax'
-import * as uuid from 'uuid/v4'
 import { LimitOrder } from 'gdax';
 import Order from '../interfaces/order';
 import { OrderType } from '../interfaces/order-type.enum';
