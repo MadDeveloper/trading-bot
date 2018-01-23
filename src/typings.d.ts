@@ -13,8 +13,7 @@ declare interface Config {
         sandbox: boolean;
     },
     trader: {
-        tickerInterval: number, // ms
-        thresholdDifferenceBetweenLastSellPriceAndNewBuyPrice: number
+        tickerInterval: number // ms
     },
     market: {
         instantOrderFees: number

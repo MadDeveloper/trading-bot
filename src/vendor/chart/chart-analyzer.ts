@@ -12,8 +12,7 @@ class ChartAnalyzer {
         this.chartWorker = chartWorker
     }
 
-    containsHollow(originalWorks: ChartWork[]): boolean {
-        const works = this.chartWorker.removeIsolatedBumpAndHollow(originalWorks.slice())
+    containsHollow(works: ChartWork[]): boolean {
         let downwardTrendConfirmed = false
         let upwardTrendConfirmed = false
 
@@ -35,6 +34,28 @@ class ChartAnalyzer {
         console.log(`upwardTrendConfirmed: ${upwardTrendConfirmed}`)
 
         return downwardTrendConfirmed && upwardTrendConfirmed
+    }
+
+    containsBump(works: ChartWork[]): boolean {
+        let upwardTrendConfirmed = false
+        let downwardTrendConfirmed = false
+
+        works.forEach(work => {
+            if (upwardTrendConfirmed && this.isDownwardTrendConfirmed(work)) {
+                if (work.price <= this.computePriceWithRateToApproveDownward(work.lastPrice)) {
+                    downwardTrendConfirmed = true
+                }
+            } else if (!upwardTrendConfirmed && this.isUpwardTrendConfirmed(work)) {
+                if (work.price >= this.computePriceWithRateToApproveUpward(work.lastPrice)) {
+                    upwardTrendConfirmed = true
+                }
+            }
+        })
+
+        console.log(`upwardTrendConfirmed: ${upwardTrendConfirmed}`)
+        console.log(`downwardTrendConfirmed: ${downwardTrendConfirmed}`)
+
+        return upwardTrendConfirmed && downwardTrendConfirmed
     }
 
     isDownwardTrendConfirmed(work: ChartWork): boolean {
@@ -60,31 +81,8 @@ class ChartAnalyzer {
     }
 
     rateBetweenPricesConfirmTrend(priceA, priceB) {
-        // High price difference confirms immediately a trend (but under a certain thresold! Too high difference will be rejected)
-        return Math.abs(Equation.rateBetweenValues(priceA, priceB)) >= config.chart.thresholdRateToApproveInversion && Math.abs(Equation.rateBetweenValues(priceA, priceB)) <= config.chart.thresholdMaxRateToApproveInversion
-    }
-
-    containsBump(originalWorks: ChartWork[]): boolean {
-        const works = this.chartWorker.removeIsolatedBumpAndHollow(originalWorks.slice())
-        let upwardTrendConfirmed = false
-        let downwardTrendConfirmed = false
-
-        works.forEach(work => {
-            if (upwardTrendConfirmed && work.lastTrend !== Trend.UPWARD && work.trend !== Trend.UPWARD) {
-                if (work.price <= this.computePriceWithRateToApproveDownward(work.lastPrice)) {
-                    downwardTrendConfirmed = true
-                }
-            } else if (!upwardTrendConfirmed && work.lastTrend !== Trend.DOWNWARD && work.trend !== Trend.DOWNWARD) {
-                if (work.price >= this.computePriceWithRateToApproveUpward(work.lastPrice)) {
-                    upwardTrendConfirmed = true
-                }
-            }
-        })
-
-        console.log(`upwardTrendConfirmed: ${upwardTrendConfirmed}`)
-        console.log(`downwardTrendConfirmed: ${downwardTrendConfirmed}`)
-
-        return upwardTrendConfirmed && downwardTrendConfirmed
+        // High price difference confirms immediately a trend
+        return Math.abs(Equation.rateBetweenValues(priceA, priceB)) >= config.chart.thresholdRateToApproveInversion
     }
 
     private computePriceWithRateToApproveDownward(price) {

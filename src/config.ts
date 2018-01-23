@@ -13,8 +13,7 @@ const config: Config = {
         sandbox: true
     },
     trader: {
-        tickerInterval: 1000 * 15, // ms
-        thresholdDifferenceBetweenLastSellPriceAndNewBuyPrice: 0.5 // in %, market buy/sell have 0.25% fees!
+        tickerInterval: 1000 * 15 // ms
     },
     market: {
         instantOrderFees: 0.0025 // <=> 0.25%

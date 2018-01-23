@@ -163,10 +163,8 @@ class Trader implements Trading {
 
     analyzeWorks() {
         const works = this.chartWorker.filterNoise(this.chartWorker.copyWorks())
-        const lastPrice = this.chartWorker.lastPrice
-        const thresholdDifferenceBetweenPrice = config.trader.thresholdDifferenceBetweenLastSellPriceAndNewBuyPrice
 
-        console.log('\non Analyse le travail')
+        console.log('\nWe are analyzing the chart...')
 
         if (TraderState.WAITING_TO_BUY === this.state) {
             console.log('Trader wants to buy...')
@@ -182,10 +180,12 @@ class Trader implements Trading {
                  * If yes: we will buy only if the price is under the last sell price (we want a negative enough pct difference)
                  * If no: we can just buy at the current price
                  */
-                if (!this.lastTrade || (Number.isFinite(this.lastTrade.price) && Equation.rateBetweenValues(this.lastTrade.price, lastPrice) < -thresholdDifferenceBetweenPrice)) {
-                    console.log('we will buy!')
+                if (!this.lastTrade || Number.isFinite(this.lastTrade.price)) {
+                    console.log('we are going to buy!')
                     // We have sold, and the current price is below since the last price we sold so we can buy
                     this.buy(this.fiatCurrencyAmountAvailable)
+                } else {
+                    console.log(`Not bought! Error occured with last trade: ${JSON.stringify(this.lastTrade)}`)
                 }
 
                 // Hollow was not enough down in order to buy, but we clear works in order to avoid to loop through it later in analyzer
@@ -209,6 +209,8 @@ class Trader implements Trading {
                 if (this.lastTrade && Number.isFinite(this.lastTrade.price) && this.isProfitable(this.lastTrade.price, this.chartWorker.lastPrice)) {
                     console.log('we will sell!')
                     this.sell(this.currencyAmountAvailable)
+                } else {
+                    console.log('Not sold! Was not profitable')
                 }
 
                 // Bump was not enough up in order to sell, but we clear works in order to avoid to loop through it later in analyzer
@@ -253,7 +255,7 @@ class Trader implements Trading {
 
             this.trades.push(this.lastTrade)
 
-            console.log(`Bought! Last trade: ${this.lastTrade}`)
+            console.log(`Bought! Last trade: ${JSON.stringify(this.lastTrade, null, 2)}`)
 
             // await this
             //     .market
