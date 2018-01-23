@@ -48,8 +48,8 @@ class Trader implements Trading {
             this.stop()
         }
 
-        // this.watchChartWorker()
-        // this.chartWorker.workOnPriceTicker()
+        this.watchChartWorker()
+        this.chartWorker.workOnPriceTicker()
 
         const worksContainingHollow: ChartWork[] = [
             {
