@@ -309,6 +309,7 @@ class Trader implements Trading {
                 type: TradeType.BUY,
                 quantity: funds / lastWork.price
             }
+            this.currencyAmountAvailable = this.currencyAmountAvailable + (funds / this.chartWorker.lastPrice)
 
             this.trades.push({ ... this.lastTrade })
 
@@ -322,7 +323,6 @@ class Trader implements Trading {
             // // TODO: check order book ou nos open orders pour savoir quand l'ordre est fini
             // // récupérer nos comptes pour savoir combien on a en crypto currency et en fiat currency (les amount)
             // this.fiatCurrencyAmountAvailable = this.fiatCurrencyAmountAvailable - funds
-            // this.currencyAmountAvailable = this.currencyAmountAvailable + (funds / this.chartWorker.lastPrice)
         } catch (error) {
             console.error(`Error when trying to buy: ${error}`)
         }
@@ -394,9 +394,11 @@ class Trader implements Trading {
     }
 
     getDebug() {
+        const works = this.chartWorker.recreateWorksTimeline(this.chartWorker.allWorks)
+
         return {
-            allWorksStored: this.chartWorker.allWorks,
-            allWorksSmoothed: this.chartWorker.filterNoise(this.chartWorker.allWorks),
+            allWorksStored: works,
+            allWorksSmoothed: this.chartWorker.filterNoise(works),
             trades: this.trades
         }
     }
