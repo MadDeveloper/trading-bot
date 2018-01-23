@@ -39,6 +39,7 @@ class Trader implements Trading {
         this.state = TraderState.WAITING_TO_BUY
         this.chartAnalyzer = new ChartAnalyzer(this.chartWorker)
         this.fiatCurrencyAmountAvailable = 100
+        this.currencyAmountAvailable = 0
         this.trades = []
     }
 
@@ -309,7 +310,8 @@ class Trader implements Trading {
                 type: TradeType.BUY,
                 quantity: funds / lastWork.price
             }
-            this.currencyAmountAvailable = this.currencyAmountAvailable + (funds / this.chartWorker.lastPrice)
+            this.currencyAmountAvailable += funds / this.lastTrade.price
+            this.fiatCurrencyAmountAvailable -= funds
 
             this.trades.push({ ... this.lastTrade })
 
@@ -348,6 +350,8 @@ class Trader implements Trading {
                 type: TradeType.SELL,
                 quantity: funds
             }
+            this.fiatCurrencyAmountAvailable += this.lastTrade.quantity * this.lastTrade.price
+            this.currencyAmountAvailable -= funds
 
             this.trades.push({ ...this.lastTrade })
 
