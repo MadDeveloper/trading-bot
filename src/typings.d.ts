@@ -14,7 +14,7 @@ declare interface Config {
     },
     trader: {
         tickerInterval: number, // ms
-        thresholdDifferenceBetweenLastSellPrieAndNewBuyPrice: number
+        thresholdDifferenceBetweenLastSellPriceAndNewBuyPrice: number
     },
     market: {
         instantOrderFees: number
@@ -22,6 +22,7 @@ declare interface Config {
     chart: {
         rateToApproveVariation: number,
         thresholdRateToApproveInversion: number,
+        thresholdMaxRateToApproveInversion: number,
         minPriceDifferenceToApproveNewPoint: number
     }
 }

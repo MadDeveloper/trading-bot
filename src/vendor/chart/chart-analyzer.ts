@@ -60,8 +60,8 @@ class ChartAnalyzer {
     }
 
     rateBetweenPricesConfirmTrend(priceA, priceB) {
-        // High price difference confirms immediately a trend
-        return Math.abs(Equation.rateBetweenValues(priceA, priceB)) >= config.chart.thresholdRateToApproveInversion
+        // High price difference confirms immediately a trend (but under a certain thresold! Too high difference will be rejected)
+        return Math.abs(Equation.rateBetweenValues(priceA, priceB)) >= config.chart.thresholdRateToApproveInversion && Math.abs(Equation.rateBetweenValues(priceA, priceB)) <= config.chart.thresholdMaxRateToApproveInversion
     }
 
     containsBump(originalWorks: ChartWork[]): boolean {

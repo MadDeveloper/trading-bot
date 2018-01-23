@@ -164,7 +164,7 @@ class Trader implements Trading {
     analyzeWorks() {
         const works = this.chartWorker.filterNoise(this.chartWorker.copyWorks())
         const lastPrice = this.chartWorker.lastPrice
-        const thresholdDifferenceBetweenPrice = config.trader.thresholdDifferenceBetweenLastSellPrieAndNewBuyPrice
+        const thresholdDifferenceBetweenPrice = config.trader.thresholdDifferenceBetweenLastSellPriceAndNewBuyPrice
 
         console.log('\non Analyse le travail')
 

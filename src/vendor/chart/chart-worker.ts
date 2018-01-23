@@ -48,20 +48,8 @@ class ChartWorker {
         const lastPoint = this.chart.lastPoint()
         const newPoint = this.chart.createPoint(time, this.price)
 
-        this.computeTrend(lastPoint, newPoint)
-        this.notifyWork(time)
-
-        this.tickerTimeout = setTimeout(() => this.priceTickerWork(time + config.trader.tickerInterval), config.trader.tickerInterval)
-    }
-
-    computeTrend(lastPoint, newPoint) {
-        const leadingCoefficient = Equation.findLineLeadingCoefficient(lastPoint, newPoint)
-
         this.lastTrend = this.trend
-        this.trend = this.determineTrend(leadingCoefficient)
-    }
-
-    notifyWork(time: number) {
+        this.trend = this.computeTrend(lastPoint, newPoint)
         this.lastWork = {
             id: this.lastId++,
             lastPrice: this.lastPrice,
@@ -70,7 +58,18 @@ class ChartWorker {
             trend: this.trend,
             time
         }
+        this.notifyWork(this.lastWork)
 
+        this.tickerTimeout = setTimeout(() => this.priceTickerWork(time + config.trader.tickerInterval), config.trader.tickerInterval)
+    }
+
+    computeTrend(lastPoint, newPoint): number {
+        const leadingCoefficient = Equation.findLineLeadingCoefficient(lastPoint, newPoint)
+
+        return this.determineTrend(leadingCoefficient)
+    }
+
+    notifyWork(work: ChartWork) {
         this.works.push(this.lastWork)
         this.allWorks.push(this.lastWork)
         this.work$.next(this.lastWork)
@@ -96,6 +95,13 @@ class ChartWorker {
             }
 
             if (Math.abs(Equation.rateBetweenValues(lastWorkKept.price, work.price)) > config.chart.minPriceDifferenceToApproveNewPoint) {
+                const pointFromLastWorkKept = this.extractPointFromWork(lastWorkKept)
+                const pointFromCurrentWork = this.extractPointFromWork(work)
+                const newTrend = this.computeTrend(pointFromLastWorkKept, pointFromCurrentWork)
+                
+                work.lastTrend = lastWorkKept.trend
+                work.trend = newTrend
+                work.lastPrice = lastWorkKept.price
                 lastWorkKept = work
 
                 return true
@@ -119,6 +125,13 @@ class ChartWorker {
 
             return !isolatedBump && !isolatedHollow
         })
+    }
+
+    extractPointFromWork(work: ChartWork): Point {
+        return {
+            x: work.time,
+            y: work.price
+        }
     }
 
     recreateIds(works: ChartWork[]): ChartWork[] {

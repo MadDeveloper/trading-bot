@@ -14,7 +14,7 @@ const config: Config = {
     },
     trader: {
         tickerInterval: 1000 * 15, // ms
-        thresholdDifferenceBetweenLastSellPrieAndNewBuyPrice: 0.5 // in %, market buy/sell have 0.25% fees!
+        thresholdDifferenceBetweenLastSellPriceAndNewBuyPrice: 0.5 // in %, market buy/sell have 0.25% fees!
     },
     market: {
         instantOrderFees: 0.0025 // <=> 0.25%
@@ -22,6 +22,7 @@ const config: Config = {
     chart: {
         rateToApproveVariation: 0.0025, // <=> 0.25%
         thresholdRateToApproveInversion: 0.2, // in %
+        thresholdMaxRateToApproveInversion: 1, // in %
         minPriceDifferenceToApproveNewPoint: 0.0025 // <=> 0.5%
     }
 }
