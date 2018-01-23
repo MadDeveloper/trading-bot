@@ -22,7 +22,7 @@ const config: Config = {
     chart: {
         rateToApproveVariation: 0.0025, // <=> 0.25%
         thresholdRateToApproveInversion: 0.2, // in %
-        minPriceDifferenceToApproveNewPoint: 0.005 // <=> 0.5%
+        minPriceDifferenceToApproveNewPoint: 0.0025 // <=> 0.5%
     }
 }
 

@@ -72,6 +72,7 @@ class ChartWorker {
         }
 
         this.works.push(this.lastWork)
+        this.allWorks.push(this.lastWork)
         this.work$.next(this.lastWork)
     }
 
@@ -84,7 +85,14 @@ class ChartWorker {
     }
 
     smoothCurve(works: ChartWork[]): ChartWork[] {
-        return works.filter(work => Math.abs(Equation.rateBetweenValues(work.lastPrice, work.price)) > config.chart.minPriceDifferenceToApproveNewPoint)
+        return works.filter(work => {
+            if (!Number.isFinite(work.lastPrice)) {
+                // First point, we keep it
+                return true
+            }
+
+            return Math.abs(Equation.rateBetweenValues(work.lastPrice, work.price)) > config.chart.minPriceDifferenceToApproveNewPoint
+        })
     }
 
     removeIsolatedBumpAndHollow(works: ChartWork[]): ChartWork[] {
