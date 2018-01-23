@@ -22,7 +22,7 @@ const config: Config = {
         rateToApproveVariation: 0.0025, // <=> 0.25%
         thresholdRateToApproveInversion: 0.2, // in %
         thresholdMaxRateToApproveInversion: 1, // in %
-        minPriceDifferenceToApproveNewPoint: 0.0025 // <=> 0.5%
+        minPriceDifferenceToApproveNewPoint: 0.004 // <=> 0.4%
     }
 }
 

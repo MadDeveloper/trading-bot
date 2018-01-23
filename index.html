@@ -18,6 +18,7 @@
 
 <body>
   <canvas id="myChart"></canvas>
+  <div>Total benefits: <span id="benefits"></span></div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
   <script>
     const works = []
@@ -28,24 +29,24 @@
       const { allWorksStored, allWorksSmoothed, trades } = await loadData()
 
       allWorksStored.forEach(work => {
-        works.push({
+        works.push(Object.assign({}, work, {
           x: work.time / 1000,
           y: work.price
-        })
+        }))
       })
 
       allWorksSmoothed.forEach(work => {
-        filteredWorks.push({
+        filteredWorks.push(Object.assign({}, work, {
           x: work.time / 1000,
           y: work.price
-        })
+        }))
       })
 
       trades.forEach(trade => {
-        allTrades.push({
+        allTrades.push(Object.assign({}, trade, {
           x: trade.time / 1000,
-          y: trade.price
-        })
+          y: trade.price,
+        }))
       })
     }
 
@@ -95,6 +96,19 @@
       })
     }
 
+    function calculateBenefits(trades) {
+      const $benefits = document.querySelector('#benefits')
+      const benefits = trades.reduce((total, trade) => {
+        if (trade.type === 0) { // sell type only, buy is 1
+          return total + trade.benefits
+        }
+
+        return total
+      }, 0)
+
+      $benefits.innerHTML = `${benefits.toLocaleString()}€`
+    }
+
     async function loadData() {
       return JSON.parse(await readTextFile('data.json'))
     }
@@ -102,6 +116,7 @@
     window.onload = async () => {
       await extractPoints()
       drawChart()
+      calculateBenefits(allTrades)
     }
   </script>
 </body>

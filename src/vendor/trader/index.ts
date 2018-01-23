@@ -258,13 +258,15 @@ class Trader implements Trading {
              * we will try to know if we are in a bump case
              */
             if (this.chartAnalyzer.containsBump(works)) {
+                const lastWork = this.chartWorker.lastWork
+
                 console.log('Bump detected!')
                 /*
                  * We found a bump, do we have already bought?
                  * If yes: we will buy only if the price is under the last sell price
                  * If no: we do nothing, we wait an hollow to buy first
                  */
-                if (this.lastTrade && Number.isFinite(this.lastTrade.price) && this.isProfitable(this.lastTrade.price, this.chartWorker.lastPrice)) {
+                if (this.lastTrade && Number.isFinite(this.lastTrade.price) && this.isProfitable(this.lastTrade.price, lastWork.price)) {
                     console.log('we will sell!')
                     this.sell(this.currencyAmountAvailable)
                 } else {
@@ -282,12 +284,22 @@ class Trader implements Trading {
         }
     }
 
-    isProfitable(priceA, priceB) {
+    isProfitable(buyPrice, comparedPrice) {
+        const threshold = this.thresholdPriceOfProbitability(buyPrice)
+
+        return comparedPrice > threshold
+    }
+
+    thresholdPriceOfProbitability(buyPrice) {
         const multiplierFeesIncluded = 1 - config.market.instantOrderFees
+
+        if (multiplierFeesIncluded === 0) {
+            throw new Error(`Mathematic error when trying to calculate threshold price of profitability (multiplierFeesIncluded = 0, cannot divide by zero)`)
+        }
 
         // a = 0.9975^2 * a * (p2/p1)
         // b > a <=> p2 > p1 / 0.9975^2
-        return priceB > (priceA / (Math.pow(multiplierFeesIncluded, 2)))
+        return buyPrice / Math.pow(multiplierFeesIncluded, 2)
     }
 
     prepareForNewTrade() {
@@ -298,6 +310,10 @@ class Trader implements Trading {
         try {
             if (!Number.isFinite(funds)) {
                 throw new Error(`Cannot buy, funds are invalid: ${funds}`)
+            }
+
+            if (this.lastTrade && this.lastTrade.type !== TradeType.SELL) {
+                throw new Error('Trying to buy but last trade is not of type SELL.')
             }
 
             const lastWork = Object.assign({}, this.chartWorker.lastWork)
@@ -344,7 +360,7 @@ class Trader implements Trading {
 
             this.state = TraderState.WAITING_TO_BUY
             this.lastTrade = {
-                price: this.chartWorker.lastPrice,
+                price: lastWork.price,
                 time: lastWork.time,
                 benefits: (this.chartWorker.lastPrice * funds) - (this.lastTrade.quantity * this.lastTrade.price),
                 type: TradeType.SELL,
@@ -355,7 +371,7 @@ class Trader implements Trading {
 
             this.trades.push({ ...this.lastTrade })
 
-            console.log(`Sold! Last trade: ${this.lastTrade}`)
+            console.log(`Sold! Last trade: ${JSON.stringify(this.lastTrade, null, 2)}`)
 
             // await this
             //     .market
