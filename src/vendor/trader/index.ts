@@ -245,7 +245,9 @@ class Trader implements Trading {
 
     analyzeWorks() {
         const works = this.chartWorker.filterNoise(this.chartWorker.copyWorks())
+        const lastWork = this.chartWorker.lastWork
 
+        Logger.debug(`Last price: ${lastWork.price}€`)
         Logger.debug('\nWe are analyzing the chart...')
 
         if (TraderState.WAITING_TO_BUY === this.state) {
@@ -282,7 +284,6 @@ class Trader implements Trading {
              * we will try to know if we are in a bump case
              */
             if (this.chartAnalyzer.containsBump(works)) {
-                const lastWork = this.chartWorker.lastWork
 
                 Logger.debug('Bump detected!')
                 /*
