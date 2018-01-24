@@ -1,28 +1,27 @@
 import * as Gdax from 'gdax'
-import { LimitOrder } from 'gdax';
-import Order from '../interfaces/order';
+import { LimitOrder, OrderResult } from 'gdax';
 import { OrderType } from '../interfaces/order-type.enum';
 import { Currency } from '../interfaces/currency.enum';
 import { OrderStatus } from '../interfaces/order-status.enum';
 
 class Orders {
-    pending: Order[] = []
-    done: Order[] = []
-    canceled: Order[] = []
-    lastOrder: Order
+    pending: OrderResult[] = []
+    done: OrderResult[] = []
+    canceled: OrderResult[] = []
+    lastOrder: OrderResult
 
     constructor(
         private client: Gdax.AuthenticatedClient,
         private publicClient: Gdax.PublicClient
     ) { }
 
-    async all(): Promise<Order[]> {
-        const orders: Order[] = await this.client.getOrders()
+    async all(): Promise<OrderResult[]> {
+        const orders: OrderResult[] = await this.client.getOrders()
 
         return orders
     }
 
-    find(id: string, status: OrderType): Order {
+    find(id: string, status: OrderType): OrderResult {
         let ordersToSearch = []
 
         if (OrderType.BUY === status || OrderType.SELL === status) {
@@ -42,16 +41,16 @@ class Orders {
         }, null)
     }
 
-    buyOrders(): Order[] {
+    buyOrders(): OrderResult[] {
         return this.pending.filter(order => order.side === OrderType.BUY)
     }
 
-    sellOrders(): Order[] {
+    sellOrders(): OrderResult[] {
         return this.pending.filter(order => order.side === OrderType.SELL)
     }
 
     async buyLimit(currency: Currency, quantity: number, price: number, allowTaker = false): Promise<any> {
-        const response = await this.client.buy({
+        const response: OrderResult = await this.client.buy({
             type: 'limit',
             side: 'buy',
             price: price.toFixed(2),
@@ -64,14 +63,14 @@ class Orders {
             throw Error(`Error when trying to buy with a limit order: ${JSON.stringify(response, null, 2)}`)
         }
 
-        this.lastOrder = <Order>response
+        this.lastOrder = response
         this.pending.push(this.lastOrder)
 
         return this.lastOrder
     }
 
     async buyMarket(currency: Currency, funds: number) {
-        const response = await this.client.buy({
+        const response: OrderResult = await this.client.buy({
             type: 'market',
             side: 'sell',
             size: null,
@@ -83,14 +82,14 @@ class Orders {
             throw Error(`Error when trying to buy with a market order: ${JSON.stringify(response, null, 2)}`)
         }
 
-        this.lastOrder = <Order>response
+        this.lastOrder = response
         this.done.push({ ...this.lastOrder })
 
         return this.lastOrder
     }
 
     async buyStop(currency: Currency, price: number, funds: number = null) {
-        const response = await this.client.buy({
+        const response: OrderResult = await this.client.buy({
             // client_oid: this.lastOrder.id,
             type: 'stop',
             side: 'sell',
@@ -103,14 +102,14 @@ class Orders {
             throw Error(`Error when trying to buy with a stop order: ${JSON.stringify(response, null, 2)}`)
         }
 
-        this.lastOrder = <Order>response
+        this.lastOrder = response
         this.pending.push(this.lastOrder)
 
         return this.lastOrder
     }
 
     async sellLimit(currency: Currency, quantity: number, price: number, allowTaker = false) {
-        const response = await this.client.sell({
+        const response: OrderResult = await this.client.sell({
             // client_oid: this.lastOrder.id,
             type: 'limit',
             side: 'sell',
@@ -124,14 +123,14 @@ class Orders {
             throw Error(`Error when trying to sell with a limit order: ${JSON.stringify(response, null, 2)}`)
         }
 
-        this.lastOrder = <Order>response
+        this.lastOrder = response
         this.pending.push(this.lastOrder)
 
         return this.lastOrder
     }
 
     async sellMarket(currency: Currency, funds: number) {
-        const response = await this.client.sell({
+        const response: OrderResult = await this.client.sell({
             // client_oid: this.lastOrder.id,
             type: 'market',
             side: 'sell',
@@ -144,14 +143,14 @@ class Orders {
             throw Error(`Error when trying to sell with a market order: ${JSON.stringify(response, null, 2)}`)
         }
 
-        this.lastOrder = <Order>response
+        this.lastOrder = response
         this.done.push({ ...this.lastOrder })
 
         return this.lastOrder
     }
 
     async sellStop(currency: Currency, price: number, funds: number = null) {
-        const response = await this.client.sell({
+        const response: OrderResult = await this.client.sell({
             // client_oid: this.lastOrder.id,
             type: 'stop',
             side: 'sell',
@@ -164,19 +163,17 @@ class Orders {
             throw Error(`Error when trying to sell with a stop order: ${JSON.stringify(response, null, 2)}`)
         }
 
-        this.lastOrder = <Order>response
+        this.lastOrder = response
         this.pending.push(this.lastOrder)
 
         return this.lastOrder
     }
 
-    cancel(order: Order) {
+    cancel(order: OrderResult) {
         this.pending = this.pending.filter(current => current.id !== order.id)
         this.canceled.push(order)
 
-        return this
-            .client
-            .cancelOrder(order.id)
+        return this.client.cancelOrder(order.id)
     }
 
     normalizeNumber(price: number): string {

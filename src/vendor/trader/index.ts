@@ -2,7 +2,6 @@ import Accounts from '../market/accounts';
 import ChartWorker from '../chart/chart-worker';
 import config from '../../config';
 import Market from '../interfaces/market';
-import Order from '../interfaces/order';
 import Trading from '../interfaces/trader';
 import { ChartWork } from '../chart/chart-work';
 import { Currency } from '../interfaces/currency.enum';
@@ -15,6 +14,7 @@ import { TradeType } from './trade-type';
 import Equation from '../chart/equation';
 import { writeFileSync } from 'fs';
 import Logger from '../logger/index';
+import { OrderResult } from 'gdax';
 
 class Trader implements Trading {
     market: Market
@@ -416,12 +416,9 @@ class Trader implements Trading {
         }
     }
 
-    async cancel(order: Order) {
+    async cancel(order: OrderResult) {
         try {
-            await this
-                .market
-                .orders
-                .cancel(order)
+            await this.market.orders.cancel(order)
         } catch (error) {
             Logger.error(`Error when trying to cancel order: ${error}`)
         }
