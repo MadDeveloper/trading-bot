@@ -4,6 +4,7 @@ import { Trend } from './trend.enum';
 import config from '../../config';
 import Equation from './equation';
 import ChartWorker from './chart-worker';
+import Logger from '../logger/index';
 
 class ChartAnalyzer {
     chartWorker: ChartWorker
@@ -28,8 +29,8 @@ class ChartAnalyzer {
             }
         })
 
-        console.log(`downwardTrendConfirmed: ${downwardTrendConfirmed}`)
-        console.log(`upwardTrendConfirmed: ${upwardTrendConfirmed}`)
+        Logger.debug(`downwardTrendConfirmed: ${downwardTrendConfirmed}`)
+        Logger.debug(`upwardTrendConfirmed: ${upwardTrendConfirmed}`)
 
         return downwardTrendConfirmed && upwardTrendConfirmed
     }
@@ -50,8 +51,8 @@ class ChartAnalyzer {
             }
         })
 
-        console.log(`upwardTrendConfirmed: ${upwardTrendConfirmed}`)
-        console.log(`downwardTrendConfirmed: ${downwardTrendConfirmed}`)
+        Logger.debug(`upwardTrendConfirmed: ${upwardTrendConfirmed}`)
+        Logger.debug(`downwardTrendConfirmed: ${downwardTrendConfirmed}`)
 
         return upwardTrendConfirmed && downwardTrendConfirmed
     }

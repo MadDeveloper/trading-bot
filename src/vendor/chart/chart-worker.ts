@@ -70,8 +70,11 @@ class ChartWorker {
     }
 
     notifyWork(work: ChartWork) {
-        this.works.push(this.lastWork)
-        this.work$.next(this.lastWork)
+        const copiedWork = Object.assign({}, work)
+
+        this.works.push(copiedWork)
+        this.allWorks.push(copiedWork)
+        this.work$.next(copiedWork)
     }
 
     notifyTrend() {
@@ -162,10 +165,6 @@ class ChartWorker {
     }
 
     clearWorks() {
-        if (config.app.debug) {
-            this.allWorks = this.recreateWorksTimeline(this.allWorks.concat(this.copyWorks()))
-        }
-
         this.works = []
     }
 

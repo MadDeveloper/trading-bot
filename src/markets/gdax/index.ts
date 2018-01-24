@@ -6,6 +6,7 @@ import Market from '../../vendor/interfaces/market';
 import Orders from '../../vendor/market/orders';
 import Accounts from '../../vendor/market/accounts';
 import { Subject } from 'rxjs/Subject';
+import Logger from '../../vendor/logger/index';
 
 class GdaxService implements Market {
     currency: Currency
@@ -76,7 +77,7 @@ class GdaxService implements Market {
     }
 
     private listenSocketErrors() {
-        this.socket.on('error', error => console.error(`A socket error occurs: ${error}`))
+        this.socket.on('error', error => Logger.error(`A socket error occurs: ${error}`))
     }
 }
 

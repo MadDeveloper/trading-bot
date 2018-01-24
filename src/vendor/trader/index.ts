@@ -13,6 +13,8 @@ import ChartAnalyzer from '../chart/chart-analyzer';
 import { Trade } from './trade';
 import { TradeType } from './trade-type';
 import Equation from '../chart/equation';
+import { writeFileSync } from 'fs';
+import Logger from '../logger/index';
 
 class Trader implements Trading {
     market: Market
@@ -27,8 +29,6 @@ class Trader implements Trading {
 
     trades: Trade[]
     lastTrade: Trade
-
-    private priceObserver: Subscription
 
     constructor(market: Market) {
         this.market = market
@@ -45,7 +45,7 @@ class Trader implements Trading {
 
     async trade() {
         if (!this.market.currency) {
-            console.error('Currency is not set, stopping trading.')
+            Logger.error('Currency is not set, stopping trading.')
             this.stop()
         }
 
@@ -209,50 +209,54 @@ class Trader implements Trading {
             }
         ]
 
-        // console.log(this.chartAnalyzer.containsHollow(worksContainingHollow))
-        // console.log(this.chartAnalyzer.containsBump(worksContainingBump))
+        // Logger.debug(this.chartAnalyzer.containsHollow(worksContainingHollow))
+        // Logger.debug(this.chartAnalyzer.containsBump(worksContainingBump))
     }
 
     async watchChartWorker() {
         this.workObserver = this.chartWorker.work$.subscribe((work: ChartWork) => {
             this.analyzeWorks()
+
+            if (config.app.debug) {
+                this.writeDebug()
+            }
         })
     }
 
     analyzeWorks() {
         const works = this.chartWorker.filterNoise(this.chartWorker.copyWorks())
 
-        console.log('\nWe are analyzing the chart...')
+        Logger.debug('\nWe are analyzing the chart...')
 
         if (TraderState.WAITING_TO_BUY === this.state) {
-            console.log('Trader wants to buy...')
+            Logger.debug('Trader wants to buy...')
 
             /*
              * Trader is waiting to buy
              * we will try to know if we are in a hollow case
              */
             if (this.chartAnalyzer.containsHollow(works)) {
-                console.log('hollow detected!')
+                Logger.debug('hollow detected!')
                 /*
                  * We found a hollow, do we have already sold?
                  * If yes: we will buy only if the price is under the last sell price (we want a negative enough pct difference)
                  * If no: we can just buy at the current price
                  */
                 if (!this.lastTrade || Number.isFinite(this.lastTrade.price)) {
-                    console.log('we are going to buy!')
+                    Logger.debug('we are going to buy!')
                     // We have sold, and the current price is below since the last price we sold so we can buy
                     this.buy(this.fiatCurrencyAmountAvailable)
                 } else {
-                    console.log(`Not bought! Error occured with last trade: ${JSON.stringify(this.lastTrade)}`)
+                    Logger.debug(`Not bought! Error occured with last trade: ${JSON.stringify(this.lastTrade)}`)
                 }
 
                 // Hollow was not enough down in order to buy, but we clear works in order to avoid to loop through it later in analyzer
                 this.prepareForNewTrade()
             } else {
-                console.log('waiting for an hollow...')
+                Logger.debug('waiting for an hollow...')
             }
         } else if (TraderState.WAITING_TO_SELL === this.state) {
-            console.log('Trader wants to sell...')
+            Logger.debug('Trader wants to sell...')
             /*
              * Trader is waiting to sell
              * we will try to know if we are in a bump case
@@ -260,26 +264,26 @@ class Trader implements Trading {
             if (this.chartAnalyzer.containsBump(works)) {
                 const lastWork = this.chartWorker.lastWork
 
-                console.log('Bump detected!')
+                Logger.debug('Bump detected!')
                 /*
                  * We found a bump, do we have already bought?
                  * If yes: we will buy only if the price is under the last sell price
                  * If no: we do nothing, we wait an hollow to buy first
                  */
                 if (this.lastTrade && Number.isFinite(this.lastTrade.price) && this.isProfitable(this.lastTrade.price, lastWork.price)) {
-                    console.log('we will sell!')
+                    Logger.debug('we will sell!')
                     this.sell(this.currencyAmountAvailable)
                 } else {
-                    console.log('Not sold! Was not profitable')
+                    Logger.debug('Not sold! Was not profitable')
                 }
 
                 // Bump was not enough up in order to sell, but we clear works in order to avoid to loop through it later in analyzer
                 this.prepareForNewTrade()
             } else {
-                console.log('waiting for a bump...')
+                Logger.debug('waiting for a bump...')
             }
         } else {
-            console.error(`Trader.state does not match any action: ${this.state}`)
+            Logger.error(`Trader.state does not match any action: ${this.state}`)
             this.stop() // No action to be done, trader is maybe crashed, need external intervention
         }
     }
@@ -331,15 +335,15 @@ class Trader implements Trading {
 
             this.trades.push({ ... this.lastTrade })
 
-            console.log(`
+            Logger.debug(`
              ____ ____ ____ 
             ||B |||U |||Y ||
             ||__|||__|||__||
             |/__\\|/__\\|/__\\|            
             
             `)
-            console.log(`Last trade: ${JSON.stringify(this.lastTrade, null, 2)}`)
-            console.log(`Would be able to sell when the price will be above ${this.thresholdPriceOfProbitability(this.lastTrade.price).toFixed(2)}€`)
+            Logger.debug(`Last trade: ${JSON.stringify(this.lastTrade, null, 2)}`)
+            Logger.debug(`Would be able to sell when the price will be above ${this.thresholdPriceOfProbitability(this.lastTrade.price).toFixed(2)}€`)
 
             // await this
             //     .market
@@ -350,7 +354,7 @@ class Trader implements Trading {
             // // récupérer nos comptes pour savoir combien on a en crypto currency et en fiat currency (les amount)
             // this.fiatCurrencyAmountAvailable = this.fiatCurrencyAmountAvailable - funds
         } catch (error) {
-            console.error(`Error when trying to buy: ${error}`)
+            Logger.error(`Error when trying to buy: ${error}`)
         }
     }
 
@@ -379,14 +383,14 @@ class Trader implements Trading {
 
             this.trades.push({ ...this.lastTrade })
 
-            console.log(`
+            Logger.debug(`
              ____ ____ ____ ____ 
             ||S |||e |||l |||l ||
             ||__|||__|||__|||__||
             |/__\\|/__\\|/__\\|/__\\|
             
             `)
-            console.log(`Last trade: ${JSON.stringify(this.lastTrade, null, 2)}`)
+            Logger.debug(`Last trade: ${JSON.stringify(this.lastTrade, null, 2)}`)
 
             // await this
             //     .market
@@ -398,7 +402,7 @@ class Trader implements Trading {
             // this.fiatCurrencyAmountAvailable = this.fiatCurrencyAmountAvailable + (funds * this.chartWorker.lastPrice)
             // this.currencyAmountAvailable = this.currencyAmountAvailable - funds
         } catch (error) {
-            console.error(`Error when trying to sell: ${error}`)
+            Logger.error(`Error when trying to sell: ${error}`)
         }
     }
 
@@ -409,20 +413,16 @@ class Trader implements Trading {
                 .orders
                 .cancel(order)
         } catch (error) {
-            console.error(`Error when trying to cancel order: ${error}`)
+            Logger.error(`Error when trying to cancel order: ${error}`)
         }
     }
 
     stop() {
-        console.warn('Trader has been stopped.')
+        Logger.warn('Trader has been stopped.')
         this.killWatchers()
     }
 
     killWatchers() {
-        if (this.priceObserver) {
-            this.priceObserver.unsubscribe()
-        }
-
         if (this.workObserver) {
             this.workObserver.unsubscribe()
         }
@@ -436,6 +436,12 @@ class Trader implements Trading {
             allWorksSmoothed: this.chartWorker.filterNoise(works),
             trades: this.trades
         }
+    }
+
+    writeDebug() {
+        const debug = this.getDebug()
+
+        writeFileSync('./data.json', JSON.stringify(debug, null, 2), { encoding: 'utf-8' })
     }
 }
 

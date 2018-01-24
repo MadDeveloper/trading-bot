@@ -1,4 +1,5 @@
 import Point from './point';
+import Logger from '../logger/index';
 
 class Chart {
     points: Point[]
@@ -9,7 +10,7 @@ class Chart {
 
     createPoint(x: number, y: number): Point {
         if (!Number.isFinite(x) || !Number.isFinite(y)) {
-            console.error(`Cannot create point on the chart, coordinates are invalid (x: ${x}, y: ${y})`)
+            Logger.error(`Cannot create point on the chart, coordinates are invalid (x: ${x}, y: ${y})`)
         }
 
         const point = new Point(x, y)
