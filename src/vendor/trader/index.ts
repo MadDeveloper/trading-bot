@@ -58,6 +58,8 @@ class Trader implements Trading {
         if (!this.market.currency) {
             Logger.error('Currency is not set, stopping trading.')
             this.stop()
+
+            return
         }
 
         try {

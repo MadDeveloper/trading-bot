@@ -18,7 +18,7 @@ const config: Config = {
         tickerInterval: 1000 * 15 // ms
     },
     market: {
-        currency: null,
+        currency: Currency.BTC_EUR,
         instantOrderFees: 0.0025 // <=> 0.25%
     },
     account: {
