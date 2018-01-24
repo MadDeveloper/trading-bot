@@ -23,7 +23,7 @@ class GdaxService implements Market {
     lastTicker: Gdax.ProductTicker
     initialized: boolean
 
-    constructor(currency = Currency.BTC_EUR, channels = ['ticker'], sandbox = false) {
+    constructor(currency: Currency = config.market.currency, channels: string[] = ['ticker'], sandbox: boolean = false) {
         this.currency = currency
         this.channels = channels
         this.sandbox = sandbox

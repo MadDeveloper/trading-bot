@@ -18,6 +18,7 @@ declare interface Config {
         tickerInterval: number // ms
     },
     market: {
+        currency: Currency,
         instantOrderFees: number
     },
     account: {

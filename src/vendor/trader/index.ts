@@ -342,11 +342,7 @@ class Trader implements Trading {
             }
 
             // Remote work
-            await this
-                .market
-                .orders
-                .buyMarket(this.market.currency, funds)
-
+            await this.market.orders.buyMarket(this.market.currency, funds)
             await this.updateBalances()
 
             // Local work

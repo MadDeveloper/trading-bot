@@ -71,7 +71,7 @@ class Orders {
         this.lastOrder = <Order>await this
             .client
             .placeOrder({
-                client_oid: this.lastOrder.id,
+                // client_oid: this.lastOrder.id,
                 type: 'market',
                 side: 'sell',
                 size: null,
@@ -88,7 +88,7 @@ class Orders {
         this.lastOrder = <Order>await this
             .client
             .placeOrder({
-                client_oid: this.lastOrder.id,
+                // client_oid: this.lastOrder.id,
                 type: 'stop',
                 side: 'sell',
                 size: null,
@@ -105,7 +105,7 @@ class Orders {
         this.lastOrder = <Order>await this
             .client
             .placeOrder({
-                client_oid: this.lastOrder.id,
+                // client_oid: this.lastOrder.id,
                 type: 'limit',
                 side: 'sell',
                 price: price.toFixed(5),
@@ -123,7 +123,7 @@ class Orders {
         this.lastOrder = <Order>await this
             .client
             .placeOrder({
-                client_oid: this.lastOrder.id,
+                // client_oid: this.lastOrder.id,
                 type: 'market',
                 side: 'sell',
                 size: null,
@@ -140,7 +140,7 @@ class Orders {
         this.lastOrder = <Order>await this
             .client
             .placeOrder({
-                client_oid: this.lastOrder.id,
+                // client_oid: this.lastOrder.id,
                 type: 'stop',
                 side: 'sell',
                 size: null,
