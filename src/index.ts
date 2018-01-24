@@ -3,14 +3,13 @@ import Trader from './vendor/trader/index';
 import GdaxMarket from './markets/gdax';
 import config from './config';
 import { writeFileSync } from 'fs'
+import Logger from './vendor/logger/index';
 
-// Markets
-const gdax = new GdaxMarket()
+const market = new GdaxMarket()
 
-gdax.sandbox = false
-gdax.init()
+market.sandbox = config.api.sandbox
+market.init()
 
-// Traders
-const bot = new Trader(gdax)
+const trader = new Trader(market)
 
-bot.trade()
+trader.trade()

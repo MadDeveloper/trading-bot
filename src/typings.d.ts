@@ -1,3 +1,5 @@
+import { Currency } from './vendor/interfaces/currency.enum';
+
 declare interface Config {
     app: {
         debug: boolean
@@ -17,6 +19,10 @@ declare interface Config {
     },
     market: {
         instantOrderFees: number
+    },
+    account: {
+        fiatCurrency: Currency,
+        cryptoCurrency: Currency
     },
     chart: {
         rateToApproveVariation: number,

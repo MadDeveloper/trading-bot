@@ -24,8 +24,10 @@ class Trader implements Trading {
     worksStored: ChartWork[]
     state: TraderState
     chartAnalyzer: ChartAnalyzer
-    fiatCurrencyAmountAvailable: number // €, $, £, etc.
-    currencyAmountAvailable: number // BTC, ETH, LTC, etc.
+    fiatCurrency: Currency
+    fiatCurrencyBalance: number // €, $, £, etc.
+    cryptoCurrency: Currency
+    cryptoCurrencyBalance: number // BTC, ETH, LTC, etc.
 
     trades: Trade[]
     lastTrade: Trade
@@ -38,15 +40,33 @@ class Trader implements Trading {
         this.trades = []
         this.state = TraderState.WAITING_TO_BUY
         this.chartAnalyzer = new ChartAnalyzer(this.chartWorker)
-        this.fiatCurrencyAmountAvailable = 100
-        this.currencyAmountAvailable = 0
         this.trades = []
+
+        // Currencies
+        this.fiatCurrency = config.account.fiatCurrency
+        this.fiatCurrencyBalance = 0
+        this.cryptoCurrency = config.account.cryptoCurrency
+        this.cryptoCurrencyBalance = 0
+    }
+
+    async updateBalances() {
+        this.fiatCurrencyBalance = await this.accounts.availableFunds(this.fiatCurrency)
+        this.cryptoCurrencyBalance = await this.accounts.availableFunds(this.cryptoCurrency)
     }
 
     async trade() {
         if (!this.market.currency) {
             Logger.error('Currency is not set, stopping trading.')
             this.stop()
+        }
+
+        try {
+            await this.updateBalances()
+        } catch (error) {
+            Logger.error('Fatal error occured while trying to retrieve account balances')
+            Logger.error(error)
+
+            return
         }
 
         this.watchChartWorker()
@@ -245,7 +265,7 @@ class Trader implements Trading {
                 if (!this.lastTrade || Number.isFinite(this.lastTrade.price)) {
                     Logger.debug('we are going to buy!')
                     // We have sold, and the current price is below since the last price we sold so we can buy
-                    this.buy(this.fiatCurrencyAmountAvailable)
+                    this.buy(this.fiatCurrencyBalance)
                 } else {
                     Logger.debug(`Not bought! Error occured with last trade: ${JSON.stringify(this.lastTrade)}`)
                 }
@@ -272,7 +292,7 @@ class Trader implements Trading {
                  */
                 if (this.lastTrade && Number.isFinite(this.lastTrade.price) && this.isProfitable(this.lastTrade.price, lastWork.price)) {
                     Logger.debug('we will sell!')
-                    this.sell(this.currencyAmountAvailable)
+                    this.sell(this.cryptoCurrencyBalance)
                 } else {
                     Logger.debug('Not sold! Was not profitable')
                 }
@@ -320,6 +340,15 @@ class Trader implements Trading {
                 throw new Error('Trying to buy but last trade is not of type SELL.')
             }
 
+            // Remote work
+            await this
+                .market
+                .orders
+                .buyMarket(this.market.currency, funds)
+
+            await this.updateBalances()
+
+            // Local work
             const lastWork = Object.assign({}, this.chartWorker.lastWork)
 
             this.state = TraderState.WAITING_TO_SELL
@@ -330,8 +359,6 @@ class Trader implements Trading {
                 type: TradeType.BUY,
                 quantity: funds / lastWork.price
             }
-            this.currencyAmountAvailable += funds / this.lastTrade.price
-            this.fiatCurrencyAmountAvailable -= funds
 
             this.trades.push({ ... this.lastTrade })
 
@@ -344,15 +371,6 @@ class Trader implements Trading {
             `)
             Logger.debug(`Last trade: ${JSON.stringify(this.lastTrade, null, 2)}`)
             Logger.debug(`Would be able to sell when the price will be above ${this.thresholdPriceOfProbitability(this.lastTrade.price).toFixed(2)}€`)
-
-            // await this
-            //     .market
-            //     .orders
-            //     .buyMarket(this.market.currency, funds)
-
-            // // TODO: check order book ou nos open orders pour savoir quand l'ordre est fini
-            // // récupérer nos comptes pour savoir combien on a en crypto currency et en fiat currency (les amount)
-            // this.fiatCurrencyAmountAvailable = this.fiatCurrencyAmountAvailable - funds
         } catch (error) {
             Logger.error(`Error when trying to buy: ${error}`)
         }
@@ -368,6 +386,10 @@ class Trader implements Trading {
                 throw new Error('Trying to sell but last trade is not of type BUY.')
             }
 
+            // Remote work
+            await this.market.orders.sellMarket(this.market.currency, funds)
+            await this.updateBalances()
+
             const lastWork = Object.assign({}, this.chartWorker.lastWork)
 
             this.state = TraderState.WAITING_TO_BUY
@@ -378,8 +400,6 @@ class Trader implements Trading {
                 type: TradeType.SELL,
                 quantity: funds
             }
-            this.fiatCurrencyAmountAvailable += this.lastTrade.quantity * this.lastTrade.price
-            this.currencyAmountAvailable -= funds
 
             this.trades.push({ ...this.lastTrade })
 
@@ -391,16 +411,6 @@ class Trader implements Trading {
             
             `)
             Logger.debug(`Last trade: ${JSON.stringify(this.lastTrade, null, 2)}`)
-
-            // await this
-            //     .market
-            //     .orders
-            //     .sellMarket(this.market.currency, funds)
-
-            // // TODO: check order book ou nos open orders pour savoir quand l'ordre est fini
-            // // récupérer nos comptes pour savoir combien on a en crypto currency et en fiat currency (les amount)
-            // this.fiatCurrencyAmountAvailable = this.fiatCurrencyAmountAvailable + (funds * this.chartWorker.lastPrice)
-            // this.currencyAmountAvailable = this.currencyAmountAvailable - funds
         } catch (error) {
             Logger.error(`Error when trying to sell: ${error}`)
         }

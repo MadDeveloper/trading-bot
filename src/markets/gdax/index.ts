@@ -30,14 +30,14 @@ class GdaxService implements Market {
         this.price$ = new Subject()
     }
 
-    init() {
+    async init() {
         const restURI = this.sandbox ? config.api.sandboxURI : config.api.uri
         const websocketURI = this.sandbox ? config.api.websocketURI : config.api.sandboxWebsocketURI
-        const websocketAuth = null/*this.sandbox ? null : {
+        const websocketAuth = this.sandbox ? null : {
             key: config.api.key,
             secret: config.api.secret,
             passphrase: config.api.passphrase
-        }*/
+        }
 
         this.publicClient = new Gdax.PublicClient(restURI)
         this.client = new Gdax.AuthenticatedClient(config.api.key, config.api.secret, config.api.passphrase, restURI)

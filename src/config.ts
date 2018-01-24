@@ -1,4 +1,6 @@
 import keys from './keys'
+import { Currency } from './vendor/interfaces/currency.enum';
+import { Config } from './typings';
 
 const config: Config = {
     app: {
@@ -17,6 +19,10 @@ const config: Config = {
     },
     market: {
         instantOrderFees: 0.0025 // <=> 0.25%
+    },
+    account: {
+        fiatCurrency: Currency.EUR,
+        cryptoCurrency: Currency.BTC
     },
     chart: {
         rateToApproveVariation: 0.0025, // <=> 0.25%
