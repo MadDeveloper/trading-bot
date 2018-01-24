@@ -267,7 +267,7 @@ class Trader implements Trading {
                  * If no: we can just buy at the current price
                  */
                 if (!this.lastTrade || Number.isFinite(this.lastTrade.price)) {
-                    Logger.debug('we are going to buy!')
+                    Logger.debug(`Trader is buying at ${lastWork.price}`)
                     // We have sold, and the current price is below since the last price we sold so we can buy
                     this.buy(this.fiatCurrencyBalance)
                 } else {
@@ -294,7 +294,7 @@ class Trader implements Trading {
                  * If no: we do nothing, we wait an hollow to buy first
                  */
                 if (this.lastTrade && Number.isFinite(this.lastTrade.price) && this.isProfitable(this.lastTrade.price, lastWork.price)) {
-                    Logger.debug('we will sell!')
+                    Logger.debug(`Trader is selling at ${lastWork.price}`)
                     this.sell(this.cryptoCurrencyBalance)
                 } else {
                     Logger.debug('Not sold! Was not profitable')
@@ -324,7 +324,8 @@ class Trader implements Trading {
             throw new Error(`Mathematic error when trying to calculate threshold price of profitability (multiplierFeesIncluded = 0, cannot divide by zero)`)
         }
 
-        // a = 0.9975^2 * a * (p2/p1)
+        // a = amount invested, p1 = price when bought (with "a" amount), b = amount recovered, p2 = price when sold (give "b" amount)
+        // b = 0.9975^2 * a * (p2/p1)
         // b > a <=> p2 > p1 / 0.9975^2
         return buyPrice / Math.pow(multiplierFeesIncluded, 2)
     }

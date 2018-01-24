@@ -4,7 +4,7 @@ import { Currency } from '../interfaces/currency.enum';
 import { Account, CoinbaseAccount } from 'gdax';
 
 class Accounts {
-    private allAccounts: any[]
+    // private allAccounts: any[] // FIXME: hard to maintain cache and reload when needed
     private allMarketAccounts: any[]
 
     client: Gdax.AuthenticatedClient
@@ -32,12 +32,14 @@ class Accounts {
         return marketAccountsFound[0]
     }
 
-    async accounts(): Promise<Account[]> {
-        if (!Array.isArray(this.allAccounts)) {
-            this.allAccounts = await this.client.getAccounts()
-        }
+    accounts(): Promise<Account[]> {
+        return this.client.getAccounts()
+        // FIXME: need to be more flexible and permets cache reload
+        // if (!Array.isArray(this.allAccounts)) {
+        //     this.allAccounts = await this.client.getAccounts()
+        // }
 
-        return this.allAccounts
+        // return this.allAccounts
     }
 
     account(id: string): Promise<Account> {
