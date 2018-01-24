@@ -65,8 +65,7 @@ class Trader implements Trading {
         try {
             await this.updateBalances()
         } catch (error) {
-            Logger.error('Fatal error occured while trying to retrieve account balances')
-            Logger.error(error)
+            Logger.error(`Fatal error occured while trying to retrieve account balances: ${error}`)
 
             return
         }
@@ -74,6 +73,7 @@ class Trader implements Trading {
         this.watchChartWorker()
         this.chartWorker.workOnPriceTicker()
 
+        // FOLLOWING LINES ARE FOR DEBUG ONLY
         const worksContainingHollow: ChartWork[] = [
             {
                 "id": 7,
@@ -286,7 +286,6 @@ class Trader implements Trading {
              * we will try to know if we are in a bump case
              */
             if (this.chartAnalyzer.containsBump(works)) {
-
                 Logger.debug('Bump detected!')
                 /*
                  * We found a bump, do we have already bought?
@@ -385,6 +384,8 @@ class Trader implements Trading {
             if (this.lastTrade.type !== TradeType.BUY) {
                 throw new Error('Trying to sell but last trade is not of type BUY.')
             }
+
+            Logger.debug(`Trying to sell ${funds} ${this.cryptoCurrency}`)
 
             // Remote work
             await this.market.orders.sellMarket(this.market.currency, funds)

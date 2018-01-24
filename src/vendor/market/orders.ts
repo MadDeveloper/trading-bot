@@ -12,8 +12,7 @@ class Orders {
 
     constructor(
         private client: Gdax.AuthenticatedClient,
-        private publicClient: Gdax.PublicClient
-    ) { }
+        private publicClient: Gdax.PublicClient) { }
 
     async all(): Promise<OrderResult[]> {
         const orders: OrderResult[] = await this.client.getOrders()
@@ -72,7 +71,7 @@ class Orders {
     async buyMarket(currency: Currency, funds: number) {
         const response: OrderResult = await this.client.buy({
             type: 'market',
-            side: 'sell',
+            side: 'buy',
             size: null,
             funds: this.normalizeNumber(funds),
             product_id: currency
@@ -90,9 +89,8 @@ class Orders {
 
     async buyStop(currency: Currency, price: number, funds: number = null) {
         const response: OrderResult = await this.client.buy({
-            // client_oid: this.lastOrder.id,
             type: 'stop',
-            side: 'sell',
+            side: 'buy',
             size: null,
             funds: this.normalizeNumber(funds),
             product_id: currency
@@ -110,7 +108,6 @@ class Orders {
 
     async sellLimit(currency: Currency, quantity: number, price: number, allowTaker = false) {
         const response: OrderResult = await this.client.sell({
-            // client_oid: this.lastOrder.id,
             type: 'limit',
             side: 'sell',
             price: price.toFixed(2),
@@ -129,13 +126,12 @@ class Orders {
         return this.lastOrder
     }
 
-    async sellMarket(currency: Currency, funds: number) {
+    async sellMarket(currency: Currency, size: number) {
         const response: OrderResult = await this.client.sell({
-            // client_oid: this.lastOrder.id,
             type: 'market',
             side: 'sell',
-            size: null,
-            funds: this.normalizeNumber(funds),
+            size: this.normalizeNumber(size),
+            funds: undefined, // undefined is important here, null value returns 400 from API, and funds is needed by typings
             product_id: currency
         })
 
@@ -149,13 +145,12 @@ class Orders {
         return this.lastOrder
     }
 
-    async sellStop(currency: Currency, price: number, funds: number = null) {
+    async sellStop(currency: Currency, price: number, size: number) {
         const response: OrderResult = await this.client.sell({
-            // client_oid: this.lastOrder.id,
             type: 'stop',
             side: 'sell',
-            size: null,
-            funds: this.normalizeNumber(funds),
+            size: this.normalizeNumber(size),
+            funds: undefined, // undefined is important here, null value returns 400 from API, and funds is needed by typings
             product_id: currency
         })
 
