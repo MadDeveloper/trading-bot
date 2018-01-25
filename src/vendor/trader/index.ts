@@ -24,10 +24,10 @@ class Trader implements Trading {
     worksStored: ChartWork[]
     state: TraderState
     chartAnalyzer: ChartAnalyzer
-    fiatCurrency: Currency
-    fiatCurrencyBalance: number // €, $, £, etc.
-    cryptoCurrency: Currency
-    cryptoCurrencyBalance: number // BTC, ETH, LTC, etc.
+    quoteCurrency: Currency
+    quoteCurrencyBalance: number // €, $, £, etc.
+    baseCurrency: Currency
+    baseCurrencyBalance: number // BTC, ETH, LTC, etc.
 
     trades: Trade[]
     lastTrade: Trade
@@ -43,15 +43,15 @@ class Trader implements Trading {
         this.trades = []
 
         // Currencies
-        this.fiatCurrency = config.account.fiatCurrency
-        this.fiatCurrencyBalance = 0
-        this.cryptoCurrency = config.account.cryptoCurrency
-        this.cryptoCurrencyBalance = 0
+        this.quoteCurrency = config.account.quoteCurrency
+        this.quoteCurrencyBalance = 0
+        this.baseCurrency = config.account.baseCurrency
+        this.baseCurrencyBalance = 0
     }
 
     async updateBalances() {
-        this.fiatCurrencyBalance = await this.accounts.availableFunds(this.fiatCurrency)
-        this.cryptoCurrencyBalance = await this.accounts.availableFunds(this.cryptoCurrency)
+        this.quoteCurrencyBalance = await this.accounts.availableFunds(this.quoteCurrency)
+        this.baseCurrencyBalance = await this.accounts.availableFunds(this.baseCurrency)
     }
 
     async trade() {
@@ -250,7 +250,6 @@ class Trader implements Trading {
         const lastWork = this.chartWorker.lastWork
 
         Logger.debug(`Last price: ${lastWork.price}€`)
-        Logger.debug('\nWe are analyzing the chart...')
 
         if (TraderState.WAITING_TO_BUY === this.state) {
             Logger.debug('Trader wants to buy...')
@@ -259,7 +258,7 @@ class Trader implements Trading {
              * Trader is waiting to buy
              * we will try to know if we are in a hollow case
              */
-            if (this.chartAnalyzer.containsHollow(works)) {
+            if (this.chartAnalyzer.detectHollow(works)) {
                 Logger.debug('hollow detected!')
                 /*
                  * We found a hollow, do we have already sold?
@@ -267,9 +266,12 @@ class Trader implements Trading {
                  * If no: we can just buy at the current price
                  */
                 if (!this.lastTrade || Number.isFinite(this.lastTrade.price)) {
+                    const funds = config.trader.quantityOfQuoteCurrencyToUse * this.quoteCurrencyBalance
+
                     Logger.debug(`Trader is buying at ${lastWork.price}`)
+
                     // We have sold, and the current price is below since the last price we sold so we can buy
-                    this.buy(this.fiatCurrencyBalance)
+                    this.buy(funds)
                 } else {
                     Logger.debug(`Not bought! Error occured with last trade: ${JSON.stringify(this.lastTrade)}`)
                 }
@@ -285,22 +287,31 @@ class Trader implements Trading {
              * Trader is waiting to sell
              * we will try to know if we are in a bump case
              */
-            if (this.chartAnalyzer.containsBump(works)) {
+            if (this.chartAnalyzer.detectBump(works)) {
                 Logger.debug('Bump detected!')
                 /*
                  * We found a bump, do we have already bought?
                  * If yes: we will buy only if the price is under the last sell price
                  * If no: we do nothing, we wait an hollow to buy first
                  */
-                if (this.lastTrade && Number.isFinite(this.lastTrade.price) && this.isProfitable(this.lastTrade.price, lastWork.price)) {
+                if (this.lastTrade && Number.isFinite(this.lastTrade.price) && Equation.isProfitable(this.lastTrade.price, lastWork.price)) {
+                    const size = config.trader.quantityOfBaseCurrencyToUse * this.baseCurrencyBalance
+
                     Logger.debug(`Trader is selling at ${lastWork.price}`)
-                    this.sell(this.cryptoCurrencyBalance)
+                    this.sell(size)
                 } else {
                     Logger.debug('Not sold! Was not profitable')
                 }
 
                 // Bump was not enough up in order to sell, but we clear works in order to avoid to loop through it later in analyzer
                 this.prepareForNewTrade()
+            } else if (!this.chartWorker.isInFastMode() && this.chartAnalyzer.detectProfitablePump(works, this.lastTrade.price)) {
+              /*
+               * Detect pump which can be profitable to sell in
+               * We accelerate the ticker interval until we try to sell
+               */
+              Logger.debug('Fast mode actived')
+              this.chartWorker.fastMode()
             } else {
                 Logger.debug('waiting for a bump...')
             }
@@ -308,29 +319,12 @@ class Trader implements Trading {
             Logger.error(`Trader.state does not match any action: ${this.state}`)
             this.stop() // No action to be done, trader is maybe crashed, need external intervention
         }
-    }
 
-    isProfitable(buyPrice, comparedPrice) {
-        const threshold = this.thresholdPriceOfProbitability(buyPrice)
-
-        return comparedPrice > threshold
-    }
-
-    thresholdPriceOfProbitability(buyPrice) {
-        const multiplierFeesIncluded = 1 - config.market.instantOrderFees
-
-        if (multiplierFeesIncluded === 0) {
-            throw new Error(`Mathematic error when trying to calculate threshold price of profitability (multiplierFeesIncluded = 0, cannot divide by zero)`)
-        }
-
-        // a = amount invested, p1 = price when bought (with "a" amount), b = amount recovered, p2 = price when sold (give "b" amount)
-        // b = 0.9975^2 * a * (p2/p1)
-        // b > a <=> p2 > p1 / 0.9975^2
-        return buyPrice / Math.pow(multiplierFeesIncluded, 2)
+        Logger.debug('\n----------------------------------------\n')
     }
 
     prepareForNewTrade() {
-        this.chartWorker.clearWorks()
+        this.chartWorker.prepareForNewWorks()
     }
 
     async buy(funds: number) {
@@ -369,7 +363,7 @@ class Trader implements Trading {
             
             `)
             Logger.debug(`Last trade: ${JSON.stringify(this.lastTrade, null, 2)}`)
-            Logger.debug(`Would be able to sell when the price will be above ${this.thresholdPriceOfProbitability(this.lastTrade.price).toFixed(2)}€`)
+            Logger.debug(`Would be able to sell when the price will be above ${Equation.thresholdPriceOfProbitability(this.lastTrade.price).toFixed(2)}€`)
         } catch (error) {
             Logger.error(`Error when trying to buy: ${error}`)
         }
@@ -385,7 +379,7 @@ class Trader implements Trading {
                 throw new Error('Trying to sell but last trade is not of type BUY.')
             }
 
-            Logger.debug(`Trying to sell ${funds} ${this.cryptoCurrency}`)
+            Logger.debug(`Trying to sell ${funds} ${this.baseCurrency}`)
 
             // Remote work
             await this.market.orders.sellMarket(this.market.currency, funds)

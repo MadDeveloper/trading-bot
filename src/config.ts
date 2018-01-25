@@ -15,21 +15,24 @@ const config: Config = {
         sandbox: true
     },
     trader: {
-        tickerInterval: 1000 * 15 // ms
+        quantityOfBaseCurrencyToUse: 100, // in %
+        quantityOfQuoteCurrencyToUse: 100 // in %
     },
     market: {
         currency: Currency.BTC_EUR,
         instantOrderFees: 0.0025 // <=> 0.25%
     },
     account: {
-        fiatCurrency: Currency.EUR,
-        cryptoCurrency: Currency.BTC
+        quoteCurrency: Currency.EUR,
+        baseCurrency: Currency.BTC
     },
     chart: {
         rateToApproveVariation: 0.0025, // <=> 0.25%
         thresholdRateToApproveInversion: 0.2, // in %
         thresholdMaxRateToApproveInversion: 1, // in %
-        minPriceDifferenceToApproveNewPoint: 0.004 // <=> 0.4%
+        minPriceDifferenceToApproveNewPoint: 0.004, // <=> 0.4%
+        tickerInterval: 1000 * 15, // ms
+        reductionOfTheTickerIntervalOnSpeedMode: 0.3 // <=> we reduce by 30% the ticker interval
     }
 }
 

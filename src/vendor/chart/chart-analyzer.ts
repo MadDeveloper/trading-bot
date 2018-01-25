@@ -3,7 +3,6 @@ import Point from './point';
 import { Trend } from './trend.enum';
 import config from '../../config';
 import Equation from './equation';
-import ChartWorker from './chart-worker';
 import Logger from '../logger/index';
 
 class ChartAnalyzer {
@@ -13,7 +12,7 @@ class ChartAnalyzer {
         this.chartWorker = chartWorker
     }
 
-    containsHollow(works: ChartWork[]): boolean {
+    detectHollow(works: ChartWork[]): boolean {
         let downwardTrendConfirmed = false
         let upwardTrendConfirmed = false
 
@@ -35,7 +34,7 @@ class ChartAnalyzer {
         return downwardTrendConfirmed && upwardTrendConfirmed
     }
 
-    containsBump(works: ChartWork[]): boolean {
+    detectBump(works: ChartWork[]): boolean {
         let upwardTrendConfirmed = false
         let downwardTrendConfirmed = false
 
@@ -55,6 +54,20 @@ class ChartAnalyzer {
         Logger.debug(`downwardTrendConfirmed: ${downwardTrendConfirmed}`)
 
         return upwardTrendConfirmed && downwardTrendConfirmed
+    }
+
+    detectProfitablePump(works: ChartWork[], buyPrice: number): boolean {
+        const thresholdPriceProfitable = Equation.thresholdPriceOfProbitability(buyPrice)
+        const lastWork = works[works.length - 1]
+        let profitablePump = false
+
+        works.forEach(work => {
+            if (!profitablePump) {
+                profitablePump = work.price >= thresholdPriceProfitable && this.isUpwardTrendConfirmed(work)
+            }
+        })
+
+        return profitablePump
     }
 
     isDownwardTrendConfirmed(work: ChartWork): boolean {

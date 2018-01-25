@@ -15,20 +15,23 @@ declare interface Config {
         sandbox: boolean;
     },
     trader: {
-        tickerInterval: number // ms
+        quantityOfBaseCurrencyToUse: number, // in %
+        quantityOfQuoteCurrencyToUse: number
     },
     market: {
         currency: Currency,
         instantOrderFees: number
     },
     account: {
-        fiatCurrency: Currency,
-        cryptoCurrency: Currency
+        baseCurrency: Currency
+        quoteCurrency: Currency,
     },
     chart: {
         rateToApproveVariation: number,
         thresholdRateToApproveInversion: number,
         thresholdMaxRateToApproveInversion: number,
-        minPriceDifferenceToApproveNewPoint: number
+        minPriceDifferenceToApproveNewPoint: number,
+        tickerInterval: number, // ms
+        reductionOfTheTickerIntervalOnSpeedMode: number
     }
 }

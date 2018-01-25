@@ -6,6 +6,7 @@ import Point from './point';
 import { Trend } from './trend.enum';
 import { Subject } from 'rxjs/Subject';
 import { ChartWork } from './chart-work';
+import { WorkerSpeed } from './worker-speed';
 
 class ChartWorker {
     chart: Chart
@@ -17,11 +18,14 @@ class ChartWorker {
     trend$: Subject<Trend>
     work$: Subject<ChartWork>
     tickerTimeout: NodeJS.Timer
+    tickerInterval: number
     started: boolean
     lastId: number
+    lastTime: number
     works: ChartWork[]
     allWorks: ChartWork[] // only different from .works property in debug mode
     lastWork: ChartWork
+    mode: WorkerSpeed
 
     constructor(market: Market) {
         this.market = market
@@ -32,16 +36,18 @@ class ChartWorker {
         this.work$ = new Subject()
         this.started = false
         this.lastId = 0
+        this.tickerInterval = config.chart.tickerInterval
+        this.mode = WorkerSpeed.NORMAL
     }
 
     workOnPriceTicker() {
         this.started = true
-        const time = 0
+        this.lastTime = 0
 
-        this.priceTickerWork(time)        
+        this.priceTickerWork(this.lastTime)        
     }
 
-    async priceTickerWork(time) {
+    async priceTickerWork(time: number) {
         this.lastPrice = this.price
         this.price = await this.market.getCurrencyPrice()
 
@@ -60,7 +66,39 @@ class ChartWorker {
         }
         this.notifyWork(this.lastWork)
 
-        this.tickerTimeout = setTimeout(() => this.priceTickerWork(time + config.trader.tickerInterval), config.trader.tickerInterval)
+        this.tickerTimeout = setTimeout(() => this.priceTickerWork(time + this.tickerInterval), this.tickerInterval)
+    }
+
+    fastMode() {
+        if (this.mode !== WorkerSpeed.FAST) {
+            if (this.tickerTimeout) {
+                clearTimeout(this.tickerTimeout)
+            }
+
+            this.mode = WorkerSpeed.FAST
+            this.tickerInterval = this.tickerInterval * (1 - config.chart.reductionOfTheTickerIntervalOnSpeedMode)
+            this.priceTickerWork(this.lastTime)
+        }
+    }
+
+    normalMode() {
+        if (this.mode !== WorkerSpeed.NORMAL) {
+            if (this.tickerTimeout) {
+                clearTimeout(this.tickerTimeout)
+            }
+
+            this.mode = WorkerSpeed.NORMAL
+            this.tickerInterval = config.chart.tickerInterval
+            this.priceTickerWork(this.lastTime)
+        }
+    }
+
+    isInFastMode(): boolean {
+        return this.mode === WorkerSpeed.FAST
+    }
+
+    isInNormalMode(): boolean {
+        return this.mode === WorkerSpeed.NORMAL
     }
 
     computeTrend(lastPoint, newPoint): number {
@@ -146,7 +184,7 @@ class ChartWorker {
                 time: time
             })
 
-            time += config.trader.tickerInterval
+            time += this.tickerInterval
 
             return newWork
         })
@@ -162,6 +200,14 @@ class ChartWorker {
 
     copyWorks(): ChartWork[] {
         return this.works.slice().map(work => Object.assign({}, work))
+    }
+
+    prepareForNewWorks() {
+        if (this.isInFastMode()) {
+            this.normalMode()
+        }
+
+        this.clearWorks()
     }
 
     clearWorks() {
