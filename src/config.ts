@@ -18,7 +18,8 @@ const config: Config = {
         quantityOfBaseCurrencyToUse: 100, // in % (BTC, ETH, LTC, ...)
         quantityOfQuoteCurrencyToUse: 100, // in % (€, $)
         maxQuantityQuoteCurrencyToUse: 100, // 100€, 100 BTC (max quantity)
-        minQuantityQuoteCurrencyToUse: 50 // 50€
+        minQuantityQuoteCurrencyToUse: 50, // 50€
+        minProfitableRateWhenSelling: 0 // how many % profitability wanted when selling
     },
     market: {
         currency: Currency.BTC_EUR,

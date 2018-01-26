@@ -18,7 +18,8 @@ declare interface Config {
         quantityOfBaseCurrencyToUse: number, // in %
         quantityOfQuoteCurrencyToUse: number, // in %
         maxQuantityQuoteCurrencyToUse: number,
-        minQuantityQuoteCurrencyToUse: number
+        minQuantityQuoteCurrencyToUse: number,
+        minProfitableRateWhenSelling: number // in %
     },
     market: {
         currency: Currency,

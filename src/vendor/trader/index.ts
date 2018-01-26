@@ -372,10 +372,10 @@ class Trader implements Trading {
             this.lastTrade = {
                 price: lastWork.price,
                 time: lastWork.time,
-                benefits: -(funds - fees),
+                benefits: -funds,
                 fees,
                 type: TradeType.BUY,
-                quantity: funds / lastWork.price
+                quantity: (funds - fees) / lastWork.price
             }
 
             this.trades.push({ ... this.lastTrade })
@@ -394,33 +394,34 @@ class Trader implements Trading {
         }
     }
 
-    async sell(funds: number) {
+    async sell(size: number) {
         try {
-            if (!Number.isFinite(funds)) {
-                throw new Error(`Cannot sell, funds are invalid: ${funds}`)
+            if (!Number.isFinite(size)) {
+                throw new Error(`Cannot sell, funds are invalid: ${size}`)
             }
 
             if (this.lastTrade.type !== TradeType.BUY) {
                 throw new Error('Trying to sell but last trade is not of type BUY.')
             }
 
-            Logger.debug(`Trying to sell ${funds} ${this.baseCurrency}`)
+            Logger.debug(`Trying to sell ${size} ${this.baseCurrency}`)
 
             // Remote work
-            await this.market.orders.sellMarket(this.market.currency, funds)
+            await this.market.orders.sellMarket(this.market.currency, size)
             await this.updateBalances()
 
             const lastWork = Object.assign({}, this.chartWorker.lastWork)
-            const fees = (this.lastTrade.quantity * this.lastTrade.price) * config.market.instantOrderFees
+            const fees = (this.chartWorker.lastPrice * size) * config.market.instantOrderFees
+            const quantity = (this.chartWorker.lastPrice * size) - fees
 
             this.state = TraderState.WAITING_TO_BUY
             this.lastTrade = {
                 price: lastWork.price,
                 time: lastWork.time,
-                benefits: (this.chartWorker.lastPrice * funds) - (this.lastTrade.quantity * this.lastTrade.price) - fees,
+                benefits: quantity - Math.abs(this.lastTrade.benefits), // lastTrade is a buy trade, and trade trade have a negative benefits
                 fees,
                 type: TradeType.SELL,
-                quantity: funds
+                quantity
             }
 
             this.trades.push({ ...this.lastTrade })

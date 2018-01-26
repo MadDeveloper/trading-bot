@@ -31,7 +31,7 @@ class Equation {
     static isProfitable(buyPrice, comparedPrice) {
         const threshold = Equation.thresholdPriceOfProbitability(buyPrice)
 
-        return comparedPrice > threshold
+        return comparedPrice > threshold * (1 + (config.trader.minProfitableRateWhenSelling / 100))
     }
 
     static thresholdPriceOfProbitability(buyPrice) {
