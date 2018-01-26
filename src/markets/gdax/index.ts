@@ -32,7 +32,7 @@ class GdaxService implements Market {
 
     async init() {
         const restURI = this.sandbox ? config.api.sandboxURI : config.api.uri
-        const websocketURI = this.sandbox ? config.api.websocketURI : config.api.sandboxWebsocketURI
+        const websocketURI = this.sandbox ? config.api.sandboxWebsocketURI : config.api.websocketURI
         const websocketAuth = this.sandbox ? null : {
             key: config.api.key,
             secret: config.api.secret,

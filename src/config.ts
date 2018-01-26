@@ -15,8 +15,8 @@ const config: Config = {
         sandbox: false
     },
     trader: {
-        quantityOfBaseCurrencyToUse: 100, // in %
-        quantityOfQuoteCurrencyToUse: 100 // in %
+        quantityOfBaseCurrencyToUse: 100, // in % (BTC, ETH, LTC, ...)
+        quantityOfQuoteCurrencyToUse: 100 // in % (€, $)
     },
     market: {
         currency: Currency.BTC_EUR,
@@ -24,7 +24,7 @@ const config: Config = {
     },
     account: {
         quoteCurrency: Currency.EUR, // €, $
-        baseCurrency: Currency.BTC // BTC, ETH, LTC, etc.
+        baseCurrency: Currency.BTC // BTC, ETH, LTC, ...
     },
     chart: {
         rateToApproveVariation: 0.0025, // <=> 0.25%
