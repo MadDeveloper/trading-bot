@@ -266,7 +266,7 @@ class Trader implements Trading {
                  * If no: we can just buy at the current price
                  */
                 if (!this.lastTrade || Number.isFinite(this.lastTrade.price)) {
-                    const funds = config.trader.quantityOfQuoteCurrencyToUse * this.quoteCurrencyBalance
+                    const funds = (config.trader.quantityOfQuoteCurrencyToUse / 100) * this.quoteCurrencyBalance
 
                     Logger.debug(`Trader is buying at ${lastWork.price}`)
 
@@ -295,7 +295,7 @@ class Trader implements Trading {
                  * If no: we do nothing, we wait an hollow to buy first
                  */
                 if (this.lastTrade && Number.isFinite(this.lastTrade.price) && Equation.isProfitable(this.lastTrade.price, lastWork.price)) {
-                    const size = config.trader.quantityOfBaseCurrencyToUse * this.baseCurrencyBalance
+                    const size = (config.trader.quantityOfBaseCurrencyToUse / 100) * this.baseCurrencyBalance
 
                     Logger.debug(`Trader is selling at ${lastWork.price}`)
                     this.sell(size)

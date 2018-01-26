@@ -77,7 +77,10 @@ class GdaxService implements Market {
     }
 
     private listenSocketErrors() {
-        this.socket.on('error', error => Logger.error(`A socket error occurs: ${error}`))
+        this.socket.on('error', error => {
+            Logger.error('A socket error occured')
+            Logger.error(error)
+        })
     }
 }
 

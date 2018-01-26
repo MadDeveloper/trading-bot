@@ -12,7 +12,7 @@ const config: Config = {
         websocketURI: 'wss://ws-feed.gdax.com',
         sandboxWebsocketURI: 'wss://ws-feed-public.sandbox.gdax.com',
         sandboxURI: 'https://api-public.sandbox.gdax.com',
-        sandbox: true
+        sandbox: false
     },
     trader: {
         quantityOfBaseCurrencyToUse: 100, // in %
@@ -23,8 +23,8 @@ const config: Config = {
         instantOrderFees: 0.0025 // <=> 0.25%
     },
     account: {
-        quoteCurrency: Currency.EUR,
-        baseCurrency: Currency.BTC
+        quoteCurrency: Currency.EUR, // €, $
+        baseCurrency: Currency.BTC // BTC, ETH, LTC, etc.
     },
     chart: {
         rateToApproveVariation: 0.0025, // <=> 0.25%
