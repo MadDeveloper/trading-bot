@@ -366,12 +366,14 @@ class Trader implements Trading {
 
             // Local work
             const lastWork = Object.assign({}, this.chartWorker.lastWork)
+            const fees = funds * config.market.instantOrderFees
 
             this.state = TraderState.WAITING_TO_SELL
             this.lastTrade = {
                 price: lastWork.price,
                 time: lastWork.time,
-                benefits: -funds,
+                benefits: -(funds - fees),
+                fees,
                 type: TradeType.BUY,
                 quantity: funds / lastWork.price
             }
@@ -409,12 +411,14 @@ class Trader implements Trading {
             await this.updateBalances()
 
             const lastWork = Object.assign({}, this.chartWorker.lastWork)
+            const fees = (this.lastTrade.quantity * this.lastTrade.price) * config.market.instantOrderFees
 
             this.state = TraderState.WAITING_TO_BUY
             this.lastTrade = {
                 price: lastWork.price,
                 time: lastWork.time,
-                benefits: (this.chartWorker.lastPrice * funds) - (this.lastTrade.quantity * this.lastTrade.price),
+                benefits: (this.chartWorker.lastPrice * funds) - (this.lastTrade.quantity * this.lastTrade.price) - fees,
+                fees,
                 type: TradeType.SELL,
                 quantity: funds
             }

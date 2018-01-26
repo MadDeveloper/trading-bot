@@ -5,5 +5,6 @@ export interface Trade {
     quantity: number
     time: number
     benefits: number
+    fees: number
     type: TradeType
 }

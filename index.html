@@ -11,7 +11,7 @@
     body,
     #myChart {
       width: 100%;
-      height: 100%;
+      height: 90%;
     }
   </style>
 </head>
@@ -19,6 +19,7 @@
 <body>
   <canvas id="myChart"></canvas>
   <div>Total benefits: <span id="benefits"></span></div>
+  <div>Last trade: <span id="lastTrade"></span></div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
   <script>
     const works = []
@@ -109,6 +110,17 @@
       $benefits.innerHTML = `${benefits.toFixed(2)}€`
     }
 
+    function printLastTrade(trades) {
+      if (trades.length === 0) {
+        return
+      }
+
+      const lastTrade = trades[trades.length - 1]
+      const $lastTrade = document.querySelector('#lastTrade')
+
+      $lastTrade.innerHTML = JSON.stringify(lastTrade, null, 2)
+    } 
+
     async function loadData() {
       return JSON.parse(await readTextFile('data.json'))
     }
@@ -117,6 +129,7 @@
       await extractPoints()
       drawChart()
       calculateBenefits(allTrades)
+      printLastTrade(allTrades)
     }
   </script>
 </body>
