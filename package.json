@@ -14,7 +14,8 @@
   "license": "ISC",
   "dependencies": {
     "gdax": "github:coinbase/gdax-node",
-    "rxjs": "^5.5.6"
+    "rxjs": "^5.5.6",
+    "sleep": "^5.1.1"
   },
   "devDependencies": {
     "@types/node": "^8.5.2",

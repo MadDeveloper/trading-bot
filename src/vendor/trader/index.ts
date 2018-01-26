@@ -71,7 +71,7 @@ class Trader implements Trading {
         }
 
         this.watchChartWorker()
-        this.chartWorker.workOnPriceTicker()
+        this.chartWorker.startWorking()
 
         // FOLLOWING LINES ARE FOR DEBUG ONLY
         const worksContainingHollow: ChartWork[] = [
@@ -237,11 +237,11 @@ class Trader implements Trading {
 
     async watchChartWorker() {
         this.workObserver = this.chartWorker.work$.subscribe((work: ChartWork) => {
-            this.analyzeWorks()
+            // this.analyzeWorks()
 
-            if (config.app.debug) {
-                this.writeDebug()
-            }
+            // if (config.app.debug) {
+            //     this.writeDebug()
+            // }
         })
     }
 
@@ -271,7 +271,7 @@ class Trader implements Trading {
                     Logger.debug(`Trader is buying at ${lastWork.price}`)
 
                     // We have sold, and the current price is below since the last price we sold so we can buy
-                    this.buy(funds)
+                    // this.buy(funds)
                 } else {
                     Logger.debug(`Not bought! Error occured with last trade: ${JSON.stringify(this.lastTrade)}`)
                 }
@@ -298,7 +298,7 @@ class Trader implements Trading {
                     const size = (config.trader.quantityOfBaseCurrencyToUse / 100) * this.baseCurrencyBalance
 
                     Logger.debug(`Trader is selling at ${lastWork.price}`)
-                    this.sell(size)
+                    // this.sell(size)
                 } else {
                     Logger.debug('Not sold! Was not profitable')
                 }
@@ -431,7 +431,7 @@ class Trader implements Trading {
     }
 
     getDebug() {
-        const works = this.chartWorker.recreateWorksTimeline(this.chartWorker.allWorks)
+        const works = this.chartWorker.allWorks
 
         return {
             allWorksStored: works,

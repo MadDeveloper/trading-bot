@@ -7,6 +7,8 @@ import { Trend } from './trend.enum';
 import { Subject } from 'rxjs/Subject';
 import { ChartWork } from './chart-work';
 import { WorkerSpeed } from './worker-speed';
+import Logger from '../logger/index';
+import * as sleep from 'sleep'
 
 class ChartWorker {
     chart: Chart
@@ -36,21 +38,31 @@ class ChartWorker {
         this.work$ = new Subject()
         this.started = false
         this.lastId = 0
+        this.lastTime = 0
         this.tickerInterval = config.chart.tickerInterval
         this.mode = WorkerSpeed.NORMAL
     }
 
     workOnPriceTicker() {
-        this.started = true
-        this.lastTime = 0
-
         this.priceTickerWork(this.lastTime)        
     }
 
     async priceTickerWork(time: number) {
         this.lastTime = time
         this.lastPrice = this.price
-        this.price = await this.market.getCurrencyPrice()
+
+        try {
+            this.price = await this.market.getCurrencyPrice()
+        } catch (error) {
+            // Maybe network error, we stop worker and wait network connection back
+            Logger.debug('Worker cannot retrieve currency price')
+            Logger.debug(error)
+            this.stopWorking()
+
+            Logger.debug('Worker will rery until it can get the currency price')
+            this.price = await this.retryUntilGetCurrencyPrice()
+            Logger.debug('Worker has retrieved the currency price, it continues the work')
+        }
 
         const lastPoint = this.chart.lastPoint()
         const newPoint = this.chart.createPoint(time, this.price)
@@ -179,20 +191,15 @@ class ChartWorker {
         }
     }
 
-    recreateWorksTimeline(works: ChartWork[]): ChartWork[] {
-        let id = 0
-        let time = 0
+    startWorking() {
+        if (this.tickerTimeout) {
+            clearTimeout(this.tickerTimeout)
+        }
 
-        return works.map(work => {
-            const newWork = Object.assign({}, work, {
-                id: id++,
-                time: time
-            })
+        this.started = true
+        this.workOnPriceTicker()
 
-            time += this.tickerInterval
-
-            return newWork
-        })
+        Logger.debug('Worker is started')
     }
 
     stopWorking() {
@@ -201,6 +208,28 @@ class ChartWorker {
         }
 
         this.started = false
+
+        Logger.debug('Worker is stopped')
+    }
+
+    async retryUntilGetCurrencyPrice() {
+        Logger.debug('Retry to get currency price')
+        
+        try {
+            const price = await this.market.getCurrencyPrice()
+
+            if (price) {
+                return price
+            }
+
+            sleep.sleep(5)
+
+            return this.retryUntilGetCurrencyPrice()
+        } catch (error) {
+            sleep.sleep(5)
+            
+            return this.retryUntilGetCurrencyPrice()
+        }
     }
 
     copyWorks(): ChartWork[] {

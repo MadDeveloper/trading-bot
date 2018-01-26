@@ -1,11 +1,8 @@
 - Prendre en compte le min_base_currency pour acheter/vendre
-- Renforcer la sécurité du bot (problème internet, crash, etc.)
+- Renforcer la sécurité du bot (crash)
 - Pouvoir lancer le bot avec un trade en court (achat ou vente) et repartir de ce dernier
 - Stocker le dernier état du bot (trade, charts) (si il crash, pouvoir le relancer sans rien toucher au marché)
 - mettre plus d'options pour controler le bot (socket ?) -> voir sur une page web ses trades, son état, le chart, etc.
 - faire des tests internet & api quand on lance le bot
 - calculer un peu plus la croissance ou décroissance d'une courbe pour estimer la faisabilité d'achat ou vente (mieux que juste tendance sur 3 points)
 - Peut-être : Quand on lisse les points qui n'ont pas assez d'écart de valeur, on garde quand même ceux qui ont au minimum 2 intervalles de différence même si la différence de prix est proche
-- Peut-être : Quand on détecte une forte montée, une forte descente, un ralentissement dans un creux ou un sommet, on accélère le nombre de points capturés jusqu'au prochain trade (ou annulation du sommet, creux)
-- Lors d'une perte réseau, ne pas couper le bot, tenter une reconnexion toutes les x secondes et continuer le trade
-- Lorsqu'on veut vendre et qu'une bonne montée à été détectés (profitable) lors du premier point descendant on accèlére la capture pour obtenir un point plus rapprochés
