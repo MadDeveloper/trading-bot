@@ -4,6 +4,7 @@ import { Trend } from './trend.enum';
 import config from '../../config';
 import Equation from './equation';
 import Logger from '../logger/index';
+import ChartWorker from './chart-worker';
 
 class ChartAnalyzer {
     chartWorker: ChartWorker
