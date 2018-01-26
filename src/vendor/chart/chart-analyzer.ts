@@ -64,7 +64,7 @@ class ChartAnalyzer {
 
         works.forEach(work => {
             if (!profitablePump) {
-                profitablePump = (work.price >= thresholdPriceProfitable * (1 + config.trader.minProfitableRateWhenSelling)) && this.isUpwardTrendConfirmed(work)
+                profitablePump = work.price >= thresholdPriceProfitable && this.isUpwardTrendConfirmed(work)
             }
         })
 

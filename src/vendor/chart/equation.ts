@@ -31,7 +31,7 @@ class Equation {
     static isProfitable(buyPrice, comparedPrice) {
         const threshold = Equation.thresholdPriceOfProbitability(buyPrice)
 
-        return comparedPrice > threshold * (1 + (config.trader.minProfitableRateWhenSelling / 100))
+        return comparedPrice > threshold
     }
 
     static thresholdPriceOfProbitability(buyPrice) {
@@ -43,8 +43,8 @@ class Equation {
 
         // a = amount invested, p1 = price when bought (with "a" amount), b = amount recovered, p2 = price when sold (give "b" amount)
         // b = 0.9975^2 * a * (p2/p1)
-        // b > a <=> p2 > p1 / 0.9975^2
-        return buyPrice / Math.pow(multiplierFeesIncluded, 2)
+        // b > a <=> (p2 > p1 / 0.9975^2) * minRateOfProfitabilityToSell
+        return (buyPrice / Math.pow(multiplierFeesIncluded, 2)) * (1 + (config.trader.minProfitableRateWhenSelling / 100))
     }
 }
 
