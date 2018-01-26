@@ -330,17 +330,19 @@ class Trader implements Trading {
             return config.trader.maxQuantityQuoteCurrencyToUse
         }
 
+        if (funds < config.trader.minQuantityQuoteCurrencyToUse) {
+            if (config.trader.minQuantityQuoteCurrencyToUse > this.quoteCurrencyBalance) {
+                throw new Error(`Trader has not enough funds (minQuantityQuoteCurrencyToUse is not respected: ${config.trader.minQuantityQuoteCurrencyToUse}, current balance: ${this.quoteCurrencyBalance}`)
+            }
+
+            return config.trader.minQuantityQuoteCurrencyToUse
+        }
+
         return funds
     }
 
     sizeToUse(): number {
-        const size = (config.trader.quantityOfBaseCurrencyToUse / 100) * this.baseCurrencyBalance
-
-        if (size > config.trader.maxQuantityBaseCurrencyToUse) {
-            return config.trader.maxQuantityBaseCurrencyToUse
-        }
-
-        return size
+        return (config.trader.quantityOfBaseCurrencyToUse / 100) * this.baseCurrencyBalance
     }
 
     prepareForNewTrade() {
