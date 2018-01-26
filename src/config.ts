@@ -16,7 +16,9 @@ const config: Config = {
     },
     trader: {
         quantityOfBaseCurrencyToUse: 100, // in % (BTC, ETH, LTC, ...)
-        quantityOfQuoteCurrencyToUse: 100 // in % (€, $)
+        maxQuantityBaseCurrencyToUse: 100, // 100 BTC, 100 LTC, 100 ETH
+        quantityOfQuoteCurrencyToUse: 100, // in % (€, $)
+        maxQuantityQuoteCurrencyToUse: 100 // 100€, 100 BTC (max quantity)
     },
     market: {
         currency: Currency.BTC_EUR,

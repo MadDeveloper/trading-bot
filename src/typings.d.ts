@@ -16,7 +16,9 @@ declare interface Config {
     },
     trader: {
         quantityOfBaseCurrencyToUse: number, // in %
-        quantityOfQuoteCurrencyToUse: number
+        maxQuantityBaseCurrencyToUse: number,
+        quantityOfQuoteCurrencyToUse: number, // in %
+        maxQuantityQuoteCurrencyToUse: number
     },
     market: {
         currency: Currency,

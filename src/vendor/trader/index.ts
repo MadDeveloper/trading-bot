@@ -237,15 +237,15 @@ class Trader implements Trading {
 
     async watchChartWorker() {
         this.workObserver = this.chartWorker.work$.subscribe((work: ChartWork) => {
-            // this.analyzeWorks()
+            this.analyzeWorks()
 
-            // if (config.app.debug) {
-            //     this.writeDebug()
-            // }
+            if (config.app.debug) {
+                this.writeDebug()
+            }
         })
     }
 
-    analyzeWorks() {
+    async analyzeWorks() {
         const works = this.chartWorker.filterNoise(this.chartWorker.copyWorks())
         const lastWork = this.chartWorker.lastWork
 
@@ -266,12 +266,12 @@ class Trader implements Trading {
                  * If no: we can just buy at the current price
                  */
                 if (!this.lastTrade || Number.isFinite(this.lastTrade.price)) {
-                    const funds = (config.trader.quantityOfQuoteCurrencyToUse / 100) * this.quoteCurrencyBalance
+                    const funds = this.fundsToUse()
 
                     Logger.debug(`Trader is buying at ${lastWork.price}`)
 
                     // We have sold, and the current price is below since the last price we sold so we can buy
-                    // this.buy(funds)
+                    this.buy(funds)
                 } else {
                     Logger.debug(`Not bought! Error occured with last trade: ${JSON.stringify(this.lastTrade)}`)
                 }
@@ -295,10 +295,10 @@ class Trader implements Trading {
                  * If no: we do nothing, we wait an hollow to buy first
                  */
                 if (this.lastTrade && Number.isFinite(this.lastTrade.price) && Equation.isProfitable(this.lastTrade.price, lastWork.price)) {
-                    const size = (config.trader.quantityOfBaseCurrencyToUse / 100) * this.baseCurrencyBalance
+                    const size = this.sizeToUse()
 
                     Logger.debug(`Trader is selling at ${lastWork.price}`)
-                    // this.sell(size)
+                    this.sell(size)
                 } else {
                     Logger.debug('Not sold! Was not profitable')
                 }
@@ -310,7 +310,7 @@ class Trader implements Trading {
                * Detect pump which can be profitable to sell in
                * We accelerate the ticker interval until we try to sell
                */
-              Logger.debug('Fast mode actived')
+              Logger.debug('Fast mode activated')
               this.chartWorker.fastMode()
             } else {
                 Logger.debug('waiting for a bump...')
@@ -321,6 +321,26 @@ class Trader implements Trading {
         }
 
         Logger.debug('\n----------------------------------------\n')
+    }
+
+    fundsToUse(): number {
+        const funds = (config.trader.quantityOfQuoteCurrencyToUse / 100) * this.quoteCurrencyBalance
+
+        if (funds > config.trader.maxQuantityQuoteCurrencyToUse) {
+            return config.trader.maxQuantityQuoteCurrencyToUse
+        }
+
+        return funds
+    }
+
+    sizeToUse(): number {
+        const size = (config.trader.quantityOfBaseCurrencyToUse / 100) * this.baseCurrencyBalance
+
+        if (size > config.trader.maxQuantityBaseCurrencyToUse) {
+            return config.trader.maxQuantityBaseCurrencyToUse
+        }
+
+        return size
     }
 
     prepareForNewTrade() {
