@@ -48,6 +48,7 @@ class ChartWorker {
     }
 
     async priceTickerWork(time: number) {
+        this.lastTime = time
         this.lastPrice = this.price
         this.price = await this.market.getCurrencyPrice()
 
@@ -75,9 +76,11 @@ class ChartWorker {
                 clearTimeout(this.tickerTimeout)
             }
 
+            const lastTickerInterval = this.tickerInterval
+
             this.mode = WorkerSpeed.FAST
             this.tickerInterval = this.tickerInterval * (1 - config.chart.reductionOfTheTickerIntervalOnSpeedMode)
-            this.priceTickerWork(this.lastTime)
+            this.priceTickerWork(this.lastTime + lastTickerInterval)
         }
     }
 
@@ -87,9 +90,11 @@ class ChartWorker {
                 clearTimeout(this.tickerTimeout)
             }
 
+            const lastTickerInterval = this.tickerInterval
+
             this.mode = WorkerSpeed.NORMAL
             this.tickerInterval = config.chart.tickerInterval
-            this.priceTickerWork(this.lastTime)
+            this.priceTickerWork(this.lastTime + lastTickerInterval)
         }
     }
 

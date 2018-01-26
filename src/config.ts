@@ -32,7 +32,7 @@ const config: Config = {
         thresholdMaxRateToApproveInversion: 1, // in %
         minPriceDifferenceToApproveNewPoint: 0.004, // <=> 0.4%
         tickerInterval: 1000 * 15, // ms
-        reductionOfTheTickerIntervalOnSpeedMode: 0.3 // <=> we reduce by 30% the ticker interval
+        reductionOfTheTickerIntervalOnSpeedMode: 0.5 // <=> we reduce by 30% the ticker interval
     }
 }
 
