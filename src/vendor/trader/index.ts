@@ -332,7 +332,8 @@ class Trader implements Trading {
 
         if (funds < config.trader.minQuantityQuoteCurrencyToUse) {
             if (config.trader.minQuantityQuoteCurrencyToUse > this.quoteCurrencyBalance) {
-                throw new Error(`Trader has not enough funds (minQuantityQuoteCurrencyToUse is not respected: ${config.trader.minQuantityQuoteCurrencyToUse}, current balance: ${this.quoteCurrencyBalance}`)
+                Logger.debug(`Trader has not enough funds (minQuantityQuoteCurrencyToUse is not respected: ${config.trader.minQuantityQuoteCurrencyToUse}, current balance: ${this.quoteCurrencyBalance})`)
+                this.stop()
             }
 
             return config.trader.minQuantityQuoteCurrencyToUse
