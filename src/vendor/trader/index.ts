@@ -472,8 +472,10 @@ class Trader implements Trading {
         const debug = this.getDebug()
 
         writeFile('./data.json', JSON.stringify(debug, null, 2), { encoding: 'utf-8' }, error => {
-            Logger.debug('An error occured while trying to write in debug file')
-            Logger.debug(error)
+            if (error) {
+                Logger.debug('An error occured while trying to write in debug file')
+                Logger.debug(error)
+            }
         })
     }
 }
