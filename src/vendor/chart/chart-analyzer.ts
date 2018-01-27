@@ -20,11 +20,11 @@ class ChartAnalyzer {
         works.forEach(work => {
             if (downwardTrendConfirmed && !upwardTrendConfirmed && this.isUpwardTrendConfirmed(work)) {
                 // if (work.price >= this.computePriceWithRateToApproveUpward(work.lastPrice)) {
-                    upwardTrendConfirmed = true
+                upwardTrendConfirmed = true
                 // }
             } else if (!downwardTrendConfirmed && this.isDownwardTrendConfirmed(work)) {
                 // if (work.price <= this.computePriceWithRateToApproveDownward(work.lastPrice)) {
-                    downwardTrendConfirmed = true
+                downwardTrendConfirmed = true
                 // }
             }
         })
@@ -42,11 +42,11 @@ class ChartAnalyzer {
         works.forEach(work => {
             if (upwardTrendConfirmed && !downwardTrendConfirmed && this.isDownwardTrendConfirmed(work)) {
                 // if (work.price <= this.computePriceWithRateToApproveDownward(work.lastPrice)) {
-                    downwardTrendConfirmed = true
+                downwardTrendConfirmed = true
                 // }
             } else if (!upwardTrendConfirmed && this.isUpwardTrendConfirmed(work)) {
                 // if (work.price >= this.computePriceWithRateToApproveUpward(work.lastPrice)) {
-                    upwardTrendConfirmed = true
+                upwardTrendConfirmed = true
                 // }
             }
         })
@@ -72,25 +72,55 @@ class ChartAnalyzer {
     }
 
     isDownwardTrendConfirmed(work: ChartWork): boolean {
-        return (work.trend === Trend.DOWNWARD && this.rateBetweenPricesConfirmTrend(work.lastPrice, work.price)) || this.trendsConfirmDownward(work)
+        return this.isBigDumpConfirmed(work) || this.trendsConfirmDownward(work)
     }
 
     isUpwardTrendConfirmed(work: ChartWork): boolean {
-        return (work.trend === Trend.UPWARD && this.rateBetweenPricesConfirmTrend(work.lastPrice, work.price)) || this.trendsConfirmUpward(work)
+        return this.isBigPumpConfirmed(work) || this.trendsConfirmUpward(work)
+    }
+
+    isBigDumpConfirmed(work): boolean {
+        return config.chart.validateDumpWhenBigDumpIsDetected && (work.trend === Trend.DOWNWARD && this.rateBetweenPricesConfirmTrend(work.lastPrice, work.price))
+    }
+
+    isBigPumpConfirmed(work): boolean {
+        return config.chart.validatePumpWhenBigPumpIsDetected && (work.trend === Trend.UPWARD && this.rateBetweenPricesConfirmTrend(work.lastPrice, work.price))
     }
 
     trendsConfirmDownward(work: ChartWork): boolean {
-        // 2 down trend are needed to confirm downward trend 
-        const previousWork = this.chartWorker.findPreviousWork(work)
+        // number of down needed to confirm downward trend, it is set in the config
+        let lastWork = work
+        let numberOfDownDetected = 0
 
-        return (work.trend === Trend.DOWNWARD && (work.lastTrend === Trend.DOWNWARD || (work.lastTrend === Trend.FLAT && previousWork.lastTrend === Trend.DOWNWARD)))
+        for (let index = 0; index < config.chart.numberOfDownPointsToValidateDump; index++) {
+            if (lastWork) {
+                if (lastWork.trend === Trend.DOWNWARD) {
+                    ++numberOfDownDetected
+                }
+
+                lastWork = this.chartWorker.findPreviousWork(lastWork)
+            }
+        }
+
+        return numberOfDownDetected >= config.chart.numberOfDownPointsToValidateDump
     }
 
     trendsConfirmUpward(work: ChartWork): boolean {
-        // 2 down trend are needed to confirm upward trend 
-        const previousWork = this.chartWorker.findPreviousWork(work)
+        // number of up needed to confirm upward trend, it is set in the config
+        let lastWork = work
+        let numberOfUpDetected = 0
 
-        return (work.trend === Trend.UPWARD && (work.lastTrend === Trend.UPWARD || (work.lastTrend === Trend.FLAT && previousWork.lastTrend === Trend.UPWARD)))
+        for (let index = 0; index < config.chart.numberOfUpPointsToValidatePump; index++) {
+            if (lastWork) {
+                if (lastWork.trend === Trend.UPWARD) {
+                    ++numberOfUpDetected
+                }
+
+                lastWork = this.chartWorker.findPreviousWork(lastWork)
+            }
+        }
+
+        return numberOfUpDetected >= config.chart.numberOfUpPointsToValidatePump
     }
 
     rateBetweenPricesConfirmTrend(priceA, priceB) {

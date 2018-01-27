@@ -35,6 +35,10 @@ declare interface Config {
         thresholdMaxRateToApproveInversion: number,
         minPriceDifferenceToApproveNewPoint: number,
         tickerInterval: number, // ms
-        reductionOfTheTickerIntervalOnSpeedMode: number
+        reductionOfTheTickerIntervalOnSpeedMode: number,
+        numberOfUpPointsToValidatePump: number,
+        numberOfDownPointsToValidateDump: number,
+        validatePumpWhenBigPumpIsDetected: boolean,
+        validateDumpWhenBigDumpIsDetected: boolean
     }
 }

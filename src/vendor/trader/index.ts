@@ -231,8 +231,11 @@ class Trader implements Trading {
             }
         ]
 
-        // Logger.debug(this.chartAnalyzer.containsHollow(worksContainingHollow))
-        // Logger.debug(this.chartAnalyzer.containsBump(worksContainingBump))
+        // this.chartWorker.works = worksContainingHollow
+        // Logger.debug(this.chartAnalyzer.detectHollow(worksContainingHollow))
+
+        // this.chartWorker.works = worksContainingBump
+        // Logger.debug(this.chartAnalyzer.detectBump(worksContainingBump))
     }
 
     async watchChartWorker() {

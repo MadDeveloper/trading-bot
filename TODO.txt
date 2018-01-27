@@ -1,4 +1,4 @@
-- rendre configurable le nombre de points désirés pour valider une hausse/baisse
+- installer Gdax à partir de npm et non github
 - Pouvoir lancer le bot avec un trade en court (achat ou vente) et repartir de ce dernier
 
 - Prendre en compte le min_base_currency pour acheter/vendre
