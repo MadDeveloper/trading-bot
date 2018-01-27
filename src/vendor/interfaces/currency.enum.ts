@@ -3,6 +3,11 @@ export enum Currency {
     BTC_EUR = 'BTC-EUR',
     BTC_USD = 'BTC-USD',
 
+    // Bitcoin cash
+    BCH_EUR = 'BCH-EUR',
+    BCH_USD = 'BCH-USD',
+    BCH_BTC = 'BCH-BTC',
+
     // Ethereum
     ETH_EUR = 'ETH-EUR',
     ETH_USD = 'ETH-USD',
