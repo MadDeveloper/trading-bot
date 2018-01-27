@@ -96,6 +96,9 @@ class ChartAnalyzer {
             if (lastWork) {
                 if (lastWork.trend === Trend.DOWNWARD) {
                     ++numberOfDownDetected
+                } else if (lastWork.trend === Trend.FLAT) {
+                    // if the trend is flat, we ignore the point
+                    index -= 1
                 }
 
                 lastWork = this.chartWorker.findPreviousWork(lastWork)
@@ -114,6 +117,9 @@ class ChartAnalyzer {
             if (lastWork) {
                 if (lastWork.trend === Trend.UPWARD) {
                     ++numberOfUpDetected
+                } else if (lastWork.trend === Trend.FLAT) {
+                    // if the trend is flat, we ignore the point
+                    index -= 1
                 }
 
                 lastWork = this.chartWorker.findPreviousWork(lastWork)
