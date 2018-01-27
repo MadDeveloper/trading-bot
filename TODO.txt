@@ -1,9 +1,11 @@
+- rendre configurable le nombre de points désirés pour valider une hausse/baisse
+- Pouvoir lancer le bot avec un trade en court (achat ou vente) et repartir de ce dernier
+
 - Prendre en compte le min_base_currency pour acheter/vendre
 - Renforcer la sécurité du bot (crash)
-- Pouvoir lancer le bot avec un trade en court (achat ou vente) et repartir de ce dernier
 - Stocker le dernier état du bot (trade, charts) (si il crash, pouvoir le relancer sans rien toucher au marché)
 - mettre plus d'options pour controler le bot (socket ?) -> voir sur une page web ses trades, son état, le chart, etc.
 - faire des tests internet & api quand on lance le bot
 - calculer un peu plus la croissance ou décroissance d'une courbe pour estimer la faisabilité d'achat ou vente (mieux que juste tendance sur 3 points)
-- Peut-être : Quand on lisse les points qui n'ont pas assez d'écart de valeur, on garde quand même ceux qui ont au minimum 2 intervalles de différence même si la différence de prix est proche
-- prendre en compte les fees dans le calculs de bénéfices data.json
+- api binance
+- si le bot est bloqué sur un trade de vente trop longtemps envoyer une alerte

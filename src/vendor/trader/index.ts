@@ -12,7 +12,7 @@ import ChartAnalyzer from '../chart/chart-analyzer';
 import { Trade } from './trade';
 import { TradeType } from './trade-type';
 import Equation from '../chart/equation';
-import { writeFileSync } from 'fs';
+import { writeFile } from 'fs';
 import Logger from '../logger/index';
 import { OrderResult } from 'gdax';
 
@@ -306,12 +306,12 @@ class Trader implements Trading {
                 // Bump was not enough up in order to sell, but we clear works in order to avoid to loop through it later in analyzer
                 this.prepareForNewTrade()
             } else if (!this.chartWorker.isInFastMode() && this.chartAnalyzer.detectProfitablePump(works, this.lastTrade.price)) {
-              /*
-               * Detect pump which can be profitable to sell in
-               * We accelerate the ticker interval until we try to sell
-               */
-              Logger.debug('Fast mode activated')
-              this.chartWorker.fastMode()
+                /*
+                 * Detect pump which can be profitable to sell in
+                 * We accelerate the ticker interval until we try to sell
+                 */
+                Logger.debug('Fast mode activated')
+                this.chartWorker.fastMode()
             } else {
                 Logger.debug('waiting for a bump...')
             }
@@ -471,7 +471,10 @@ class Trader implements Trading {
     writeDebug() {
         const debug = this.getDebug()
 
-        writeFileSync('./data.json', JSON.stringify(debug, null, 2), { encoding: 'utf-8' })
+        writeFile('./data.json', JSON.stringify(debug, null, 2), { encoding: 'utf-8' }, error => {
+            Logger.debug('An error occured while trying to write in debug file')
+            Logger.debug(error)
+        })
     }
 }
 
