@@ -9,6 +9,7 @@ import { ChartWork } from './chart-work';
 import { WorkerSpeed } from './worker-speed';
 import Logger from '../logger/index';
 import * as sleep from 'sleep'
+import { Smoothing } from './smoothing';
 
 class ChartWorker {
     chart: Chart
@@ -137,10 +138,35 @@ class ChartWorker {
     }
 
     filterNoise(works: ChartWork[]): ChartWork[] {
-        return this.smoothCurve(this.removeIsolatedBumpAndHollow(works))
+        const smooting = config.chart.smoothing
+
+        switch (smooting) {
+            case Smoothing.MOVING_AVERAGE:
+                return this.removePointsTooClose(this.smoothMovingAverage(works))
+
+            case Smoothing.SAMPLE:
+            default:
+                return this.removePointsTooClose(this.removeIsolatedBumpAndHollow(works))
+        }
     }
 
-    smoothCurve(works: ChartWork[]): ChartWork[] {
+    smoothMovingAverage(works: ChartWork[]): ChartWork[] {
+        const numberOfWorks = works.length
+
+        return works.map((work, index) => {
+            const previousWork = this.findPreviousWork(work)
+            const nextWork = this.findNextWork(work)
+            let smoothedWork = { ...work }
+
+            if (previousWork && nextWork) {
+                smoothedWork.price = (previousWork.price + work.price + nextWork.price) / 3
+            }
+
+            return smoothedWork
+        })
+    }
+
+    removePointsTooClose(works: ChartWork[]): ChartWork[] {
         let lastWorkKept: ChartWork
 
         return works.filter((work, index) => {
@@ -270,6 +296,19 @@ class ChartWorker {
         })
 
         return workFound
+    }
+
+    findNextWork(work: ChartWork): ChartWork {
+        let nextWork: ChartWork = null
+        const numberOfWorks = this.works.length
+
+        this.works.forEach((current, index) => {
+            if (current.id === work.id && index < numberOfWorks - 1) {
+                nextWork = this.works[index + 1]
+            }
+        })
+
+        return nextWork
     }
 
     private determineTrend(leadingCoefficient: number): Trend {

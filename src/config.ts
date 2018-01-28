@@ -1,6 +1,7 @@
 import keys from './keys'
 import { Currency } from './vendor/interfaces/currency.enum';
 import { Config } from './typings';
+import { Smoothing } from './vendor/chart/smoothing';
 
 const config: Config = {
     app: {
@@ -33,13 +34,14 @@ const config: Config = {
         rateToApproveVariation: 0.0025, // <=> 0.25%
         thresholdRateToApproveInversion: 0.2, // in %
         thresholdMaxRateToApproveInversion: 1, // in %
-        minPriceDifferenceToApproveNewPoint: 0.004, // <=> 0.4%
+        minPriceDifferenceToApproveNewPoint: 0.07, // <=> 0.05%
         tickerInterval: 1000 * 15, // ms
         reductionOfTheTickerIntervalOnSpeedMode: 0.5, // <=> we reduce by 30% the ticker interval
         numberOfUpPointsToValidatePump: 2,
         numberOfDownPointsToValidateDump: 2,
         validatePumpWhenBigPumpIsDetected: true,
-        validateDumpWhenBigDumpIsDetected: true
+        validateDumpWhenBigDumpIsDetected: true,
+        smoothing: Smoothing.MOVING_AVERAGE
     }
 }
 

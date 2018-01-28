@@ -1,4 +1,5 @@
 import { Currency } from './vendor/interfaces/currency.enum';
+import { Smoothing } from './vendor/chart/smoothing';
 
 declare interface Config {
     app: {
@@ -39,6 +40,7 @@ declare interface Config {
         numberOfUpPointsToValidatePump: number,
         numberOfDownPointsToValidateDump: number,
         validatePumpWhenBigPumpIsDetected: boolean,
-        validateDumpWhenBigDumpIsDetected: boolean
+        validateDumpWhenBigDumpIsDetected: boolean,
+        smoothing: Smoothing
     }
 }
