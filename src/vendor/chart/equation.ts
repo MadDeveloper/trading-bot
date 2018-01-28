@@ -31,20 +31,20 @@ class Equation {
     static isProfitable(buyPrice, comparedPrice) {
         const threshold = Equation.thresholdPriceOfProbitability(buyPrice)
 
-        return comparedPrice > threshold
+        return comparedPrice >= threshold
     }
 
     static thresholdPriceOfProbitability(buyPrice) {
         const multiplierFeesIncluded = 1 - config.market.instantOrderFees
 
         if (multiplierFeesIncluded === 0) {
-            throw new Error(`Mathematic error when trying to calculate threshold price of profitability (multiplierFeesIncluded = 0, cannot divide by zero)`)
+            throw new Error(`Fees cannot be 100%. Mathematic error when trying to calculate threshold price of profitability (multiplierFeesIncluded = 0, cannot divide by zero)`)
         }
 
         // a = amount invested, p1 = price when bought (with "a" amount), b = amount recovered, p2 = price when sold (give "b" amount)
-        // b = 0.9975^2 * a * (p2/p1)
-        // b > a <=> (p2 > p1 / 0.9975^2) * minRateOfProfitabilityToSell
-        return (buyPrice / Math.pow(multiplierFeesIncluded, 2)) * (1 + (config.trader.minProfitableRateWhenSelling / 100))
+        // b = (1 - fees)^2 * a * (p2/p1)
+        // b > a <=> p2 > p1 * ((1 + (t / 100)) / ((1 - fees)^2))
+        return buyPrice * ((1 + (config.trader.minProfitableRateWhenSelling / 100)) / Math.pow(multiplierFeesIncluded, 2))
     }
 }
 
