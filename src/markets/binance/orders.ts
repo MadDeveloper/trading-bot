@@ -95,7 +95,7 @@ class BinanceOrders implements Orders {
         return this.client.cancelOrder(order.id)
     }
 
-    normalizeQuantity(quantity): number {
+    normalizeQuantity(quantity: number): number {
         const currencyInfo: CurrencyInfo = this.market.currencyInfo
         const currencyLotSizeFilter = this.getLotSizeFilter(currencyInfo)
         const currencyMinNotionalFilter = this.getMinNotionalFilter(currencyInfo)
@@ -151,7 +151,7 @@ class BinanceOrders implements Orders {
         })
 
         return filter
-    } 
+    }
 }
 
 export default BinanceOrders

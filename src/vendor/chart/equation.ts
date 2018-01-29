@@ -34,6 +34,10 @@ class Equation {
         return comparedPrice >= threshold
     }
 
+    static isProfitableOnQuantity(quoteCurrencyInvested, size, sellPrice): boolean {
+        return ((size * sellPrice) * (1 - config.market.instantOrderFees)) > quoteCurrencyInvested
+    }
+
     static thresholdPriceOfProbitability(buyPrice) {
         const multiplierFeesIncluded = 1 - config.market.instantOrderFees
 

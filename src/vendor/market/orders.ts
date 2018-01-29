@@ -27,6 +27,8 @@ export interface Orders {
     sellMarket(currency: Currency, size: number, marketPrice?: number): Promise<any>
 
     sellStop(currency: Currency, price: number, size: number): Promise<any>
+    
+    normalizeQuantity?(quantity: number): number
 
     cancel(order: OrderResult): any
 }

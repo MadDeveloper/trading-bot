@@ -16,30 +16,30 @@ const binanceConfig: Config = {
     trader: {
         quantityOfBaseCurrencyToUse: 100, // in % (BTC, ETH, LTC, ...)
         quantityOfQuoteCurrencyToUse: 100, // in % (€, $)
-        maxQuantityQuoteCurrencyToUse: 100, // 100€, 100 BTC (max quantity)
-        minQuantityQuoteCurrencyToUse: 50, // 50€
-        minProfitableRateWhenSelling: 0 // how many % profitability wanted when selling
+        maxQuantityQuoteCurrencyToUse: 0.001, // 100€, 100 BTC (max quantity)
+        minQuantityQuoteCurrencyToUse: 0.001, // 50€, 50 BTC
+        minProfitableRateWhenSelling: 0.15 // how many % profitability wanted when selling
     },
     market: {
-        currency: Currency.TRXBTC,
-        instantOrderFees: 0.001 // <=> 0.25%
+        currency: Currency.NEOBTC,
+        instantOrderFees: 0.001 // <=> 0.1%
     },
     account: {
         quoteCurrency: Currency.BTC, // €, $, BTC
-        baseCurrency: Currency.TRX // BTC, ETH, LTC, ...
+        baseCurrency: Currency.NEO // BTC, ETH, LTC, ...
     },
     chart: {
         rateToApproveVariation: 0.0025, // <=> 0.25% FIXME: should it be still used?
         thresholdRateToApproveInversion: 0.4, // in %
         thresholdMaxRateToApproveInversion: 1, // in %
-        minPriceDifferenceToApproveNewPoint: 0.07, // <=> 0.07%
+        minPriceDifferenceToApproveNewPoint: 0.03, // <=> 0.07%
         tickerInterval: 1000 * 15, // ms
         reductionOfTheTickerIntervalOnSpeedMode: 0.5, // <=> we reduce by 50% the ticker interval
         numberOfUpPointsToValidatePump: 2,
         numberOfDownPointsToValidateDump: 2,
         validatePumpWhenBigPumpIsDetected: true,
         validateDumpWhenBigDumpIsDetected: true,
-        smoothing: Smoothing.MOVING_AVERAGE
+        smoothing: Smoothing.SAMPLE
     }
 }
 

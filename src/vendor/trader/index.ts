@@ -288,7 +288,7 @@ class Trader implements Trading {
             } else {
                 Logger.debug('waiting for an hollow...')
             }
-        } else if (TraderState.WAITING_TO_SELL === this.state) {
+        } else if (TraderState.WAITING_TO_SELL === this.state && this.lastTrade && Number.isFinite(this.lastTrade.price)) {
             Logger.debug('Trader wants to sell...')
             /*
              * Trader is waiting to sell
@@ -301,9 +301,12 @@ class Trader implements Trading {
                  * If yes: we will buy only if the price is under the last sell price
                  * If no: we do nothing, we wait an hollow to buy first
                  */
-                if (this.lastTrade && Number.isFinite(this.lastTrade.price) && Equation.isProfitable(this.lastTrade.price, lastWork.price)) {
-                    const size = this.sizeToUse()
+                const lastWork = Object.assign({}, this.chartWorker.lastWork)
+                const size = this.market.orders.normalizeQuantity(this.sizeToUse())
+                const quoteCurrencyInvested = this.lastTrade.benefits
+                const priceToSell = lastWork.price
 
+                if (Equation.isProfitable(this.lastTrade.price, lastWork.price) && Equation.isProfitableOnQuantity(quoteCurrencyInvested, size, priceToSell)) {
                     Logger.debug(`Trader is selling at ${lastWork.price}`)
                     this.sell(size)
                 } else {
@@ -370,7 +373,8 @@ class Trader implements Trading {
             const lastWork = Object.assign({}, this.chartWorker.lastWork)
 
             // Remote work
-            await this.market.orders.buyMarket(this.market.currency, funds, lastWork.price)
+            const order = await this.market.orders.buyMarket(this.market.currency, funds, lastWork.price)
+
             await this.updateBalances()
 
             // Local work
@@ -386,7 +390,7 @@ class Trader implements Trading {
                 quantity: (funds - fees) / lastWork.price
             }
 
-            this.trades.push({ ... this.lastTrade })
+            this.trades.push({ ...this.lastTrade })
 
             Logger.debug(`
              ____ ____ ____ 
@@ -396,9 +400,9 @@ class Trader implements Trading {
             
             `)
             Logger.debug(`Last trade: ${JSON.stringify(this.lastTrade, null, 2)}`)
-            Logger.debug(`Would be able to sell when the price will be above ${Equation.thresholdPriceOfProbitability(this.lastTrade.price).toFixed(2)}${this.quoteCurrency}`)
+            Logger.debug(`Would be able to sell when the price will be above ${Equation.thresholdPriceOfProbitability(this.lastTrade.price).toFixed(8)}${this.quoteCurrency}`)
         } catch (error) {
-            Logger.error(`Error when trying to buy: ${error}`)
+            Logger.error(`Error when trying to buy: ${JSON.stringify(error, null, 2)}`)
         }
     }
 
@@ -474,7 +478,11 @@ class Trader implements Trading {
         return {
             allWorksStored: works,
             allWorksSmoothed: this.chartWorker.filterNoise(works),
-            trades: this.trades
+            trades: this.trades,
+            baseCurrency: this.baseCurrency,
+            baseCurrencyBalance: this.baseCurrencyBalance,
+            quoteCurrency: this.quoteCurrency,
+            quoteCurrencyBalance: this.quoteCurrencyBalance
         }
     }
 

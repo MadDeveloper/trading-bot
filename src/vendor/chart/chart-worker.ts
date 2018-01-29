@@ -8,7 +8,7 @@ import { Subject } from 'rxjs/Subject';
 import { ChartWork } from './chart-work';
 import { WorkerSpeed } from './worker-speed';
 import Logger from '../logger/index';
-import * as sleep from 'sleep'
+import delay from 'delay'
 import { Smoothing } from './smoothing';
 
 class ChartWorker {
@@ -248,11 +248,11 @@ class ChartWorker {
                 return price
             }
 
-            sleep.sleep(5)
+            await delay(5000)
 
             return this.retryUntilGetCurrencyPrice()
         } catch (error) {
-            sleep.sleep(5)
+            await delay(5000)
             
             return this.retryUntilGetCurrencyPrice()
         }

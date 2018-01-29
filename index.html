@@ -8,6 +8,11 @@
   <title>Chart</title>
   <style>
     html,
+    body {
+      margin: 10px;
+    }
+
+    html,
     body,
     #myChart {
       width: 100%;
@@ -19,31 +24,47 @@
 <body>
   <canvas id="myChart"></canvas>
   <div>Total benefits: <span id="benefits"></span></div>
+  <div>
+    <strong>Balances</strong>
+    <br>
+    <span id="quote-currency-balance"></span> <span id="quote-currency"></span>
+    <br>
+    <span id="base-currency-balance"></span> <span id="base-currency"></span>
+  </div>
   <div>Last trade: <span id="lastTrade"></span></div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
   <script>
     const works = []
     const filteredWorks = []
     const allTrades = []
+    let quoteCurrency = ''
+    let quoteCurrencyBalance = 0
+    let baseCurrency = ''
+    let baseCurrencyBalance = 0 
 
-    async function extractPoints() {
-      const { allWorksStored, allWorksSmoothed, trades } = await loadData()
+    async function extractData() {
+      const data = await loadData()
 
-      allWorksStored.forEach(work => {
+      quoteCurrency = data.quoteCurrency
+      quoteCurrencyBalance = data.quoteCurrencyBalance
+      baseCurrency = data.baseCurrency
+      baseCurrencyBalance = data.baseCurrencyBalance
+
+      data.allWorksStored.forEach(work => {
         works.push(Object.assign({}, work, {
           x: work.time / 1000,
           y: work.price
         }))
       })
 
-      allWorksSmoothed.forEach(work => {
+      data.allWorksSmoothed.forEach(work => {
         filteredWorks.push(Object.assign({}, work, {
           x: work.time / 1000,
           y: work.price
         }))
       })
 
-      trades.forEach(trade => {
+      data.trades.forEach(trade => {
         allTrades.push(Object.assign({}, trade, {
           x: trade.time / 1000,
           y: trade.price,
@@ -107,7 +128,7 @@
         return total
       }, 0)
 
-      $benefits.innerHTML = `${benefits.toFixed(2)}€`
+      $benefits.innerHTML = `${benefits.toFixed(8)}${quoteCurrency}`
     }
 
     function printLastTrade(trades) {
@@ -119,17 +140,30 @@
       const $lastTrade = document.querySelector('#lastTrade')
 
       $lastTrade.innerHTML = JSON.stringify(lastTrade, null, 2)
-    } 
+    }
+
+    function printBalances() {
+      const $quoteCurrency = document.querySelector('#quote-currency')
+      const $quoteCurrencyBalance = document.querySelector('#quote-currency-balance')
+      const $baseCurrency = document.querySelector('#base-currency')
+      const $baseCurrencyBalance = document.querySelector('#base-currency-balance')
+
+      $quoteCurrency.innerHTML = quoteCurrency
+      $quoteCurrencyBalance.innerHTML = quoteCurrencyBalance.toFixed(8)
+      $baseCurrency.innerHTML = baseCurrency
+      $baseCurrencyBalance.innerHTML = baseCurrencyBalance.toFixed(8)
+    }
 
     async function loadData() {
       return JSON.parse(await readTextFile('data.json'))
     }
 
     window.onload = async () => {
-      await extractPoints()
+      await extractData()
       drawChart()
       calculateBenefits(allTrades)
       printLastTrade(allTrades)
+      printBalances()
     }
   </script>
 </body>
