@@ -1,122 +1,36 @@
-import Market from '../interfaces/market';
-import * as Gdax from 'gdax';
-import { Currency } from '../interfaces/currency.enum';
-import { Account, CoinbaseAccount } from 'gdax';
+import { Currency } from "../interfaces/currency.enum";
 
-class Accounts {
+export interface Accounts {
     // private allAccounts: any[] // FIXME: hard to maintain cache and reload when needed
-    private allMarketAccounts: any[]
+    allMarketAccounts: any[]
 
-    client: Gdax.AuthenticatedClient
+    client: any
 
-    constructor(client: Gdax.AuthenticatedClient) {
-        this.client = client
-    }
+    marketAccounts(): Promise<any[]>
 
-    async marketAccounts(): Promise<CoinbaseAccount[]> {
-        if (!Array.isArray(this.allMarketAccounts)) {
-            this.allMarketAccounts = await this.client.getCoinbaseAccounts()
-        }
+    marketAccountByCurrency(currency: string): Promise<any>
 
-        return this.allMarketAccounts
-    }
+    accounts(): Promise<any[]>
 
-    async marketAccountByCurrency(currency: string): Promise<CoinbaseAccount> {
-        const marketAccounts = await this.marketAccounts()
-        const marketAccountsFound = marketAccounts.filter(account => account.currency === currency)
+    account(id: string): Promise<any>
 
-        if (marketAccountsFound.length === 0) {
-            return null
-        }
+    history(accountId: string): Promise<any>
 
-        return marketAccountsFound[0]
-    }
+    availableFunds(currency: string): Promise<number>
 
-    accounts(): Promise<Account[]> {
-        return this.client.getAccounts()
-        // FIXME: need to be more flexible and permets cache reload
-        // if (!Array.isArray(this.allAccounts)) {
-        //     this.allAccounts = await this.client.getAccounts()
-        // }
+    fundsOnHold(currency: string): Promise<number>
 
-        // return this.allAccounts
-    }
+    hasFundsOnHold(currency: string): Promise<boolean>
 
-    account(id: string): Promise<Account> {
-        return this.client.getAccount(id)
-    }
+    accountByCurrency(currency: string): Promise<any>
 
-    history(accountId: string): Promise<any> {
-        return this.client.getAccountHistory(accountId)
-    }
+    deposit(amount: number, paymentMethod: any): Promise<any>
 
-    async availableFunds(currency: string): Promise<number> {
-        const account = await this.accountByCurrency(currency)
+    withdraw(amount: number, currency: Currency, address: string): Promise<any>
 
-        return parseFloat(account.available)
-    }
+    withdrawCrypto(amount: number, currency: Currency, address: string): Promise<any>
 
-    async fundsOnHold(currency: string): Promise<number> {
-        const account = await this.accountByCurrency(currency)
+    paymentMethods(): Promise<any[]>
 
-        return parseInt(account.holds)
-    }
-
-    async hasFundsOnHold(currency: string): Promise<boolean> {
-        const fundsOnHold = await this.fundsOnHold(currency)
-
-        return fundsOnHold > 0
-    }
-
-    async accountByCurrency(currency: string): Promise<any> {
-        const accounts = await this.accounts()
-        const accountsFound = accounts.filter(account => account.currency === currency)
-
-        if (accountsFound.length === 0) {
-            return null
-        }
-
-        return accountsFound[0]
-    }
-
-    deposit(amount: number, paymentMethod: any): Promise<any> {
-        return this.client.deposit({
-            amount,
-            currency: paymentMethod.currency,
-            payment_method_id: paymentMethod.id
-        })
-    }
-
-    withdraw(amount: number, currency: Currency, address: string): Promise<any> {
-        return this.client.withdrawCrypto({
-            amount,
-            currency,
-            coinbase_account_id: address
-        })
-    }
-
-    withdrawCrypto(amount: number, currency: Currency, address: string): Promise<any> {
-        return this.client.withdrawCrypto({
-            amount,
-            currency,
-            crypto_address: address
-        })
-    }
-
-    paymentMethods(): Promise<any[]> {
-        return (<any>this.client).getPaymentMethods()
-    }
-
-    async paymentMethodByCurrency(currency: Currency): Promise<any> {
-        const paymentMethods = await this.paymentMethods()
-        const paymentMethodsFound = paymentMethods.filter(method => method.currency === currency)
-
-        if (paymentMethods.length === 0) {
-            return null
-        }
-
-        return paymentMethods[0]
-    }
+    paymentMethodByCurrency(currency: Currency): Promise<any>
 }
-
-export default Accounts

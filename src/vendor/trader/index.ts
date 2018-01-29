@@ -1,20 +1,20 @@
-import Accounts from '../market/accounts';
+import ChartAnalyzer from '../chart/chart-analyzer';
 import ChartWorker from '../chart/chart-worker';
-import config from '../../config';
+import { config } from '../../config';
+import Equation from '../chart/equation';
+import Logger from '../logger/index';
 import Market from '../interfaces/market';
 import Trading from '../interfaces/trader';
+import { Accounts } from '../market/accounts';
 import { ChartWork } from '../chart/chart-work';
 import { Currency } from '../interfaces/currency.enum';
 import { Subscription } from 'rxjs/Subscription';
-import { TraderState } from './trader-state';
-import { Trend } from '../chart/trend.enum';
-import ChartAnalyzer from '../chart/chart-analyzer';
 import { Trade } from './trade';
+import { TraderState } from './trader-state';
 import { TradeType } from './trade-type';
-import Equation from '../chart/equation';
+import { Trend } from '../chart/trend.enum';
 import { writeFile } from 'fs';
-import Logger from '../logger/index';
-import { OrderResult } from 'gdax';
+import { OrderResult } from '../market/order';
 
 class Trader implements Trading {
     market: Market

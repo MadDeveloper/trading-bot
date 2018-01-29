@@ -1,7 +1,7 @@
 import { Currency } from "./currency.enum";
 import { Subject } from "rxjs/Subject";
-import Orders from '../market/orders';
-import Accounts from '../market/accounts';
+import { Accounts } from "../market/accounts";
+import { Orders } from "../market/orders";
 
 export default interface Market {
     lastPrice: number
@@ -14,6 +14,7 @@ export default interface Market {
     publicClient: any
     lastTicker: any
     initialized: boolean
+    sandbox: boolean
 
     init(): void
     watchCurrencyPrice(): void

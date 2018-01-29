@@ -1,14 +1,16 @@
-import keys from './keys'
-import { Currency } from './vendor/interfaces/currency.enum';
-import { Config } from './typings';
-import { Smoothing } from './vendor/chart/smoothing';
+import keysBinance from './keys.binance';
+import { Config } from '../typings';
+import { Currency } from '../vendor/interfaces/currency.enum';
+import { Smoothing } from '../vendor/chart/smoothing';
+import { Platform } from './platform';
 
-const config: Config = {
+const binanceConfig: Config = {
     app: {
         debug: true,
+        platform: Platform.BINANCE
     },
     api: {
-        ...keys,
+        ...keysBinance,
         uri: 'https://api.gdax.com',
         websocketURI: 'wss://ws-feed.gdax.com',
         sandboxWebsocketURI: 'wss://ws-feed-public.sandbox.gdax.com',
@@ -24,7 +26,7 @@ const config: Config = {
     },
     market: {
         currency: Currency.BTC_EUR,
-        instantOrderFees: 0.0025 // <=> 0.25%
+        instantOrderFees: 0.001 // <=> 0.25%
     },
     account: {
         quoteCurrency: Currency.EUR, // €, $
@@ -45,4 +47,4 @@ const config: Config = {
     }
 }
 
-export default config
+export default binanceConfig

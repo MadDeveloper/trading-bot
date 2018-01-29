@@ -1,5 +1,5 @@
 import Point from './point';
-import config from '../../config';
+import { config } from '../../config';
 
 class Equation {
     static findLineLeadingCoefficient(pointA: Point, pointB: Point): number {

@@ -10,7 +10,7 @@ import Logger from '../../vendor/logger/index';
 import GdaxAccounts from './accounts';
 import GdaxOrders from './orders';
 
-class GdaxService implements Market {
+class BinanceMarket implements Market {
     currency: Currency
     orders: Orders
     accounts: Accounts
@@ -86,4 +86,4 @@ class GdaxService implements Market {
     }
 }
 
-export default GdaxService
+export default BinanceMarket

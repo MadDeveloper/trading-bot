@@ -1,11 +1,10 @@
-- installer Gdax à partir de npm et non github
+- api binance
 - Pouvoir lancer le bot avec un trade en court (achat ou vente) et repartir de ce dernier
 
+- si le bot est bloqué sur un trade de vente trop longtemps envoyer une alerte
 - Prendre en compte le min_base_currency pour acheter/vendre
 - Renforcer la sécurité du bot (crash)
 - Stocker le dernier état du bot (trade, charts) (si il crash, pouvoir le relancer sans rien toucher au marché)
 - mettre plus d'options pour controler le bot (socket ?) -> voir sur une page web ses trades, son état, le chart, etc.
 - faire des tests internet & api quand on lance le bot
 - calculer un peu plus la croissance ou décroissance d'une courbe pour estimer la faisabilité d'achat ou vente (mieux que juste tendance sur 3 points)
-- api binance
-- si le bot est bloqué sur un trade de vente trop longtemps envoyer une alerte

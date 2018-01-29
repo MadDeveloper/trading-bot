@@ -1,5 +1,5 @@
 import Market from '../interfaces/market'
-import config from '../../config';
+import { config } from '../../config';
 import Chart from './chart';
 import Equation from './equation';
 import Point from './point';

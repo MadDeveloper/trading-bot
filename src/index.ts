@@ -1,15 +1,16 @@
 import './rxjs.extensions'
 import Trader from './vendor/trader/index';
-import GdaxMarket from './markets/gdax';
-import config from './config';
-import { writeFileSync } from 'fs'
-import Logger from './vendor/logger/index';
+import { config } from './config';
+import { Platform } from './config/platform';
+import Market from './vendor/interfaces/market';
 
-const market = new GdaxMarket()
+// Load market
+const market: Market = new (require(`./markets/${config.app.platform}`).default)()
 
 market.sandbox = config.api.sandbox
 market.init()
 
+// Make trader trade
 const trader = new Trader(market)
 
 trader.trade()

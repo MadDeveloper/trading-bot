@@ -1,9 +1,11 @@
 import { Currency } from './vendor/interfaces/currency.enum';
 import { Smoothing } from './vendor/chart/smoothing';
+import { Platform } from './config/platform';
 
 declare interface Config {
     app: {
-        debug: boolean
+        debug: boolean,
+        platform: Platform
     }
     api: {
         key: string;
