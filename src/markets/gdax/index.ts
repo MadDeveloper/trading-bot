@@ -53,7 +53,7 @@ class GdaxService implements Market {
 
     watchCurrencyPrice() {
         if (!this.initialized) {
-            throw new Error('Gdax market watchCurrencyPrice() cannot be used without being initialized')
+            throw new Error('GdaxMarket #watchCurrencyPrice() cannot be used without being initialized')
         }
 
         this.socket.on('message', (data: any) => {
@@ -70,7 +70,7 @@ class GdaxService implements Market {
 
     async getCurrencyPrice() {
         if (!this.initialized) {
-            throw new Error('Gdax market getCurrencyPrice() cannot be used without being initialized')
+            throw new Error('GdaxMarket #getCurrencyPrice() cannot be used without being initialized')
         }
 
         this.lastTicker = await this.publicClient.getProductTicker(this.currency)

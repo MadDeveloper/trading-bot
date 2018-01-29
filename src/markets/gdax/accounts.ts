@@ -51,25 +51,25 @@ class GdaxAccounts implements Accounts {
         return this.client.getAccountHistory(accountId)
     }
 
-    async availableFunds(currency: string): Promise<number> {
+    async availableFunds(currency: Currency): Promise<number> {
         const account = await this.accountByCurrency(currency)
 
         return parseFloat(account.available)
     }
 
-    async fundsOnHold(currency: string): Promise<number> {
+    async fundsOnHold(currency: Currency): Promise<number> {
         const account = await this.accountByCurrency(currency)
 
         return parseInt(account.holds)
     }
 
-    async hasFundsOnHold(currency: string): Promise<boolean> {
+    async hasFundsOnHold(currency: Currency): Promise<boolean> {
         const fundsOnHold = await this.fundsOnHold(currency)
 
         return fundsOnHold > 0
     }
 
-    async accountByCurrency(currency: string): Promise<any> {
+    async accountByCurrency(currency: Currency): Promise<any> {
         const accounts = await this.accounts()
         const accountsFound = accounts.filter(account => account.currency === currency)
 

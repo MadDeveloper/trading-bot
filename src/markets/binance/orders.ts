@@ -1,45 +1,32 @@
-import * as Gdax from 'gdax'
-import { LimitOrder } from 'gdax';
-import { OrderType } from '../../vendor/interfaces/order-type.enum';
+import * as Gdax from 'gdax';
+import Logger from '../../vendor/logger/index';
+import Market from '../../vendor/interfaces/market';
 import { Currency } from '../../vendor/interfaces/currency.enum';
-import { OrderStatus } from '../../vendor/interfaces/order-status.enum';
-import { Orders } from '../../vendor/market/orders';
+import { CurrencyFilter, CurrencyInfo } from '../../vendor/market/currency-info';
+import { LimitOrder } from 'gdax';
 import { OrderResult } from '../../vendor/market/order';
+import { Orders } from '../../vendor/market/orders';
+import { OrderStatus } from '../../vendor/interfaces/order-status.enum';
+import { OrderType } from '../../vendor/interfaces/order-type.enum';
+import { promisify } from 'util';
 
-class GdaxOrders implements Orders {
+class BinanceOrders implements Orders {
     pending: OrderResult[] = []
     done: OrderResult[] = []
     canceled: OrderResult[] = []
     lastOrder: OrderResult
+    client: any
+    market: Market
 
-    constructor(
-        private client: Gdax.AuthenticatedClient,
-        private publicClient: Gdax.PublicClient) { }
+    constructor(client: any, market: Market) {
+        this.client = client
+        this.market = market
+    }
 
     async all(): Promise<OrderResult[]> {
         const orders: OrderResult[] = await this.client.getOrders()
 
         return orders
-    }
-
-    find(id: string, status: OrderType): OrderResult {
-        let ordersToSearch = []
-
-        if (OrderType.BUY === status || OrderType.SELL === status) {
-            ordersToSearch = this.pending.slice()
-        } else if (OrderType.CANCEL === status) {
-            ordersToSearch = this.canceled.slice()
-        } else {
-            ordersToSearch = this.done
-        }
-
-        return ordersToSearch.reduce(order => {
-            if (order.id === id) {
-                return order
-            }
-
-            return null
-        }, null)
     }
 
     buyOrders(): OrderResult[] {
@@ -51,93 +38,43 @@ class GdaxOrders implements Orders {
     }
 
     async buyLimit(currency: Currency, quantity: number, price: number, allowTaker = false): Promise<any> {
-        const response: OrderResult = await this.client.buy({
-            type: 'limit',
-            side: 'buy',
-            price: price.toFixed(2),
-            size: this.normalizeNumber(quantity),
-            product_id: currency,
-            post_only: !allowTaker
-        })
-
-        if (response && (<any>response).message) {
-            throw Error(`Error when trying to buy with a limit order: ${JSON.stringify(response, null, 2)}`)
-        }
-
-        this.lastOrder = response
-        this.pending.push(this.lastOrder)
-
         return this.lastOrder
     }
 
-    async buyMarket(currency: Currency, funds: number) {
-        const response: OrderResult = await this.client.buy({
-            type: 'market',
-            side: 'buy',
-            size: null,
-            funds: this.normalizeNumber(funds),
-            product_id: currency
-        })
+    async buyMarket(currency: Currency, funds: number, marketPrice: number): Promise<any> {
+        const buy = promisify(this.client.marketBuy)
 
-        if (response && (<any>response).message) {
-            throw Error(`Error when trying to buy with a market order: ${JSON.stringify(response, null, 2)}`)
+        try {
+            const quantity = this.normalizeQuantity(funds / marketPrice)
+            const response = await buy(currency, quantity)
+
+            if (!response) {
+                throw Error(`Error when trying to buy with a market order: ${JSON.stringify(response, null, 2)}`)
+            }
+
+            this.lastOrder = response
+            this.done.push({ ...this.lastOrder })
+
+            return this.lastOrder
+        } catch (error) {
+            Logger.error(error.toJSON ? error.toJSON() : error)
         }
+    }
 
-        this.lastOrder = response
-        this.done.push({ ...this.lastOrder })
-
+    async buyStop(currency: Currency, price: number, funds: number = null): Promise<any> {
         return this.lastOrder
     }
 
-    async buyStop(currency: Currency, price: number, funds: number = null) {
-        const response: OrderResult = await this.client.buy({
-            type: 'stop',
-            side: 'buy',
-            size: null,
-            funds: this.normalizeNumber(funds),
-            product_id: currency
-        })
-
-        if (response && (<any>response).message) {
-            throw Error(`Error when trying to buy with a stop order: ${JSON.stringify(response, null, 2)}`)
-        }
-
-        this.lastOrder = response
-        this.pending.push(this.lastOrder)
-
+    async sellLimit(currency: Currency, quantity: number, price: number, allowTaker = false): Promise<any> {
         return this.lastOrder
     }
 
-    async sellLimit(currency: Currency, quantity: number, price: number, allowTaker = false) {
-        const response: OrderResult = await this.client.sell({
-            type: 'limit',
-            side: 'sell',
-            price: price.toFixed(2),
-            size: this.normalizeNumber(quantity),
-            product_id: currency,
-            post_only: !allowTaker
-        })
+    async sellMarket(currency: Currency, size: number): Promise<any> {
+        const sell = promisify(this.client.marketSell)
+        const quantity = this.normalizeQuantity(size)
+        const response = await sell(currency, quantity)
 
-        if (response && (<any>response).message) {
-            throw Error(`Error when trying to sell with a limit order: ${JSON.stringify(response, null, 2)}`)
-        }
-
-        this.lastOrder = response
-        this.pending.push(this.lastOrder)
-
-        return this.lastOrder
-    }
-
-    async sellMarket(currency: Currency, size: number) {
-        const response: OrderResult = await this.client.sell({
-            type: 'market',
-            side: 'sell',
-            size: this.normalizeNumber(size),
-            funds: undefined, // undefined is important here, null value returns 400 from API, and funds is needed by typings
-            product_id: currency
-        })
-
-        if (response && (<any>response).message) {
+        if (!response) {
             throw Error(`Error when trying to sell with a market order: ${JSON.stringify(response, null, 2)}`)
         }
 
@@ -147,22 +84,7 @@ class GdaxOrders implements Orders {
         return this.lastOrder
     }
 
-    async sellStop(currency: Currency, price: number, size: number) {
-        const response: OrderResult = await this.client.sell({
-            type: 'stop',
-            side: 'sell',
-            size: this.normalizeNumber(size),
-            funds: undefined, // undefined is important here, null value returns 400 from API, and funds is needed by typings
-            product_id: currency
-        })
-
-        if (response && (<any>response).message) {
-            throw Error(`Error when trying to sell with a stop order: ${JSON.stringify(response, null, 2)}`)
-        }
-
-        this.lastOrder = response
-        this.pending.push(this.lastOrder)
-
+    async sellStop(currency: Currency, price: number, size: number): Promise<any> {
         return this.lastOrder
     }
 
@@ -173,17 +95,63 @@ class GdaxOrders implements Orders {
         return this.client.cancelOrder(order.id)
     }
 
-    normalizeNumber(price: number): string {
-        const priceString = price.toString()
+    normalizeQuantity(quantity): number {
+        const currencyInfo: CurrencyInfo = this.market.currencyInfo
+        const currencyLotSizeFilter = this.getLotSizeFilter(currencyInfo)
+        const currencyMinNotionalFilter = this.getMinNotionalFilter(currencyInfo)
+        const minQuantity = parseFloat(currencyLotSizeFilter.minQty)
+        const maxQuantity = parseFloat(currencyLotSizeFilter.maxQty)
+        const stepSize = parseFloat(currencyLotSizeFilter.stepSize)
+        const minNotional = parseFloat(currencyMinNotionalFilter.minNotional)
+        const numberOfDigits = Number(currencyInfo.quotePrecision)
 
-        if (priceString.includes('.')) {
-            const [integers, decimals] = priceString.split('.')
-
-            return `${integers}.${decimals.substring(0, 8)}`
+        if (quantity < minQuantity) {
+            throw new Error(`Cannot normalize quantity, the quantity is below the minQuantity (quantity: ${quantity}, minQuantity: ${minQuantity})`)
         }
 
-        return priceString
+        if ((quantity - minQuantity) % stepSize !== 0) {
+            quantity -= quantity % stepSize
+        }
+
+        if (quantity > maxQuantity) {
+            quantity = maxQuantity
+        }
+
+        const quantityString = quantity.toString()
+        let normalizedQuantity = quantity
+
+        if (quantityString.includes('.')) {
+            const [integers, decimals] = quantityString.split('.')
+
+            normalizedQuantity = Number(`${integers}.${decimals.substring(0, 8)}`)
+        }
+
+        return normalizedQuantity
     }
+
+    private getLotSizeFilter(currencyInfo: CurrencyInfo): CurrencyFilter {
+        let filter: CurrencyFilter
+
+        currencyInfo.filters.forEach(currentFilter => {
+            if (currentFilter.filterType.toUpperCase() === 'LOT_SIZE') {
+                filter = currentFilter
+            }
+        })
+
+        return filter
+    }
+
+    private getMinNotionalFilter(currencyInfo: CurrencyInfo): CurrencyFilter {
+        let filter: CurrencyFilter
+
+        currencyInfo.filters.forEach(currentFilter => {
+            if (currentFilter.filterType.toUpperCase() === 'MIN_NOTIONAL') {
+                filter = currentFilter
+            }
+        })
+
+        return filter
+    } 
 }
 
-export default GdaxOrders
+export default BinanceOrders

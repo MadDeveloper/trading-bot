@@ -11,11 +11,7 @@ const binanceConfig: Config = {
     },
     api: {
         ...keysBinance,
-        uri: 'https://api.gdax.com',
-        websocketURI: 'wss://ws-feed.gdax.com',
-        sandboxWebsocketURI: 'wss://ws-feed-public.sandbox.gdax.com',
-        sandboxURI: 'https://api-public.sandbox.gdax.com',
-        sandbox: false
+        sandbox: true
     },
     trader: {
         quantityOfBaseCurrencyToUse: 100, // in % (BTC, ETH, LTC, ...)
@@ -25,12 +21,12 @@ const binanceConfig: Config = {
         minProfitableRateWhenSelling: 0 // how many % profitability wanted when selling
     },
     market: {
-        currency: Currency.BTC_EUR,
+        currency: Currency.TRXBTC,
         instantOrderFees: 0.001 // <=> 0.25%
     },
     account: {
-        quoteCurrency: Currency.EUR, // €, $
-        baseCurrency: Currency.BTC // BTC, ETH, LTC, ...
+        quoteCurrency: Currency.BTC, // €, $, BTC
+        baseCurrency: Currency.TRX // BTC, ETH, LTC, ...
     },
     chart: {
         rateToApproveVariation: 0.0025, // <=> 0.25% FIXME: should it be still used?

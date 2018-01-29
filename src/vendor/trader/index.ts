@@ -64,6 +64,10 @@ class Trader implements Trading {
 
         try {
             await this.updateBalances()
+
+            Logger.debug('\nBalances:')
+            Logger.debug(`    ${this.quoteCurrency}: ${this.quoteCurrencyBalance}`)
+            Logger.debug(`    ${this.baseCurrency}: ${this.baseCurrencyBalance}\n`)
         } catch (error) {
             Logger.error(`Fatal error occured while trying to retrieve account balances: ${error}`)
 
@@ -252,7 +256,7 @@ class Trader implements Trading {
         const works = this.chartWorker.filterNoise(this.chartWorker.copyWorks())
         const lastWork = this.chartWorker.lastWork
 
-        Logger.debug(`Last price: ${lastWork.price}€`)
+        Logger.debug(`\nLast price: ${lastWork.price}${this.quoteCurrency}`)
 
         if (TraderState.WAITING_TO_BUY === this.state) {
             Logger.debug('Trader wants to buy...')
@@ -363,12 +367,13 @@ class Trader implements Trading {
                 throw new Error('Trying to buy but last trade is not of type SELL.')
             }
 
+            const lastWork = Object.assign({}, this.chartWorker.lastWork)
+
             // Remote work
-            await this.market.orders.buyMarket(this.market.currency, funds)
+            await this.market.orders.buyMarket(this.market.currency, funds, lastWork.price)
             await this.updateBalances()
 
             // Local work
-            const lastWork = Object.assign({}, this.chartWorker.lastWork)
             const fees = funds * config.market.instantOrderFees
 
             this.state = TraderState.WAITING_TO_SELL
@@ -391,7 +396,7 @@ class Trader implements Trading {
             
             `)
             Logger.debug(`Last trade: ${JSON.stringify(this.lastTrade, null, 2)}`)
-            Logger.debug(`Would be able to sell when the price will be above ${Equation.thresholdPriceOfProbitability(this.lastTrade.price).toFixed(2)}€`)
+            Logger.debug(`Would be able to sell when the price will be above ${Equation.thresholdPriceOfProbitability(this.lastTrade.price).toFixed(2)}${this.quoteCurrency}`)
         } catch (error) {
             Logger.error(`Error when trying to buy: ${error}`)
         }
@@ -409,11 +414,13 @@ class Trader implements Trading {
 
             Logger.debug(`Trying to sell ${size} ${this.baseCurrency}`)
 
+            const lastWork = Object.assign({}, this.chartWorker.lastWork)
+
             // Remote work
-            await this.market.orders.sellMarket(this.market.currency, size)
+            await this.market.orders.sellMarket(this.market.currency, size, lastWork.price)
             await this.updateBalances()
 
-            const lastWork = Object.assign({}, this.chartWorker.lastWork)
+            // Local work
             const fees = (this.chartWorker.lastPrice * size) * config.market.instantOrderFees
             const quantity = (this.chartWorker.lastPrice * size) - fees
 

@@ -29,8 +29,7 @@ class ChartAnalyzer {
             }
         })
 
-        Logger.debug(`downwardTrendConfirmed: ${downwardTrendConfirmed}`)
-        Logger.debug(`upwardTrendConfirmed: ${upwardTrendConfirmed}`)
+        Logger.debug(`\nHollow detected at: ${((Number(downwardTrendConfirmed) / 2) + (Number(upwardTrendConfirmed) / 2)) * 100}%`)
 
         return downwardTrendConfirmed && upwardTrendConfirmed
     }
@@ -51,8 +50,7 @@ class ChartAnalyzer {
             }
         })
 
-        Logger.debug(`upwardTrendConfirmed: ${upwardTrendConfirmed}`)
-        Logger.debug(`downwardTrendConfirmed: ${downwardTrendConfirmed}`)
+        Logger.debug(`\Bump detected at: ${((Number(downwardTrendConfirmed) / 2) + (Number(upwardTrendConfirmed) / 2)) * 100}%`)
 
         return upwardTrendConfirmed && downwardTrendConfirmed
     }

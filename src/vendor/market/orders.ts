@@ -10,7 +10,7 @@ export interface Orders {
 
     all(): Promise<OrderResult[]>
 
-    find(id: string, status: OrderType): OrderResult
+    find?(id: string, status: OrderType): OrderResult
 
     buyOrders(): OrderResult[]
 
@@ -18,19 +18,17 @@ export interface Orders {
 
     buyLimit(currency: Currency, quantity: number, price: number, allowTaker: boolean): Promise<any>
 
-    buyMarket(currency: Currency, funds: number): Promise<any>
+    buyMarket(currency: Currency, funds: number, marketPrice?: number): Promise<any>
 
     buyStop(currency: Currency, price: number, funds: number): Promise<any>
 
     sellLimit(currency: Currency, quantity: number, price: number, allowTaker: boolean): Promise<any>
 
-    sellMarket(currency: Currency, size: number): Promise<any>
+    sellMarket(currency: Currency, size: number, marketPrice?: number): Promise<any>
 
     sellStop(currency: Currency, price: number, size: number): Promise<any>
 
     cancel(order: OrderResult): any
-
-    normalizeNumber(price: number): string
 }
 
 export default Orders
