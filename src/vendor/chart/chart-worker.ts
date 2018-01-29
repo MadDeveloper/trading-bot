@@ -202,9 +202,10 @@ class ChartWorker {
                 return true // we keep the first and the last point
             }
 
+            const previousWork = works[index - 1]
             const nextWork = works[index + 1]
-            const isolatedBump = work.trend === Trend.UPWARD && nextWork.trend === Trend.DOWNWARD
-            const isolatedHollow = work.trend === Trend.DOWNWARD && nextWork.trend === Trend.UPWARD
+            const isolatedBump = previousWork.trend === Trend.DOWNWARD && work.trend === Trend.UPWARD && nextWork.trend === Trend.DOWNWARD
+            const isolatedHollow = previousWork.trend === Trend.UPWARD && work.trend === Trend.DOWNWARD && nextWork.trend === Trend.UPWARD
 
             return !isolatedBump && !isolatedHollow
         })

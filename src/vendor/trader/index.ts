@@ -254,7 +254,7 @@ class Trader implements Trading {
 
     async analyzeWorks() {
         const works = this.chartWorker.filterNoise(this.chartWorker.copyWorks())
-        const lastWork = this.chartWorker.lastWork
+        const lastWork = Object.assign({}, this.chartWorker.lastWork)
 
         Logger.debug(`\nLast price: ${lastWork.price}${this.quoteCurrency}`)
 
@@ -301,7 +301,6 @@ class Trader implements Trading {
                  * If yes: we will buy only if the price is under the last sell price
                  * If no: we do nothing, we wait an hollow to buy first
                  */
-                const lastWork = Object.assign({}, this.chartWorker.lastWork)
                 const size = this.market.orders.normalizeQuantity(this.sizeToUse())
                 const quoteCurrencyInvested = this.lastTrade.benefits
                 const priceToSell = lastWork.price

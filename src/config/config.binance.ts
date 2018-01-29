@@ -32,7 +32,7 @@ const binanceConfig: Config = {
         rateToApproveVariation: 0.0025, // <=> 0.25% FIXME: should it be still used?
         thresholdRateToApproveInversion: 0.4, // in %
         thresholdMaxRateToApproveInversion: 1, // in %
-        minPriceDifferenceToApproveNewPoint: 0.03, // <=> 0.07%
+        minPriceDifferenceToApproveNewPoint: 0.005, // <=> 0.07%
         tickerInterval: 1000 * 15, // ms
         reductionOfTheTickerIntervalOnSpeedMode: 0.5, // <=> we reduce by 50% the ticker interval
         numberOfUpPointsToValidatePump: 2,
