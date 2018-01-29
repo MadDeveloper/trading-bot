@@ -31,12 +31,12 @@ const config: Config = {
         baseCurrency: Currency.BTC // BTC, ETH, LTC, ...
     },
     chart: {
-        rateToApproveVariation: 0.0025, // <=> 0.25%
-        thresholdRateToApproveInversion: 0.2, // in %
+        rateToApproveVariation: 0.0025, // <=> 0.25% FIXME: should it be still used?
+        thresholdRateToApproveInversion: 0.4, // in %
         thresholdMaxRateToApproveInversion: 1, // in %
-        minPriceDifferenceToApproveNewPoint: 0.07, // <=> 0.05%
+        minPriceDifferenceToApproveNewPoint: 0.07, // <=> 0.07%
         tickerInterval: 1000 * 15, // ms
-        reductionOfTheTickerIntervalOnSpeedMode: 0.5, // <=> we reduce by 30% the ticker interval
+        reductionOfTheTickerIntervalOnSpeedMode: 0.5, // <=> we reduce by 50% the ticker interval
         numberOfUpPointsToValidatePump: 2,
         numberOfDownPointsToValidateDump: 2,
         validatePumpWhenBigPumpIsDetected: true,
