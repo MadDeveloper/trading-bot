@@ -306,7 +306,7 @@ class Trader implements Trading {
                 const quoteCurrencyInvested = this.lastTrade.benefits
                 const priceToSell = lastWork.price
 
-                if (Equation.isProfitable(this.lastTrade.price, lastWork.price) && Equation.isProfitableOnQuantity(quoteCurrencyInvested, size, priceToSell)) {
+                if (Equation.isProfitable(this.lastTrade.price, lastWork.price) /*&& Equation.isProfitableOnQuantity(quoteCurrencyInvested, size, priceToSell)*/) {
                     Logger.debug(`Trader is selling at ${lastWork.price}`)
                     this.sell(size)
                 } else {
