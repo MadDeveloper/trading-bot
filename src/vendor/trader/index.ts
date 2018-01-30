@@ -1,6 +1,6 @@
 import ChartAnalyzer from '../chart/chart-analyzer';
 import ChartWorker from '../chart/chart-worker';
-import { config } from '../../config';
+import {  config } from '../../config';
 import Equation from '../chart/equation';
 import Logger from '../logger/index';
 import Market from '../interfaces/market';
@@ -13,8 +13,9 @@ import { Trade } from './trade';
 import { TraderState } from './trader-state';
 import { TradeType } from './trade-type';
 import { Trend } from '../chart/trend.enum';
-import { writeFile } from 'fs';
+import { writeFile, readFile } from 'fs';
 import { OrderResult } from '../market/order';
+import { promisify } from 'util';
 
 class Trader implements Trading {
     market: Market
@@ -41,7 +42,6 @@ class Trader implements Trading {
         this.trades = []
         this.state = TraderState.WAITING_TO_BUY
         this.chartAnalyzer = new ChartAnalyzer(this.chartWorker)
-        this.trades = []
 
         // Currencies
         this.quoteCurrency = config.account.quoteCurrency
@@ -64,6 +64,7 @@ class Trader implements Trading {
         }
 
         try {
+            await this.loadTrades()
             await this.updateBalances()
 
             Logger.debug('\nBalances:')
@@ -291,6 +292,18 @@ class Trader implements Trading {
             }
         } else if (TraderState.WAITING_TO_SELL === this.state && this.lastTrade && Number.isFinite(this.lastTrade.price)) {
             Logger.debug('Trader wants to sell...')
+
+            let size
+            let quoteCurrencyInvested = this.lastTrade.benefits
+            let priceToSell = lastWork.price
+
+            try {
+                size = this.market.orders.normalizeQuantity(this.sizeToUse())
+            } catch (error) {
+                Logger.error(error)
+                this.stop()
+            }
+
             /*
              * Trader is waiting to sell
              * we will try to know if we are in a bump case
@@ -302,10 +315,6 @@ class Trader implements Trading {
                  * If yes: we will buy only if the price is under the last sell price
                  * If no: we do nothing, we wait an hollow to buy first
                  */
-                const size = this.market.orders.normalizeQuantity(this.sizeToUse())
-                const quoteCurrencyInvested = this.lastTrade.benefits
-                const priceToSell = lastWork.price
-
                 if (Equation.isProfitable(this.lastTrade.price, lastWork.price) /*&& Equation.isProfitableOnQuantity(quoteCurrencyInvested, size, priceToSell)*/) {
                     Logger.debug(`Trader is selling at ${lastWork.price}`)
                     this.sell(size)
@@ -315,6 +324,22 @@ class Trader implements Trading {
 
                 // Bump was not enough up in order to sell, but we clear works in order to avoid to loop through it later in analyzer
                 this.prepareForNewTrade()
+            } else if (config.trader.sellWhenPriceExceedsThresholdOfProfitability && lastWork.price > Equation.thresholdPriceOfProbitability(this.lastTrade.price)) {
+                /*
+                 * Option sellWhenPriceExceedsThresholdOfProfitability is activated
+                 * So, we sell because de price exceeds the threshold of profitability
+                 */
+                Logger.debug('Threshold of profitability reached')
+                Logger.debug(`Trader is selling at ${lastWork.price}`)
+                this.sell(size)
+            } else if (config.trader.useExitStrategyInCaseOfLosses && Equation.rateBetweenValues(this.lastTrade.price, lastWork.price) < -config.trader.sellWhenLossRateReaches) {
+                /*
+                 * Option useExitStrategyInCaseOfLosses is activated
+                 * So, we sell because the loss is below the limit we fixed
+                 */
+                Logger.debug('Threshold of loss rate reached')
+                Logger.debug(`Trader is selling at ${lastWork.price}`)
+                this.sell(size)
             } else if (!this.chartWorker.isInFastMode() && this.chartAnalyzer.detectProfitablePump(this.works, this.lastTrade.price)) {
                 /*
                  * Detect pump which can be profitable to sell in
@@ -392,7 +417,7 @@ class Trader implements Trading {
                 quantity: order.executedQuantity
             }
 
-            this.trades.push({ ...this.lastTrade })
+            this.actionsPostTrade()
 
             Logger.debug(`
              ____ ____ ____ 
@@ -407,6 +432,7 @@ class Trader implements Trading {
             Logger.debug(`Funds really invested: ${fundsUsed}${this.quoteCurrency}`)
         } catch (error) {
             Logger.error(`Error when trying to buy: ${JSON.stringify(error, null, 2)}`)
+            this.stop()
         }
     }
 
@@ -444,7 +470,7 @@ class Trader implements Trading {
                 quantity: quoteCurrencyQuantity
             }
 
-            this.trades.push({ ...this.lastTrade })
+            this.actionsPostTrade()
 
             Logger.debug(`
              ____ ____ ____ ____ 
@@ -456,15 +482,25 @@ class Trader implements Trading {
             Logger.debug(`Last trade: ${JSON.stringify(this.lastTrade, null, 2)}`)
         } catch (error) {
             Logger.error(`Error when trying to sell: ${error}`)
+            this.stop()
         }
     }
 
-    private lastWork(): ChartWork {
-        if (this.works.length === 0) {
-            return null
-        }
+    private actionsPostTrade() {
+        this.trades.push({ ...this.lastTrade })
+        this.persistTrades()
+        this.prepareForNewTrade()
+    }
 
-        return { ...this.works[this.works.length - 1] }
+    private lastWork(): ChartWork {
+        // FIXME: should be like that, but introduces error with price (delayed by one point)
+        // if (this.works.length === 0) {
+        //     return null
+        // }
+
+        // return { ...this.works[this.works.length - 1] }
+
+        return { ...this.chartWorker.lastWork }
     }
 
     async cancel(order: OrderResult) {
@@ -483,6 +519,45 @@ class Trader implements Trading {
     killWatchers() {
         if (this.workObserver) {
             this.workObserver.unsubscribe()
+        }
+    }
+
+    async loadTrades() {
+        try {
+            const read = promisify(readFile)
+
+            const data = await read('./trades.json', { encoding: 'utf-8' })
+
+            if (data && data.length > 0) {
+                this.trades = JSON.parse(data)
+
+                if (this.trades.length > 0) {
+                    this.lastTrade = { ...this.trades[this.trades.length - 1] }
+                    this.state = this.lastTrade.type === TradeType.BUY ? TraderState.WAITING_TO_SELL : TraderState.WAITING_TO_BUY
+
+                    Logger.debug(`Starting from a previous trade: ${JSON.stringify(this.lastTrade, null, 2)}`)
+                }
+            }
+        } catch (error) {
+            Logger.error('Error while trying to open file trades.json')
+            Logger.error(error)
+
+            return
+        }
+
+        if (!this.lastTrade) {
+            Logger.debug('\nNo old trades found, starting from scratch.\n')
+        }
+    }
+
+    async persistTrades() {
+        try {
+            const write = promisify(writeFile)
+
+            await write('./trades.json', JSON.stringify(this.trades, null, 2), { encoding: 'utf-8' })
+        } catch (error) {
+            Logger.error('\nError when trying to persist trades.\n')
+            Logger.error(error)
         }
     }
 

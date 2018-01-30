@@ -78,11 +78,11 @@ class ChartAnalyzer {
     }
 
     isBigDumpConfirmed(work): boolean {
-        return config.chart.validateDumpWhenBigDumpIsDetected && (work.trend === Trend.DOWNWARD && this.rateBetweenPricesConfirmTrend(work.lastPrice, work.price))
+        return config.chart.validateDumpWhenBigDumpIsDetected && work.trend === Trend.DOWNWARD && this.rateBetweenPricesConfirmTrend(work.lastPrice, work.price)
     }
 
     isBigPumpConfirmed(work): boolean {
-        return config.chart.validatePumpWhenBigPumpIsDetected && (work.trend === Trend.UPWARD && this.rateBetweenPricesConfirmTrend(work.lastPrice, work.price))
+        return config.chart.validatePumpWhenBigPumpIsDetected && work.trend === Trend.UPWARD && this.rateBetweenPricesConfirmTrend(work.lastPrice, work.price)
     }
 
     trendsConfirmDownward(work: ChartWork): boolean {

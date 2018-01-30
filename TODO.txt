@@ -1,4 +1,4 @@
-- lastWok récupéré de works filtered et non du chartWorker
+- Test de perf au lancement
 - Pouvoir lancer le bot avec un trade en court (achat ou vente) et repartir de ce dernier
 
 - si le bot est bloqué sur un trade de vente trop longtemps envoyer une alerte

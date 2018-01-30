@@ -11,32 +11,37 @@ const binanceConfig: Config = {
     },
     api: {
         ...keysBinance,
-        sandbox: false
+        sandbox: true
     },
     trader: {
         quantityOfBaseCurrencyToUse: 100, // in % (BTC, ETH, LTC, ...)
         quantityOfQuoteCurrencyToUse: 100, // in % (€, $)
-        maxQuantityQuoteCurrencyToUse: 0.001, // 100€, 100 BTC (max quantity)
+        maxQuantityQuoteCurrencyToUse: 0.0022, // 100€, 100 BTC (max quantity)
         minQuantityQuoteCurrencyToUse: 0.001, // 50€, 50 BTC
-        minProfitableRateWhenSelling: 0.15 // how many % profitability wanted when selling
+        minProfitableRateWhenSelling: 0.22, // how many % profitability wanted when selling
+
+        // Strategies
+        useExitStrategyInCaseOfLosses: true,
+        sellWhenLossRateReaches: 2, // in %
+        sellWhenPriceExceedsThresholdOfProfitability: true
     },
     market: {
-        currency: Currency.ICXBTC,
+        currency: Currency.DASHBTC,
         instantOrderFees: 0.001 // <=> 0.1%
     },
     account: {
         quoteCurrency: Currency.BTC, // €, $, BTC
-        baseCurrency: Currency.ICX // BTC, ETH, LTC, ...
+        baseCurrency: Currency.DASH // BTC, ETH, LTC, ...
     },
     chart: {
         rateToApproveVariation: 0.0025, // <=> 0.25% FIXME: should it be still used?
         thresholdRateToApproveInversion: 0.4, // in %
         thresholdMaxRateToApproveInversion: 1, // in %
-        minPriceDifferenceToApproveNewPoint: 0.01, // <=> 0.1%
-        tickerInterval: 1000 * 20, // ms
+        minPriceDifferenceToApproveNewPoint: 0.1, // <=> 0.1%
+        tickerInterval: 1000 * 60, // ms
         reductionOfTheTickerIntervalOnSpeedMode: 0.5, // <=> we reduce by 50% the ticker interval
         numberOfUpPointsToValidatePump: 2,
-        numberOfDownPointsToValidateDump: 3,
+        numberOfDownPointsToValidateDump: 2,
         validatePumpWhenBigPumpIsDetected: true,
         validateDumpWhenBigDumpIsDetected: true,
         smoothing: Smoothing.SAMPLE

@@ -22,7 +22,12 @@ declare interface Config {
         quantityOfQuoteCurrencyToUse: number, // in %
         maxQuantityQuoteCurrencyToUse: number,
         minQuantityQuoteCurrencyToUse: number,
-        minProfitableRateWhenSelling: number // in %
+        minProfitableRateWhenSelling: number, // in %
+
+        // Strategies
+        useExitStrategyInCaseOfLosses: boolean,
+        sellWhenLossRateReaches: number, // in %
+        sellWhenPriceExceedsThresholdOfProfitability: boolean
     },
     market: {
         currency: Currency,

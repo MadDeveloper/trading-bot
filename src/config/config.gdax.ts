@@ -22,7 +22,12 @@ const gdaxConfig: Config = {
         quantityOfQuoteCurrencyToUse: 100, // in % (€, $)
         maxQuantityQuoteCurrencyToUse: 100, // 100€, 100 BTC (max quantity)
         minQuantityQuoteCurrencyToUse: 50, // 50€
-        minProfitableRateWhenSelling: 0 // how many % profitability wanted when selling
+        minProfitableRateWhenSelling: 0, // how many % profitability wanted when selling
+
+        // Strategies
+        useExitStrategyInCaseOfLosses: true,
+        sellWhenLossRateReaches: 2, // in %
+        sellWhenPriceExceedsThresholdOfProfitability: true
     },
     market: {
         currency: Currency.BTC_EUR,
