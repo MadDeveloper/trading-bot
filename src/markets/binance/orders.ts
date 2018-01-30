@@ -9,7 +9,7 @@ import { Orders } from '../../vendor/market/orders';
 import { OrderStatus } from '../../vendor/interfaces/order-status.enum';
 import { OrderType } from '../../vendor/interfaces/order-type.enum';
 import { promisify } from 'util';
-import { floatSafeRemainder } from '../../vendor/chart/maths';
+import { floatSafeRemainder, truncateLongDigits } from '../../vendor/chart/maths';
 
 class BinanceOrders implements Orders {
     pending: OrderResult[] = []
@@ -108,7 +108,9 @@ class BinanceOrders implements Orders {
         const maxQuantity = parseFloat(currencyLotSizeFilter.maxQty)
         const stepSize = parseFloat(currencyLotSizeFilter.stepSize)
         const minNotional = parseFloat(currencyMinNotionalFilter.minNotional)
-        const numberOfDigits = Number(currencyInfo.quotePrecision)
+        const numberOfDigits = Number(currencyInfo.baseAssetPrecision)
+
+        quantity = truncateLongDigits(quantity, numberOfDigits)
 
         if (quantity < minQuantity) {
             throw new Error(`Cannot normalize quantity, the quantity is below the minQuantity (quantity: ${quantity}, minQuantity: ${minQuantity})`)
@@ -123,14 +125,7 @@ class BinanceOrders implements Orders {
             quantity = maxQuantity
         }
 
-        const quantityString = quantity.toString()
-        let normalizedQuantity = quantity
-
-        if (quantityString.includes('.')) {
-            const [integers, decimals] = quantityString.split('.')
-
-            normalizedQuantity = Number(`${integers}.${decimals.substring(0, 8)}`)
-        }
+        const normalizedQuantity = truncateLongDigits(quantity, numberOfDigits)
 
         Logger.debug(`Quantity normalized: ${normalizedQuantity}`)
 
