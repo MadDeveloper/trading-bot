@@ -1,6 +1,6 @@
 import ChartAnalyzer from '../chart/chart-analyzer';
 import ChartWorker from '../chart/chart-worker';
-import {  config } from '../../config';
+import { config } from '../../config';
 import Equation from '../chart/equation';
 import Logger from '../logger/index';
 import Market from '../interfaces/market';
@@ -283,10 +283,10 @@ class Trader implements Trading {
                     this.buy(funds)
                 } else {
                     Logger.debug(`Not bought! Error occured with last trade: ${JSON.stringify(this.lastTrade)}`)
-                }
 
-                // Hollow was not enough down in order to buy, but we clear works in order to avoid to loop through it later in analyzer
-                this.prepareForNewTrade()
+                    // Hollow was not enough down in order to buy, but we clear works in order to avoid to loop through it later in analyzer
+                    this.prepareForNewTrade()
+                }
             } else {
                 Logger.debug('Waiting for an hollow...')
             }
@@ -331,22 +331,23 @@ class Trader implements Trading {
                 Logger.debug('Threshold of loss rate reached')
                 Logger.debug(`Trader is selling at ${lastWork.price}`)
                 this.sell(size)
-            } else if (this.chartAnalyzer.detectBump(this.works)) {
-                Logger.debug('Bump detected!')
+            } else if (!config.trader.sellWhenPriceExceedsThresholdOfProfitability && this.chartAnalyzer.detectBump(this.works)) {
                 /*
                  * We found a bump, do we have already bought?
                  * If yes: we will buy only if the price is under the last sell price
                  * If no: we do nothing, we wait an hollow to buy first
                  */
+                Logger.debug('Bump detected!')
+                
                 if (Equation.isProfitable(this.lastTrade.price, lastWork.price) /*&& Equation.isProfitableOnQuantity(quoteCurrencyInvested, size, priceToSell)*/) {
                     Logger.debug(`Trader is selling at ${lastWork.price}`)
                     this.sell(size)
                 } else {
                     Logger.debug('Not sold! Was not profitable')
-                }
 
-                // Bump was not enough up in order to sell, but we clear works in order to avoid to loop through it later in analyzer
-                this.prepareForNewTrade()
+                    // Bump was not enough up in order to sell, but we clear works in order to avoid to loop through it later in analyzer
+                    this.prepareForNewTrade()
+                }
             }
         } else {
             Logger.error(`Trader.state does not match any action: ${this.state}`)
@@ -524,7 +525,7 @@ class Trader implements Trading {
         try {
             const read = promisify(readFile)
 
-            const data = await read('./trades.json', { encoding: 'utf-8' })
+            const data = await read('./trades.json', {  encoding: 'utf-8' })
 
             if (data && data.length > 0) {
                 this.trades = JSON.parse(data)
@@ -549,7 +550,7 @@ class Trader implements Trading {
         try {
             const write = promisify(writeFile)
 
-            await write('./trades.json', JSON.stringify(this.trades, null, 2), { encoding: 'utf-8' })
+            await write('./trades.json', JSON.stringify(this.trades, null, 2), {  encoding: 'utf-8' })
         } catch (error) {
             Logger.error('\nError when trying to persist trades.\n')
             Logger.error(error)
