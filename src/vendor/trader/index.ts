@@ -53,6 +53,7 @@ class Trader implements Trading {
     async updateBalances() {
         this.quoteCurrencyBalance = await this.accounts.availableFunds(this.quoteCurrency)
         this.baseCurrencyBalance = await this.accounts.availableFunds(this.baseCurrency)
+        this.baseCurrencyBalance = 1
     }
 
     async trade() {

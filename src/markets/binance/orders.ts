@@ -9,6 +9,7 @@ import { Orders } from '../../vendor/market/orders';
 import { OrderStatus } from '../../vendor/interfaces/order-status.enum';
 import { OrderType } from '../../vendor/interfaces/order-type.enum';
 import { promisify } from 'util';
+import { floatSafeRemainder } from '../../vendor/chart/maths';
 
 class BinanceOrders implements Orders {
     pending: OrderResult[] = []
@@ -113,8 +114,8 @@ class BinanceOrders implements Orders {
             throw new Error(`Cannot normalize quantity, the quantity is below the minQuantity (quantity: ${quantity}, minQuantity: ${minQuantity})`)
         }
 
-        if ((quantity - minQuantity) % stepSize !== 0) {
-            quantity -= quantity % stepSize
+        if (floatSafeRemainder(quantity, stepSize) !== 0) { // floatSafeRemainder => reel js remainder
+            quantity -= floatSafeRemainder(quantity, stepSize)
         }
 
         if (quantity > maxQuantity) {
