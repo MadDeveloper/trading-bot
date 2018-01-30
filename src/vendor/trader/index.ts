@@ -53,7 +53,6 @@ class Trader implements Trading {
     async updateBalances() {
         this.quoteCurrencyBalance = await this.accounts.availableFunds(this.quoteCurrency)
         this.baseCurrencyBalance = await this.accounts.availableFunds(this.baseCurrency)
-        this.baseCurrencyBalance = 1
     }
 
     async trade() {
@@ -306,7 +305,7 @@ class Trader implements Trading {
             }
 
             // Fast mode
-            if (!this.chartWorker.isInFastMode() && this.chartAnalyzer.detectProfitablePump(this.works, this.lastTrade.price)) {
+            if (!config.trader.sellWhenPriceExceedsThresholdOfProfitability && !this.chartWorker.isInFastMode() && this.chartAnalyzer.detectProfitablePump(this.works, this.lastTrade.price)) {
                 /*
                  * Detect pump which can be profitable to sell in
                  * We accelerate the ticker interval until we try to sell
@@ -410,10 +409,10 @@ class Trader implements Trading {
             this.lastTrade = {
                 price: lastWork.price,
                 time: lastWork.time,
-                benefits: /*-fundsUsed,*/0.001,
+                benefits: -fundsUsed,
                 fees,
                 type: TradeType.BUY,
-                quantity: /*order.executedQuantity*/1
+                quantity: order.executedQuantity
             }
 
             this.actionsPostTrade()

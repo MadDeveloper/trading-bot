@@ -1,5 +1,5 @@
 - Test de perf au lancement
-- Pouvoir lancer le bot avec un trade en court (achat ou vente) et repartir de ce dernier
+- Pouvoir vendre x% quand on détecte des pics de profitabilité
 
 - si le bot est bloqué sur un trade de vente trop longtemps envoyer une alerte
 - Prendre en compte le min_base_currency pour acheter/vendre
