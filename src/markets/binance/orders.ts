@@ -115,6 +115,7 @@ class BinanceOrders implements Orders {
         }
 
         if (floatSafeRemainder(quantity, stepSize) !== 0) { // floatSafeRemainder => reel js remainder
+            Logger.debug(`Remove remainder from quantity with step size. Quantity: ${quantity} ; stepSize: ${stepSize} ; quantity after remainder: ${quantity - floatSafeRemainder(quantity, stepSize)}`)
             quantity -= floatSafeRemainder(quantity, stepSize)
         }
 
@@ -130,6 +131,8 @@ class BinanceOrders implements Orders {
 
             normalizedQuantity = Number(`${integers}.${decimals.substring(0, 8)}`)
         }
+
+        Logger.debug(`Quantity normalized: ${normalizedQuantity}`)
 
         return normalizedQuantity
     }
