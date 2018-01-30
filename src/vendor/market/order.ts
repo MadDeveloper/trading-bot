@@ -1,21 +1,18 @@
+import { Currency } from '../interfaces/currency.enum';
+
 export interface BaseOrderInfo {
     id: string;
+    clientOrderId: string;
     price: number;
-    size: number;
-    product_id: string;
-    side: 'buy' | 'sell';
-    stp: 'dc' | 'co' | 'cn' | 'cb';
-    type: 'limit' | 'market' | 'stop';
-    created_at: string;
-    post_only: boolean;
-    fill_fees: number;
-    filled_size: number;
-    status: 'received' | 'open' | 'done' | 'pending';
-    settled: boolean;
-    executed_value: number;
+    symbol: Currency;
+    side: 'buy' | 'BUY' | 'sell' | 'SELL';
+    type: 'limit' | 'LIMIT' | 'market' | 'MARKET' | 'stop' | 'STOP_LOSS' | 'STOP_LOSS_LIMIT';
+    status: 'received' | 'open' | 'done' | 'pending' | 'FILLED';
+    originQuantity: number;
+    executedQuantity: number;
+    transactionTime: number;
 }
 
 export interface OrderResult extends BaseOrderInfo {
-    time_in_force: 'GTC' | 'GTT' | 'IOC' | 'FOK';
-    status: 'received' | 'open' | 'done';
+    timeInForce: 'GTC' | 'GTT' | 'IOC' | 'FOK';
 }

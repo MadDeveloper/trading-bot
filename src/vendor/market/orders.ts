@@ -18,13 +18,13 @@ export interface Orders {
 
     buyLimit(currency: Currency, quantity: number, price: number, allowTaker: boolean): Promise<any>
 
-    buyMarket(currency: Currency, funds: number, marketPrice?: number): Promise<any>
+    buyMarket(currency: Currency, funds: number, marketPrice?: number): Promise<OrderResult>
 
     buyStop(currency: Currency, price: number, funds: number): Promise<any>
 
     sellLimit(currency: Currency, quantity: number, price: number, allowTaker: boolean): Promise<any>
 
-    sellMarket(currency: Currency, size: number, marketPrice?: number): Promise<any>
+    sellMarket(currency: Currency, size: number, marketPrice?: number): Promise<OrderResult>
 
     sellStop(currency: Currency, price: number, size: number): Promise<any>
     

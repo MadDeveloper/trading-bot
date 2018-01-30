@@ -21,7 +21,6 @@ class Trader implements Trading {
     accounts: Accounts
     chartWorker: ChartWorker
     workObserver: Subscription
-    worksStored: ChartWork[]
     state: TraderState
     chartAnalyzer: ChartAnalyzer
     quoteCurrency: Currency
@@ -32,11 +31,13 @@ class Trader implements Trading {
     trades: Trade[]
     lastTrade: Trade
 
+    private works: ChartWork[]
+
     constructor(market: Market) {
         this.market = market
         this.accounts = market.accounts
         this.chartWorker = new ChartWorker(market)
-        this.worksStored = []
+        this.works = []
         this.trades = []
         this.state = TraderState.WAITING_TO_BUY
         this.chartAnalyzer = new ChartAnalyzer(this.chartWorker)
@@ -253,10 +254,10 @@ class Trader implements Trading {
     }
 
     async analyzeWorks() {
-        const works = this.chartWorker.filterNoise(this.chartWorker.copyWorks())
-        const lastWork = Object.assign({}, this.chartWorker.lastWork)
+        this.works = this.chartWorker.filterNoise(this.chartWorker.copyWorks())
+        const lastWork = this.lastWork()
 
-        Logger.debug(`\nLast price: ${lastWork.price}${this.quoteCurrency}`)
+        Logger.debug(`\nPrice: ${lastWork.price}${this.quoteCurrency}`)
 
         if (TraderState.WAITING_TO_BUY === this.state) {
             Logger.debug('Trader wants to buy...')
@@ -265,8 +266,8 @@ class Trader implements Trading {
              * Trader is waiting to buy
              * we will try to know if we are in a hollow case
              */
-            if (this.chartAnalyzer.detectHollow(works)) {
-                Logger.debug('hollow detected!')
+            if (this.chartAnalyzer.detectHollow(this.works)) {
+                Logger.debug('Hollow detected!')
                 /*
                  * We found a hollow, do we have already sold?
                  * If yes: we will buy only if the price is under the last sell price (we want a negative enough pct difference)
@@ -286,7 +287,7 @@ class Trader implements Trading {
                 // Hollow was not enough down in order to buy, but we clear works in order to avoid to loop through it later in analyzer
                 this.prepareForNewTrade()
             } else {
-                Logger.debug('waiting for an hollow...')
+                Logger.debug('Waiting for an hollow...')
             }
         } else if (TraderState.WAITING_TO_SELL === this.state && this.lastTrade && Number.isFinite(this.lastTrade.price)) {
             Logger.debug('Trader wants to sell...')
@@ -294,7 +295,7 @@ class Trader implements Trading {
              * Trader is waiting to sell
              * we will try to know if we are in a bump case
              */
-            if (this.chartAnalyzer.detectBump(works)) {
+            if (this.chartAnalyzer.detectBump(this.works)) {
                 Logger.debug('Bump detected!')
                 /*
                  * We found a bump, do we have already bought?
@@ -314,7 +315,7 @@ class Trader implements Trading {
 
                 // Bump was not enough up in order to sell, but we clear works in order to avoid to loop through it later in analyzer
                 this.prepareForNewTrade()
-            } else if (!this.chartWorker.isInFastMode() && this.chartAnalyzer.detectProfitablePump(works, this.lastTrade.price)) {
+            } else if (!this.chartWorker.isInFastMode() && this.chartAnalyzer.detectProfitablePump(this.works, this.lastTrade.price)) {
                 /*
                  * Detect pump which can be profitable to sell in
                  * We accelerate the ticker interval until we try to sell
@@ -322,7 +323,7 @@ class Trader implements Trading {
                 Logger.debug('Fast mode activated')
                 this.chartWorker.fastMode()
             } else {
-                Logger.debug('waiting for a bump...')
+                Logger.debug('Waiting for a bump...')
             }
         } else {
             Logger.error(`Trader.state does not match any action: ${this.state}`)
@@ -369,7 +370,7 @@ class Trader implements Trading {
                 throw new Error('Trying to buy but last trade is not of type SELL.')
             }
 
-            const lastWork = Object.assign({}, this.chartWorker.lastWork)
+            const lastWork = this.lastWork()
 
             // Remote work
             const order = await this.market.orders.buyMarket(this.market.currency, funds, lastWork.price)
@@ -377,16 +378,17 @@ class Trader implements Trading {
             await this.updateBalances()
 
             // Local work
-            const fees = funds * config.market.instantOrderFees
+            const fundsUsed = order.price * order.executedQuantity
+            const fees = fundsUsed * config.market.instantOrderFees
 
             this.state = TraderState.WAITING_TO_SELL
             this.lastTrade = {
-                price: lastWork.price,
-                time: lastWork.time,
-                benefits: -funds,
+                price: order.price,
+                time: order.transactionTime,
+                benefits: -fundsUsed,
                 fees,
                 type: TradeType.BUY,
-                quantity: (funds - fees) / lastWork.price
+                quantity: order.executedQuantity
             }
 
             this.trades.push({ ...this.lastTrade })
@@ -400,6 +402,8 @@ class Trader implements Trading {
             `)
             Logger.debug(`Last trade: ${JSON.stringify(this.lastTrade, null, 2)}`)
             Logger.debug(`Would be able to sell when the price will be above ${Equation.thresholdPriceOfProbitability(this.lastTrade.price).toFixed(8)}${this.quoteCurrency}`)
+            Logger.debug(`Funds desired to invest: ${funds}${this.quoteCurrency}`)
+            Logger.debug(`Funds really invested: ${fundsUsed}${this.quoteCurrency}`)
         } catch (error) {
             Logger.error(`Error when trying to buy: ${JSON.stringify(error, null, 2)}`)
         }
@@ -417,20 +421,21 @@ class Trader implements Trading {
 
             Logger.debug(`Trying to sell ${size} ${this.baseCurrency}`)
 
-            const lastWork = Object.assign({}, this.chartWorker.lastWork)
+            const lastWork = this.lastWork()
 
             // Remote work
-            await this.market.orders.sellMarket(this.market.currency, size, lastWork.price)
+            const order = await this.market.orders.sellMarket(this.market.currency, size, lastWork.price)
+
             await this.updateBalances()
 
             // Local work
-            const fees = (this.chartWorker.lastPrice * size) * config.market.instantOrderFees
-            const quantity = (this.chartWorker.lastPrice * size) - fees
+            const fees = (order.price * order.executedQuantity) * config.market.instantOrderFees
+            const quantity = (this.chartWorker.lastPrice * order.executedQuantity) - fees
 
             this.state = TraderState.WAITING_TO_BUY
             this.lastTrade = {
-                price: lastWork.price,
-                time: lastWork.time,
+                price: order.price,
+                time: order.transactionTime,
                 benefits: quantity - Math.abs(this.lastTrade.benefits), // lastTrade is a buy trade, and trade trade have a negative benefits
                 fees,
                 type: TradeType.SELL,
@@ -450,6 +455,14 @@ class Trader implements Trading {
         } catch (error) {
             Logger.error(`Error when trying to sell: ${error}`)
         }
+    }
+
+    private lastWork(): ChartWork {
+        if (this.works.length === 0) {
+            return null
+        }
+
+        return { ...this.works[this.works.length - 1] }
     }
 
     async cancel(order: OrderResult) {

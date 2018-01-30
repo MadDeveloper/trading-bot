@@ -1,5 +1,4 @@
 import * as Gdax from 'gdax'
-import { LimitOrder } from 'gdax';
 import { OrderType } from '../../vendor/interfaces/order-type.enum';
 import { Currency } from '../../vendor/interfaces/currency.enum';
 import { OrderStatus } from '../../vendor/interfaces/order-status.enum';
@@ -51,7 +50,7 @@ class GdaxOrders implements Orders {
     }
 
     async buyLimit(currency: Currency, quantity: number, price: number, allowTaker = false): Promise<any> {
-        const response: OrderResult = await this.client.buy({
+        const response = await this.client.buy({
             type: 'limit',
             side: 'buy',
             price: price.toFixed(2),
@@ -64,14 +63,14 @@ class GdaxOrders implements Orders {
             throw Error(`Error when trying to buy with a limit order: ${JSON.stringify(response, null, 2)}`)
         }
 
-        this.lastOrder = response
+        this.lastOrder = this.forgeOrderResult(response)
         this.pending.push(this.lastOrder)
 
         return this.lastOrder
     }
 
     async buyMarket(currency: Currency, funds: number) {
-        const response: OrderResult = await this.client.buy({
+        const response = await this.client.buy({
             type: 'market',
             side: 'buy',
             size: null,
@@ -83,14 +82,14 @@ class GdaxOrders implements Orders {
             throw Error(`Error when trying to buy with a market order: ${JSON.stringify(response, null, 2)}`)
         }
 
-        this.lastOrder = response
+        this.lastOrder = this.forgeOrderResult(response)
         this.done.push({ ...this.lastOrder })
 
         return this.lastOrder
     }
 
     async buyStop(currency: Currency, price: number, funds: number = null) {
-        const response: OrderResult = await this.client.buy({
+        const response = await this.client.buy({
             type: 'stop',
             side: 'buy',
             size: null,
@@ -102,14 +101,14 @@ class GdaxOrders implements Orders {
             throw Error(`Error when trying to buy with a stop order: ${JSON.stringify(response, null, 2)}`)
         }
 
-        this.lastOrder = response
+        this.lastOrder = this.forgeOrderResult(response)
         this.pending.push(this.lastOrder)
 
         return this.lastOrder
     }
 
     async sellLimit(currency: Currency, quantity: number, price: number, allowTaker = false) {
-        const response: OrderResult = await this.client.sell({
+        const response = await this.client.sell({
             type: 'limit',
             side: 'sell',
             price: price.toFixed(2),
@@ -122,14 +121,14 @@ class GdaxOrders implements Orders {
             throw Error(`Error when trying to sell with a limit order: ${JSON.stringify(response, null, 2)}`)
         }
 
-        this.lastOrder = response
+        this.lastOrder = this.forgeOrderResult(response)
         this.pending.push(this.lastOrder)
 
         return this.lastOrder
     }
 
     async sellMarket(currency: Currency, size: number) {
-        const response: OrderResult = await this.client.sell({
+        const response = await this.client.sell({
             type: 'market',
             side: 'sell',
             size: this.normalizeNumber(size),
@@ -141,14 +140,14 @@ class GdaxOrders implements Orders {
             throw Error(`Error when trying to sell with a market order: ${JSON.stringify(response, null, 2)}`)
         }
 
-        this.lastOrder = response
+        this.lastOrder = this.forgeOrderResult(response)
         this.done.push({ ...this.lastOrder })
 
         return this.lastOrder
     }
 
     async sellStop(currency: Currency, price: number, size: number) {
-        const response: OrderResult = await this.client.sell({
+        const response = await this.client.sell({
             type: 'stop',
             side: 'sell',
             size: this.normalizeNumber(size),
@@ -160,7 +159,7 @@ class GdaxOrders implements Orders {
             throw Error(`Error when trying to sell with a stop order: ${JSON.stringify(response, null, 2)}`)
         }
 
-        this.lastOrder = response
+        this.lastOrder = this.forgeOrderResult(response)
         this.pending.push(this.lastOrder)
 
         return this.lastOrder
@@ -183,6 +182,22 @@ class GdaxOrders implements Orders {
         }
 
         return priceString
+    }
+
+    private forgeOrderResult(order: any): OrderResult {
+        return {
+            id: order.id,
+            symbol: order.product_id,
+            clientOrderId: null,
+            transactionTime: new Date(order.created_at).getTime(),
+            price: parseFloat(order.price),
+            originQuantity: parseFloat(order.size),
+            executedQuantity: parseFloat(order.filled_size),
+            status: order.status,
+            timeInForce: order.time_in_force,
+            type: order.type,
+            side: order.side
+        }
     }
 }
 

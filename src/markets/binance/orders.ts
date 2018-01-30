@@ -41,7 +41,7 @@ class BinanceOrders implements Orders {
         return this.lastOrder
     }
 
-    async buyMarket(currency: Currency, funds: number, marketPrice: number): Promise<any> {
+    async buyMarket(currency: Currency, funds: number, marketPrice: number): Promise<OrderResult> {
         const buy = promisify(this.client.marketBuy)
 
         try {
@@ -52,7 +52,9 @@ class BinanceOrders implements Orders {
                 throw Error(`Error when trying to buy with a market order: ${JSON.stringify(response, null, 2)}`)
             }
 
-            this.lastOrder = response
+            console.log('Buy response from market', response)
+
+            this.lastOrder = this.forgeOrderResult(response)
             this.done.push({ ...this.lastOrder })
 
             return this.lastOrder
@@ -69,7 +71,7 @@ class BinanceOrders implements Orders {
         return this.lastOrder
     }
 
-    async sellMarket(currency: Currency, size: number): Promise<any> {
+    async sellMarket(currency: Currency, size: number): Promise<OrderResult> {
         const sell = promisify(this.client.marketSell)
         const quantity = this.normalizeQuantity(size)
         const response = await sell(currency, quantity)
@@ -78,7 +80,9 @@ class BinanceOrders implements Orders {
             throw Error(`Error when trying to sell with a market order: ${JSON.stringify(response, null, 2)}`)
         }
 
-        this.lastOrder = response
+        console.log('Sell response from market', response)
+
+        this.lastOrder = this.forgeOrderResult(response)
         this.done.push({ ...this.lastOrder })
 
         return this.lastOrder
@@ -151,6 +155,22 @@ class BinanceOrders implements Orders {
         })
 
         return filter
+    }
+
+    private forgeOrderResult(order: any): OrderResult {
+        return {
+            id: order.orderId,
+            symbol: order.symbol,
+            clientOrderId: order.clientOrderId,
+            transactionTime: order.transactionTime,
+            price: parseFloat(order.price),
+            originQuantity: parseFloat(order.origQty),
+            executedQuantity: parseFloat(order.executedQty),
+            status: order.status,
+            timeInForce: order.timeInForce,
+            type: order.type,
+            side: order.side
+        }
     }
 }
 
