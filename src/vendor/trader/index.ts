@@ -304,27 +304,18 @@ class Trader implements Trading {
                 this.stop()
             }
 
-            /*
-             * Trader is waiting to sell
-             * we will try to know if we are in a bump case
-             */
-            if (this.chartAnalyzer.detectBump(this.works)) {
-                Logger.debug('Bump detected!')
+            // Fast mode
+            if (!this.chartWorker.isInFastMode() && this.chartAnalyzer.detectProfitablePump(this.works, this.lastTrade.price)) {
                 /*
-                 * We found a bump, do we have already bought?
-                 * If yes: we will buy only if the price is under the last sell price
-                 * If no: we do nothing, we wait an hollow to buy first
+                 * Detect pump which can be profitable to sell in
+                 * We accelerate the ticker interval until we try to sell
                  */
-                if (Equation.isProfitable(this.lastTrade.price, lastWork.price) /*&& Equation.isProfitableOnQuantity(quoteCurrencyInvested, size, priceToSell)*/) {
-                    Logger.debug(`Trader is selling at ${lastWork.price}`)
-                    this.sell(size)
-                } else {
-                    Logger.debug('Not sold! Was not profitable')
-                }
+                Logger.debug('Fast mode activated')
+                this.chartWorker.fastMode()
+            }
 
-                // Bump was not enough up in order to sell, but we clear works in order to avoid to loop through it later in analyzer
-                this.prepareForNewTrade()
-            } else if (config.trader.sellWhenPriceExceedsThresholdOfProfitability && lastWork.price > Equation.thresholdPriceOfProbitability(this.lastTrade.price)) {
+            // Strategies
+            if (config.trader.sellWhenPriceExceedsThresholdOfProfitability && lastWork.price > Equation.thresholdPriceOfProbitability(this.lastTrade.price)) {
                 /*
                  * Option sellWhenPriceExceedsThresholdOfProfitability is activated
                  * So, we sell because de price exceeds the threshold of profitability
@@ -340,15 +331,22 @@ class Trader implements Trading {
                 Logger.debug('Threshold of loss rate reached')
                 Logger.debug(`Trader is selling at ${lastWork.price}`)
                 this.sell(size)
-            } else if (!this.chartWorker.isInFastMode() && this.chartAnalyzer.detectProfitablePump(this.works, this.lastTrade.price)) {
+            } else if (this.chartAnalyzer.detectBump(this.works)) {
+                Logger.debug('Bump detected!')
                 /*
-                 * Detect pump which can be profitable to sell in
-                 * We accelerate the ticker interval until we try to sell
+                 * We found a bump, do we have already bought?
+                 * If yes: we will buy only if the price is under the last sell price
+                 * If no: we do nothing, we wait an hollow to buy first
                  */
-                Logger.debug('Fast mode activated')
-                this.chartWorker.fastMode()
-            } else {
-                Logger.debug('Waiting for a bump...')
+                if (Equation.isProfitable(this.lastTrade.price, lastWork.price) /*&& Equation.isProfitableOnQuantity(quoteCurrencyInvested, size, priceToSell)*/) {
+                    Logger.debug(`Trader is selling at ${lastWork.price}`)
+                    this.sell(size)
+                } else {
+                    Logger.debug('Not sold! Was not profitable')
+                }
+
+                // Bump was not enough up in order to sell, but we clear works in order to avoid to loop through it later in analyzer
+                this.prepareForNewTrade()
             }
         } else {
             Logger.error(`Trader.state does not match any action: ${this.state}`)
@@ -411,10 +409,10 @@ class Trader implements Trading {
             this.lastTrade = {
                 price: lastWork.price,
                 time: lastWork.time,
-                benefits: -fundsUsed,
+                benefits: /*-fundsUsed,*/0.001,
                 fees,
                 type: TradeType.BUY,
-                quantity: order.executedQuantity
+                quantity: /*order.executedQuantity*/1
             }
 
             this.actionsPostTrade()
@@ -539,10 +537,7 @@ class Trader implements Trading {
                 }
             }
         } catch (error) {
-            Logger.error('Error while trying to open file trades.json')
-            Logger.error(error)
-
-            return
+            Logger.debug('File trades.json does not exist or contains invalid json')
         }
 
         if (!this.lastTrade) {

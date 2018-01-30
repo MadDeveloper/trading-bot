@@ -18,11 +18,11 @@ const binanceConfig: Config = {
         quantityOfQuoteCurrencyToUse: 100, // in % (€, $)
         maxQuantityQuoteCurrencyToUse: 0.0022, // 100€, 100 BTC (max quantity)
         minQuantityQuoteCurrencyToUse: 0.001, // 50€, 50 BTC
-        minProfitableRateWhenSelling: 0.22, // how many % profitability wanted when selling
+        minProfitableRateWhenSelling: 0, // how many % profitability wanted when selling
 
         // Strategies
         useExitStrategyInCaseOfLosses: true,
-        sellWhenLossRateReaches: 2, // in %
+        sellWhenLossRateReaches: 0.1, // in %
         sellWhenPriceExceedsThresholdOfProfitability: true
     },
     market: {
@@ -37,8 +37,8 @@ const binanceConfig: Config = {
         rateToApproveVariation: 0.0025, // <=> 0.25% FIXME: should it be still used?
         thresholdRateToApproveInversion: 0.4, // in %
         thresholdMaxRateToApproveInversion: 1, // in %
-        minPriceDifferenceToApproveNewPoint: 0.1, // <=> 0.1%
-        tickerInterval: 1000 * 60, // ms
+        minPriceDifferenceToApproveNewPoint: 0.05, // <=> 0.1%
+        tickerInterval: 1000 * 15, // ms
         reductionOfTheTickerIntervalOnSpeedMode: 0.5, // <=> we reduce by 50% the ticker interval
         numberOfUpPointsToValidatePump: 2,
         numberOfDownPointsToValidateDump: 2,
