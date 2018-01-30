@@ -430,16 +430,16 @@ class Trader implements Trading {
 
             // Local work
             const fees = (order.price * order.executedQuantity) * config.market.instantOrderFees
-            const quantity = (this.chartWorker.lastPrice * order.executedQuantity) - fees
+            const quoteCurrencyQuantity = (this.chartWorker.lastPrice * order.executedQuantity) - fees
 
             this.state = TraderState.WAITING_TO_BUY
             this.lastTrade = {
-                price: order.price,
-                time: order.transactionTime,
-                benefits: quantity - Math.abs(this.lastTrade.benefits), // lastTrade is a buy trade, and trade trade have a negative benefits
+                price: order.price || lastWork.price,
+                time: order.transactionTime || lastWork.time,
+                benefits: quoteCurrencyQuantity - Math.abs(this.lastTrade.benefits), // lastTrade is a buy trade, and trade trade have a negative benefits
                 fees,
                 type: TradeType.SELL,
-                quantity
+                quantity: quoteCurrencyQuantity
             }
 
             this.trades.push({ ...this.lastTrade })
