@@ -377,14 +377,15 @@ class Trader implements Trading {
 
             await this.updateBalances()
 
+            // FIXME: order.price is always 0.00000, need to get FULL response type
             // Local work
-            const fundsUsed = order.price * order.executedQuantity
+            const fundsUsed = lastWork.price * order.executedQuantity
             const fees = fundsUsed * config.market.instantOrderFees
 
             this.state = TraderState.WAITING_TO_SELL
             this.lastTrade = {
-                price: order.price,
-                time: order.transactionTime,
+                price: lastWork.price,
+                time: lastWork.time,
                 benefits: -fundsUsed,
                 fees,
                 type: TradeType.BUY,
@@ -428,14 +429,15 @@ class Trader implements Trading {
 
             await this.updateBalances()
 
+            // FIXME: order.price is always 0.00000, need to get FULL response type
             // Local work
-            const fees = (order.price * order.executedQuantity) * config.market.instantOrderFees
-            const quoteCurrencyQuantity = (this.chartWorker.lastPrice * order.executedQuantity) - fees
+            const fees = (lastWork.price * order.executedQuantity) * config.market.instantOrderFees
+            const quoteCurrencyQuantity = (lastWork.price * order.executedQuantity) - fees
 
             this.state = TraderState.WAITING_TO_BUY
             this.lastTrade = {
-                price: order.price || lastWork.price,
-                time: order.transactionTime || lastWork.time,
+                price: lastWork.price,
+                time: lastWork.time,
                 benefits: quoteCurrencyQuantity - Math.abs(this.lastTrade.benefits), // lastTrade is a buy trade, and trade trade have a negative benefits
                 fees,
                 type: TradeType.SELL,

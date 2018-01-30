@@ -11,7 +11,7 @@ const binanceConfig: Config = {
     },
     api: {
         ...keysBinance,
-        sandbox: true
+        sandbox: false
     },
     trader: {
         quantityOfBaseCurrencyToUse: 100, // in % (BTC, ETH, LTC, ...)
@@ -21,22 +21,22 @@ const binanceConfig: Config = {
         minProfitableRateWhenSelling: 0.15 // how many % profitability wanted when selling
     },
     market: {
-        currency: Currency.NEOBTC,
+        currency: Currency.ICXBTC,
         instantOrderFees: 0.001 // <=> 0.1%
     },
     account: {
         quoteCurrency: Currency.BTC, // €, $, BTC
-        baseCurrency: Currency.NEO // BTC, ETH, LTC, ...
+        baseCurrency: Currency.ICX // BTC, ETH, LTC, ...
     },
     chart: {
         rateToApproveVariation: 0.0025, // <=> 0.25% FIXME: should it be still used?
         thresholdRateToApproveInversion: 0.4, // in %
         thresholdMaxRateToApproveInversion: 1, // in %
-        minPriceDifferenceToApproveNewPoint: 0.005, // <=> 0.07%
-        tickerInterval: 1000 * 15, // ms
+        minPriceDifferenceToApproveNewPoint: 0.01, // <=> 0.1%
+        tickerInterval: 1000 * 20, // ms
         reductionOfTheTickerIntervalOnSpeedMode: 0.5, // <=> we reduce by 50% the ticker interval
         numberOfUpPointsToValidatePump: 2,
-        numberOfDownPointsToValidateDump: 2,
+        numberOfDownPointsToValidateDump: 3,
         validatePumpWhenBigPumpIsDetected: true,
         validateDumpWhenBigDumpIsDetected: true,
         smoothing: Smoothing.SAMPLE
