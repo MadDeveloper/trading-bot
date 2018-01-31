@@ -502,15 +502,6 @@ class Trader implements Trading {
         }
 
         const lastWork = { ...this.works[this.works.length - 1] }
-        const lastWorkFromWorker = this.chartWorker.lastWork
-
-        if (lastWork.price !== lastWorkFromWorker.price) {
-            this.stop()
-            throw new Error(
-                `LastWork, retrieved from #lastWork() in trader class, has diverged with lastWork in the worker.
-                lastWork price: ${lastWork.price}${this.quoteCurrency}
-                lastWork from worker price: ${lastWorkFromWorker.price}${this.quoteCurrency}`)
-        }
 
         return lastWork
     }

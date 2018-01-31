@@ -1,4 +1,5 @@
 - Pouvoir lancer le bot en émulant des ordres d'achats/ventes
+- récupérer le prix exact d'achat/vente après order
 - Pouvoir vendre x% quand on détecte des pics de profitabilité
 - recréer les tendances après filtrage
 
