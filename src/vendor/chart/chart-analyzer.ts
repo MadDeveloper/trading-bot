@@ -18,11 +18,11 @@ class ChartAnalyzer {
         let upwardTrendConfirmed = false
 
         works.forEach(work => {
-            if (downwardTrendConfirmed && !upwardTrendConfirmed && this.isUpwardTrendConfirmed(work)) {
+            if (downwardTrendConfirmed && !upwardTrendConfirmed && this.isUpwardTrendConfirmed(work, works)) {
                 // if (work.price >= this.computePriceWithRateToApproveUpward(work.lastPrice)) {
                 upwardTrendConfirmed = true
                 // }
-            } else if (!downwardTrendConfirmed && this.isDownwardTrendConfirmed(work)) {
+            } else if (!downwardTrendConfirmed && this.isDownwardTrendConfirmed(work, works)) {
                 // if (work.price <= this.computePriceWithRateToApproveDownward(work.lastPrice)) {
                 downwardTrendConfirmed = true
                 // }
@@ -39,11 +39,11 @@ class ChartAnalyzer {
         let downwardTrendConfirmed = false
 
         works.forEach(work => {
-            if (upwardTrendConfirmed && !downwardTrendConfirmed && this.isDownwardTrendConfirmed(work)) {
+            if (upwardTrendConfirmed && !downwardTrendConfirmed && this.isDownwardTrendConfirmed(work, works)) {
                 // if (work.price <= this.computePriceWithRateToApproveDownward(work.lastPrice)) {
                 downwardTrendConfirmed = true
                 // }
-            } else if (!upwardTrendConfirmed && this.isUpwardTrendConfirmed(work)) {
+            } else if (!upwardTrendConfirmed && this.isUpwardTrendConfirmed(work, works)) {
                 // if (work.price >= this.computePriceWithRateToApproveUpward(work.lastPrice)) {
                 upwardTrendConfirmed = true
                 // }
@@ -62,19 +62,19 @@ class ChartAnalyzer {
 
         works.forEach(work => {
             if (!profitablePump) {
-                profitablePump = work.price >= thresholdPriceProfitable && this.isUpwardTrendConfirmed(work)
+                profitablePump = work.price >= thresholdPriceProfitable && this.isUpwardTrendConfirmed(work, works)
             }
         })
 
         return profitablePump
     }
 
-    isDownwardTrendConfirmed(work: ChartWork): boolean {
-        return this.isBigDumpConfirmed(work) || this.trendsConfirmDownward(work)
+    isDownwardTrendConfirmed(work: ChartWork, works: ChartWork[]): boolean {
+        return this.isBigDumpConfirmed(work) || this.trendsConfirmDownward(work, works)
     }
 
-    isUpwardTrendConfirmed(work: ChartWork): boolean {
-        return this.isBigPumpConfirmed(work) || this.trendsConfirmUpward(work)
+    isUpwardTrendConfirmed(work: ChartWork, works: ChartWork[]): boolean {
+        return this.isBigPumpConfirmed(work) || this.trendsConfirmUpward(work, works)
     }
 
     isBigDumpConfirmed(work): boolean {
@@ -85,7 +85,7 @@ class ChartAnalyzer {
         return config.chart.validatePumpWhenBigPumpIsDetected && work.trend === Trend.UPWARD && this.rateBetweenPricesConfirmTrend(work.lastPrice, work.price)
     }
 
-    trendsConfirmDownward(work: ChartWork): boolean {
+    trendsConfirmDownward(work: ChartWork, works: ChartWork[]): boolean {
         // number of down needed to confirm downward trend, it is set in the config
         let lastWork = work
         let numberOfDownDetected = 0
@@ -99,14 +99,14 @@ class ChartAnalyzer {
                     index -= 1
                 }
 
-                lastWork = this.chartWorker.findPreviousWork(lastWork)
+                lastWork = this.chartWorker.findPreviousWork(lastWork, works)
             }
         }
 
         return numberOfDownDetected >= config.chart.numberOfDownPointsToValidateDump
     }
 
-    trendsConfirmUpward(work: ChartWork): boolean {
+    trendsConfirmUpward(work: ChartWork, works: ChartWork[]): boolean {
         // number of up needed to confirm upward trend, it is set in the config
         let lastWork = work
         let numberOfUpDetected = 0
@@ -120,7 +120,7 @@ class ChartAnalyzer {
                     index -= 1
                 }
 
-                lastWork = this.chartWorker.findPreviousWork(lastWork)
+                lastWork = this.chartWorker.findPreviousWork(lastWork, works)
             }
         }
 

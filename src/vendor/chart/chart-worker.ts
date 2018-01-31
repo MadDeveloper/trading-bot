@@ -42,6 +42,9 @@ class ChartWorker {
         this.lastTime = 0
         this.tickerInterval = config.chart.tickerInterval
         this.mode = WorkerSpeed.NORMAL
+        this.trend = null
+        this.lastTrend = null
+        this.lastPrice = null
     }
 
     workOnPriceTicker() {
@@ -126,7 +129,7 @@ class ChartWorker {
     }
 
     notifyWork(work: ChartWork) {
-        const copiedWork = Object.assign({}, work)
+        const copiedWork = { ...work }
 
         this.works.push(copiedWork)
         this.allWorks.push(copiedWork)
@@ -154,12 +157,17 @@ class ChartWorker {
         const numberOfWorks = works.length
 
         return works.map((work, index) => {
-            const previousWork = this.findPreviousWork(work)
-            const nextWork = this.findNextWork(work)
+            const previousWork = this.findPreviousWork(work, works)
+            const nextWork = this.findNextWork(work, works)
             let smoothedWork = { ...work }
 
             if (previousWork && nextWork) {
                 smoothedWork.price = (previousWork.price + work.price + nextWork.price) / 3
+            }
+
+            if (previousWork) {
+                smoothedWork.lastTrend = previousWork.trend
+                smoothedWork.trend = this.computeTrend(this.extractPointFromWork(previousWork), this.extractPointFromWork(smoothedWork))
             }
 
             return smoothedWork
@@ -172,7 +180,7 @@ class ChartWorker {
         return works.filter((work, index) => {
             if (index === 0 || !lastWorkKept) {
                 // First point, we keep it
-                lastWorkKept = Object.assign({}, work)
+                lastWorkKept = { ...work }
 
                 return true
             }
@@ -185,7 +193,7 @@ class ChartWorker {
                 work.lastTrend = lastWorkKept.trend
                 work.trend = newTrend
                 work.lastPrice = lastWorkKept.price
-                lastWorkKept = Object.assign({}, work)
+                lastWorkKept = { ...work }
 
                 return true
             }
@@ -260,7 +268,7 @@ class ChartWorker {
     }
 
     copyWorks(): ChartWork[] {
-        return this.works.slice().map(work => Object.assign({}, work))
+        return this.works.slice().map(work => ({ ...work }))
     }
 
     prepareForNewWorks() {
@@ -275,22 +283,22 @@ class ChartWorker {
         this.works = []
     }
 
-    findPreviousWork(work: ChartWork): ChartWork {
+    findPreviousWork(work: ChartWork, works: ChartWork[]): ChartWork {
         let previousWork: ChartWork = null
 
-        this.works.forEach((current, index) => {
+        works.forEach((current, index) => {
             if (current.id === work.id && index > 0) {
-                previousWork = this.works[index - 1]
+                previousWork = works[index - 1]
             }
         })
 
         return previousWork
     }
 
-    findWork(work: ChartWork): ChartWork {
+    findWork(work: ChartWork, works: ChartWork[]): ChartWork {
         let workFound: ChartWork = null
 
-        this.works.forEach(current => {
+        works.forEach(current => {
             if (current.id === work.id) {
                 workFound = current
             }
@@ -299,13 +307,13 @@ class ChartWorker {
         return workFound
     }
 
-    findNextWork(work: ChartWork): ChartWork {
+    findNextWork(work: ChartWork, works: ChartWork[]): ChartWork {
         let nextWork: ChartWork = null
-        const numberOfWorks = this.works.length
+        const numberOfWorks = works.length
 
-        this.works.forEach((current, index) => {
+        works.forEach((current, index) => {
             if (current.id === work.id && index < numberOfWorks - 1) {
-                nextWork = this.works[index + 1]
+                nextWork = works[index + 1]
             }
         })
 

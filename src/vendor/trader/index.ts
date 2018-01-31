@@ -261,7 +261,7 @@ class Trader implements Trading {
         Logger.debug(`\nPrice: ${lastWork.price}${this.quoteCurrency}`)
 
         if (TraderState.WAITING_TO_BUY === this.state) {
-            Logger.debug('Trader wants to buy...')
+            Logger.debug('Trader wants to buy.')
 
             /*
              * Trader is waiting to buy
@@ -291,7 +291,7 @@ class Trader implements Trading {
                 Logger.debug('Waiting for an hollow...')
             }
         } else if (TraderState.WAITING_TO_SELL === this.state && this.lastTrade && Number.isFinite(this.lastTrade.price)) {
-            Logger.debug('Trader wants to sell...')
+            Logger.debug('Trader wants to sell.')
 
             let size
             let quoteCurrencyInvested = this.lastTrade.benefits
@@ -302,6 +302,8 @@ class Trader implements Trading {
             } catch (error) {
                 Logger.error(error)
                 this.stop()
+
+                return
             }
 
             // Fast mode
@@ -338,7 +340,7 @@ class Trader implements Trading {
                  * If no: we do nothing, we wait an hollow to buy first
                  */
                 Logger.debug('Bump detected!')
-                
+
                 if (Equation.isProfitable(this.lastTrade.price, lastWork.price) /*&& Equation.isProfitableOnQuantity(quoteCurrencyInvested, size, priceToSell)*/) {
                     Logger.debug(`Trader is selling at ${lastWork.price}`)
                     this.sell(size)
@@ -348,6 +350,8 @@ class Trader implements Trading {
                     // Bump was not enough up in order to sell, but we clear works in order to avoid to loop through it later in analyzer
                     this.prepareForNewTrade()
                 }
+            } else {
+                Logger.debug('No defined strategies detected. Waiting for an event...')
             }
         } else {
             Logger.error(`Trader.state does not match any action: ${this.state}`)
@@ -492,22 +496,23 @@ class Trader implements Trading {
     }
 
     private lastWork(): ChartWork {
-        // FIXME: should be like that, but introduces error with price (delayed by one point)
-        // if (this.works.length === 0) {
-        //     return null
-        // }
-
-        // return { ...this.works[this.works.length - 1] }
-
-        return { ...this.chartWorker.lastWork }
-    }
-
-    async cancel(order: OrderResult) {
-        try {
-            await this.market.orders.cancel(order)
-        } catch (error) {
-            Logger.error(`Error when trying to cancel order: ${error}`)
+        // FIXME: may introduces error with price and trend (delayed by one point with lastWork without filtering)
+        if (this.works.length === 0) {
+            return null
         }
+
+        const lastWork = { ...this.works[this.works.length - 1] }
+        const lastWorkFromWorker = this.chartWorker.lastWork
+
+        if (lastWork.price !== lastWorkFromWorker.price) {
+            this.stop()
+            throw new Error(
+                `LastWork, retrieved from #lastWork() in trader class, has diverged with lastWork in the worker.
+                lastWork price: ${lastWork.price}${this.quoteCurrency}
+                lastWork from worker price: ${lastWorkFromWorker.price}${this.quoteCurrency}`)
+        }
+
+        return lastWork
     }
 
     stop() {
@@ -525,7 +530,7 @@ class Trader implements Trading {
         try {
             const read = promisify(readFile)
 
-            const data = await read('./trades.json', {  encoding: 'utf-8' })
+            const data = await read('./trades.json', { encoding: 'utf-8' })
 
             if (data && data.length > 0) {
                 this.trades = JSON.parse(data)
@@ -550,7 +555,7 @@ class Trader implements Trading {
         try {
             const write = promisify(writeFile)
 
-            await write('./trades.json', JSON.stringify(this.trades, null, 2), {  encoding: 'utf-8' })
+            await write('./trades.json', JSON.stringify(this.trades, null, 2), { encoding: 'utf-8' })
         } catch (error) {
             Logger.error('\nError when trying to persist trades.\n')
             Logger.error(error)

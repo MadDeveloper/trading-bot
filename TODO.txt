@@ -1,6 +1,8 @@
-- Test de perf au lancement
+- Pouvoir lancer le bot en émulant des ordres d'achats/ventes
 - Pouvoir vendre x% quand on détecte des pics de profitabilité
+- recréer les tendances après filtrage
 
+- Test de perf au lancement
 - si le bot est bloqué sur un trade de vente trop longtemps envoyer une alerte
 - Prendre en compte le min_base_currency pour acheter/vendre
 - Renforcer la sécurité du bot (crash)

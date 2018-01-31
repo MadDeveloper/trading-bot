@@ -22,7 +22,7 @@ const binanceConfig: Config = {
 
         // Strategies
         useExitStrategyInCaseOfLosses: true,
-        sellWhenLossRateReaches: 0.1, // in %
+        sellWhenLossRateReaches: 5, // in %
         sellWhenPriceExceedsThresholdOfProfitability: true
     },
     market: {
@@ -35,15 +35,15 @@ const binanceConfig: Config = {
     },
     chart: {
         rateToApproveVariation: 0.0025, // <=> 0.25% FIXME: should it be still used?
-        thresholdRateToApproveInversion: 0.4, // in %
-        thresholdMaxRateToApproveInversion: 1, // in %
+        thresholdRateToApproveInversion: 1, // in %
+        thresholdMaxRateToApproveInversion: 2, // in %
         minPriceDifferenceToApproveNewPoint: 0.05, // <=> 0.1%
         tickerInterval: 1000 * 15, // ms
         reductionOfTheTickerIntervalOnSpeedMode: 0.5, // <=> we reduce by 50% the ticker interval
-        numberOfUpPointsToValidatePump: 2,
-        numberOfDownPointsToValidateDump: 2,
+        numberOfUpPointsToValidatePump: 3,
+        numberOfDownPointsToValidateDump: 3,
         validatePumpWhenBigPumpIsDetected: true,
-        validateDumpWhenBigDumpIsDetected: true,
+        validateDumpWhenBigDumpIsDetected: false,
         smoothing: Smoothing.SAMPLE
     }
 }
