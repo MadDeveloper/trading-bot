@@ -20,8 +20,8 @@ class ChartWorker {
     price: number
     trend$: Subject<Trend>
     work$: Subject<ChartWork>
-    tickerTimeout: NodeJS.Timer
     tickerInterval: number
+    tickerIntervalRef: NodeJS.Timer
     started: boolean
     lastId: number
     lastTime: number
@@ -41,6 +41,7 @@ class ChartWorker {
         this.lastId = 0
         this.lastTime = 0
         this.tickerInterval = config.chart.tickerInterval
+        this.tickerIntervalRef = null
         this.mode = WorkerSpeed.NORMAL
         this.trend = null
         this.lastTrend = null
@@ -48,11 +49,24 @@ class ChartWorker {
     }
 
     workOnPriceTicker() {
-        this.priceTickerWork(this.lastTime)        
+        if (this.tickerIntervalRef) {
+            clearInterval(this.tickerIntervalRef)
+        }
+
+        this.priceTickerWork()
+        this.tickerIntervalRef = setInterval(() => this.priceTickerWork(), this.tickerInterval)     
     }
 
-    async priceTickerWork(time: number) {
-        this.lastTime = time
+    changeTickerInterval(newInterval: number) {
+        if (this.tickerIntervalRef) {
+            clearInterval(this.tickerIntervalRef)
+        }
+
+        this.tickerInterval = newInterval
+        this.tickerIntervalRef = setInterval(() => this.priceTickerWork(), this.tickerInterval)
+    }
+
+    async priceTickerWork() {
         this.lastPrice = this.price
 
         try {
@@ -69,7 +83,7 @@ class ChartWorker {
         }
 
         const lastPoint = this.chart.lastPoint()
-        const newPoint = this.chart.createPoint(time, this.price)
+        const newPoint = this.chart.createPoint(this.lastTime, this.price)
 
         this.lastTrend = this.trend
         this.trend = this.computeTrend(lastPoint, newPoint)
@@ -79,38 +93,23 @@ class ChartWorker {
             price: this.price,
             lastTrend: this.lastTrend,
             trend: this.trend,
-            time
+            time: this.lastTime
         }
         this.notifyWork(this.lastWork)
-
-        this.tickerTimeout = setTimeout(() => this.priceTickerWork(time + this.tickerInterval), this.tickerInterval)
+        this.lastTime += this.tickerInterval
     }
 
     fastMode() {
         if (this.mode !== WorkerSpeed.FAST) {
-            if (this.tickerTimeout) {
-                clearTimeout(this.tickerTimeout)
-            }
-
-            const lastTickerInterval = this.tickerInterval
-
             this.mode = WorkerSpeed.FAST
-            this.tickerInterval = this.tickerInterval * (1 - config.chart.reductionOfTheTickerIntervalOnSpeedMode)
-            this.priceTickerWork(this.lastTime + lastTickerInterval)
+            this.changeTickerInterval(config.chart.tickerInterval * (1 - config.chart.reductionOfTheTickerIntervalOnSpeedMode))
         }
     }
 
     normalMode() {
         if (this.mode !== WorkerSpeed.NORMAL) {
-            if (this.tickerTimeout) {
-                clearTimeout(this.tickerTimeout)
-            }
-
-            const lastTickerInterval = this.tickerInterval
-
             this.mode = WorkerSpeed.NORMAL
-            this.tickerInterval = config.chart.tickerInterval
-            this.priceTickerWork(this.lastTime + lastTickerInterval)
+            this.changeTickerInterval(config.chart.tickerInterval)
         }
     }
 
@@ -227,19 +226,21 @@ class ChartWorker {
     }
 
     startWorking() {
-        if (this.tickerTimeout) {
-            clearTimeout(this.tickerTimeout)
+        if (this.tickerIntervalRef) {
+            clearInterval(this.tickerIntervalRef)
         }
 
         this.started = true
+
+
         this.workOnPriceTicker()
 
         Logger.debug('Worker is started')
     }
 
     stopWorking() {
-        if (this.tickerTimeout) {
-            clearTimeout(this.tickerTimeout)
+        if (this.tickerIntervalRef) {
+            clearInterval(this.tickerIntervalRef)
         }
 
         this.started = false

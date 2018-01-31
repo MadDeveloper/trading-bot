@@ -54,7 +54,8 @@ class BinanceOrders implements Orders {
                 throw Error(`Error when trying to buy with a market order: ${JSON.stringify(response, null, 2)}`)
             }
 
-            console.log('Buy response from market', response)
+            Logger.debug('Buy response from market')
+            Logger.debug(JSON.stringify(response, null, 2))
 
             this.lastOrder = this.forgeOrderResult(response)
             this.done.push({ ...this.lastOrder })
@@ -82,7 +83,8 @@ class BinanceOrders implements Orders {
             throw Error(`Error when trying to sell with a market order: ${JSON.stringify(response, null, 2)}`)
         }
 
-        console.log('Sell response from market', response)
+        Logger.debug('Sell response from market')
+        Logger.debug(JSON.stringify(response, null, 2))
 
         this.lastOrder = this.forgeOrderResult(response)
         this.done.push({ ...this.lastOrder })

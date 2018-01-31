@@ -248,22 +248,25 @@ class Trader implements Trading {
 
     async watchChartWorker() {
         this.workObserver = this.chartWorker.work$.subscribe((work: ChartWork) => {
+            
             this.works = this.chartWorker.filterNoise(this.chartWorker.copyWorks())
-
+            
             const newLastWork = { ...this.works[this.works.length - 1] }
-
-            Logger.debug(`\nPrice: ${newLastWork.price}${this.quoteCurrency}`)
+            
+            Logger.debug(`\n--------------- ${newLastWork.price} ${this.quoteCurrency} -----------------\n`)
 
             if (!this.worksAreEquals(newLastWork, this.lastWork)) {
                 this.lastWork = newLastWork
                 this.analyzeWorks()
             } else {
-                Logger.debug('\nLast price does not need analyze')
+                Logger.debug('Waiting a new point...')
             }
 
             if (config.app.debug) {
                 this.writeDebug()
             }
+
+            Logger.debug('\n')
         })
     }
 
@@ -316,16 +319,6 @@ class Trader implements Trading {
                 return
             }
 
-            // Fast mode
-            if (!this.chartWorker.isInFastMode() && this.chartAnalyzer.detectProfitablePump(this.works, this.lastTrade.price)) {
-                /*
-                 * Detect pump which can be profitable to sell in
-                 * We accelerate the ticker interval until we try to sell
-                 */
-                Logger.debug('Fast mode activated')
-                this.chartWorker.fastMode()
-            }
-
             // Strategies
             if (config.trader.sellWhenPriceExceedsMaxThresholdOfProfitability && this.lastWork.price > Equation.maxThresholdPriceOfProbitability(this.lastTrade.price)) {
                 /*
@@ -360,6 +353,14 @@ class Trader implements Trading {
                     // Bump was not enough up in order to sell, but we clear works in order to avoid to loop through it later in analyzer
                     this.prepareForNewTrade()
                 }
+            } else if (!this.chartWorker.isInFastMode() && this.chartAnalyzer.detectProfitablePump(this.works, this.lastTrade.price)) {
+                /*
+                 * Fast mode
+                 * Detect pump which can be profitable to sell in
+                 * We accelerate the ticker interval until we try to sell
+                 */
+                Logger.debug('Fast mode activated')
+                this.chartWorker.fastMode()
             } else {
                 Logger.debug('No defined strategies detected. Waiting for an event...')
             }
@@ -367,8 +368,6 @@ class Trader implements Trading {
             Logger.error(`Trader.state does not match any action: ${this.state}`)
             this.stop() // No action to be done, trader is maybe crashed, need external intervention
         }
-
-        Logger.debug('\n----------------------------------------\n')
     }
 
     fundsToUse(): number {

@@ -35,17 +35,17 @@ const binanceConfig: Config = {
     },
     market: {
         currency: Currency.PPTBTC,
-        orderFees: 0.000 // <=> 0.1%
+        orderFees: 0.001 // <=> 0.1%
     },
     account: {
         quoteCurrency: Currency.BTC, // €, $, BTC
         baseCurrency: Currency.PPT // BTC, ETH, LTC, ...
     },
     chart: {
-        tickerInterval: 1000 * 15, // ms
+        tickerInterval: 1000 * 5, // ms
         reductionOfTheTickerIntervalOnSpeedMode: 0.5, // <=> we reduce by 50% the ticker interval
 
-        minPriceDifferenceToApproveNewPoint: 0.07, // <=> 0.1%
+        minPriceDifferenceToApproveNewPoint: 0.003, // <=> 0.1%
         smoothing: Smoothing.SAMPLE,
 
         // Pump & dump
@@ -53,8 +53,8 @@ const binanceConfig: Config = {
         thresholdMaxRateToApproveInversion: 2, // in %
         numberOfUpPointsToValidatePump: 2,
         numberOfDownPointsToValidateDump: 1,
-        validatePumpWhenBigPumpIsDetected: true,
-        validateDumpWhenBigDumpIsDetected: false
+        validatePumpWhenBigPumpIsDetected: false,
+        validateDumpWhenBigDumpIsDetected: true
     }
 }
 
