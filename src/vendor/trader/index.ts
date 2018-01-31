@@ -556,7 +556,7 @@ class Trader implements Trading {
     getDebug() {
         return {
             allWorksStored: this.chartWorker.allWorks,
-            allWorksSmoothed: this.works,
+            allWorksSmoothed: this.chartWorker.filterNoise(this.chartWorker.copyWorks(this.chartWorker.allWorks)),
             trades: this.trades,
             baseCurrency: this.baseCurrency,
             baseCurrencyBalance: this.baseCurrencyBalance,

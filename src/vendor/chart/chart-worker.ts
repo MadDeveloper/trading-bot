@@ -267,8 +267,8 @@ class ChartWorker {
         }
     }
 
-    copyWorks(): ChartWork[] {
-        return this.works.slice().map(work => ({ ...work }))
+    copyWorks(works: ChartWork[] = this.works): ChartWork[] {
+        return works.slice().map(work => ({ ...work }))
     }
 
     prepareForNewWorks() {
