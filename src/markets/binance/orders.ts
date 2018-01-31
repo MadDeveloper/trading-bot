@@ -126,8 +126,8 @@ class BinanceOrders implements Orders {
         }
 
         if (floatSafeRemainder(quantity, stepSize) !== 0) { // floatSafeRemainder => reel js remainder
-            Logger.debug(`Remove remainder from quantity with step size. Quantity: ${quantity} ; stepSize: ${stepSize} ; quantity after remainder: ${quantity - floatSafeRemainder(quantity, stepSize)}`)
-            quantity -= floatSafeRemainder(quantity, stepSize)
+            Logger.debug(`Remove remainder from quantity with step size. Quantity: ${quantity} ; stepSize: ${stepSize} ; quantity after remainder: ${Number(quantity - floatSafeRemainder(quantity, stepSize)).toFixed(numberOfDigits)}`)
+            quantity = parseFloat(Number(quantity - floatSafeRemainder(quantity, stepSize)).toFixed(numberOfDigits))
         }
 
         if (quantity > maxQuantity) {
