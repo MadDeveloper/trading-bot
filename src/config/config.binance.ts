@@ -9,21 +9,26 @@ const binanceConfig: Config = {
         debug: true,
         platform: Platform.BINANCE
     },
+    network: {
+        retryIntervalWhenConnectionIsLost: 5000 // ms
+    },
     api: {
         ...keysBinance,
         sandbox: true
     },
     trader: {
+        // Quantities strategy
         quantityOfBaseCurrencyToUse: 100, // in % (BTC, ETH, LTC, ...)
+
         quantityOfQuoteCurrencyToUse: 100, // in % (€, $)
         maxQuantityQuoteCurrencyToUse: 0.0022, // 100€, 100 BTC (max quantity)
         minQuantityQuoteCurrencyToUse: 0.001, // 50€, 50 BTC
+        
+        // Probitability strategy & exit strategies
         minProfitableRateWhenSelling: 0, // how many % profitability wanted when selling
-
-        // Strategies
+        sellWhenPriceExceedsThresholdOfProfitability: true,
         useExitStrategyInCaseOfLosses: true,
-        sellWhenLossRateReaches: 5, // in %
-        sellWhenPriceExceedsThresholdOfProfitability: true
+        sellWhenLossRateReaches: 10 // in %
     },
     market: {
         currency: Currency.GASBTC,
@@ -34,17 +39,19 @@ const binanceConfig: Config = {
         baseCurrency: Currency.GAS // BTC, ETH, LTC, ...
     },
     chart: {
-        rateToApproveVariation: 0.0025, // <=> 0.25% FIXME: should it be still used?
-        thresholdRateToApproveInversion: 1, // in %
-        thresholdMaxRateToApproveInversion: 2, // in %
-        minPriceDifferenceToApproveNewPoint: 0.07, // <=> 0.1%
         tickerInterval: 1000 * 15, // ms
         reductionOfTheTickerIntervalOnSpeedMode: 0.5, // <=> we reduce by 50% the ticker interval
+
+        minPriceDifferenceToApproveNewPoint: 0.07, // <=> 0.1%
+        smoothing: Smoothing.SAMPLE,
+
+        // Pump & dump
+        thresholdRateToApproveInversion: 1, // in %
+        thresholdMaxRateToApproveInversion: 2, // in %
         numberOfUpPointsToValidatePump: 3,
         numberOfDownPointsToValidateDump: 3,
         validatePumpWhenBigPumpIsDetected: true,
-        validateDumpWhenBigDumpIsDetected: false,
-        smoothing: Smoothing.SAMPLE
+        validateDumpWhenBigDumpIsDetected: false
     }
 }
 

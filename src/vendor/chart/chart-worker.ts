@@ -8,7 +8,7 @@ import { Subject } from 'rxjs/Subject';
 import { ChartWork } from './chart-work';
 import { WorkerSpeed } from './worker-speed';
 import Logger from '../logger/index';
-import delay from 'delay'
+import * as delay from 'delay'
 import { Smoothing } from './smoothing';
 
 class ChartWorker {
@@ -257,11 +257,11 @@ class ChartWorker {
                 return price
             }
 
-            await delay(5000)
+            await delay(config.network.retryIntervalWhenConnectionIsLost)
 
             return this.retryUntilGetCurrencyPrice()
         } catch (error) {
-            await delay(5000)
+            await delay(config.network.retryIntervalWhenConnectionIsLost)
             
             return this.retryUntilGetCurrencyPrice()
         }

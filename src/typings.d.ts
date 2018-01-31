@@ -6,7 +6,10 @@ declare interface Config {
     app: {
         debug: boolean,
         platform: Platform
-    }
+    },
+    network: {
+        retryIntervalWhenConnectionIsLost: number // ms
+    },
     api: {
         key: string;
         secret: string;
@@ -38,7 +41,6 @@ declare interface Config {
         quoteCurrency: Currency,
     },
     chart: {
-        rateToApproveVariation: number,
         thresholdRateToApproveInversion: number,
         thresholdMaxRateToApproveInversion: number,
         minPriceDifferenceToApproveNewPoint: number,

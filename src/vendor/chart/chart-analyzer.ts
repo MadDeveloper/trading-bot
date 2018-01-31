@@ -19,13 +19,9 @@ class ChartAnalyzer {
 
         works.forEach(work => {
             if (downwardTrendConfirmed && !upwardTrendConfirmed && this.isUpwardTrendConfirmed(work, works)) {
-                // if (work.price >= this.computePriceWithRateToApproveUpward(work.lastPrice)) {
                 upwardTrendConfirmed = true
-                // }
             } else if (!downwardTrendConfirmed && this.isDownwardTrendConfirmed(work, works)) {
-                // if (work.price <= this.computePriceWithRateToApproveDownward(work.lastPrice)) {
                 downwardTrendConfirmed = true
-                // }
             }
         })
 
@@ -40,13 +36,9 @@ class ChartAnalyzer {
 
         works.forEach(work => {
             if (upwardTrendConfirmed && !downwardTrendConfirmed && this.isDownwardTrendConfirmed(work, works)) {
-                // if (work.price <= this.computePriceWithRateToApproveDownward(work.lastPrice)) {
                 downwardTrendConfirmed = true
-                // }
             } else if (!upwardTrendConfirmed && this.isUpwardTrendConfirmed(work, works)) {
-                // if (work.price >= this.computePriceWithRateToApproveUpward(work.lastPrice)) {
                 upwardTrendConfirmed = true
-                // }
             }
         })
 
@@ -131,14 +123,6 @@ class ChartAnalyzer {
         // High price difference confirms immediately a trend
         return Math.abs(Equation.rateBetweenValues(priceA, priceB)) >= config.chart.thresholdRateToApproveInversion
     }
-
-    // private computePriceWithRateToApproveDownward(price) {
-    //     return price * (1 - config.chart.rateToApproveVariation)
-    // }
-
-    // private computePriceWithRateToApproveUpward(price) {
-    //     return price * (1 + config.chart.rateToApproveVariation)
-    // }
 }
 
 export default ChartAnalyzer

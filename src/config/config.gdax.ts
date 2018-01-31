@@ -9,6 +9,9 @@ const gdaxConfig: Config = {
         debug: true,
         platform: Platform.GDAX
     },
+    network: {
+        retryIntervalWhenConnectionIsLost: 5000 // ms
+    },
     api: {
         ...keysGdax,
         uri: 'https://api.gdax.com',
@@ -18,37 +21,41 @@ const gdaxConfig: Config = {
         sandbox: false
     },
     trader: {
+        // Quantities strategy
         quantityOfBaseCurrencyToUse: 100, // in % (BTC, ETH, LTC, ...)
-        quantityOfQuoteCurrencyToUse: 100, // in % (€, $)
-        maxQuantityQuoteCurrencyToUse: 100, // 100€, 100 BTC (max quantity)
-        minQuantityQuoteCurrencyToUse: 50, // 50€
-        minProfitableRateWhenSelling: 0, // how many % profitability wanted when selling
 
-        // Strategies
+        quantityOfQuoteCurrencyToUse: 100, // in % (€, $)
+        maxQuantityQuoteCurrencyToUse: 0.0022, // 100€, 100 BTC (max quantity)
+        minQuantityQuoteCurrencyToUse: 0.001, // 50€, 50 BTC
+        
+        // Probitability strategy & exit strategies
+        minProfitableRateWhenSelling: 0, // how many % profitability wanted when selling
+        sellWhenPriceExceedsThresholdOfProfitability: true,
         useExitStrategyInCaseOfLosses: true,
-        sellWhenLossRateReaches: 2, // in %
-        sellWhenPriceExceedsThresholdOfProfitability: true
+        sellWhenLossRateReaches: 10 // in %
     },
     market: {
         currency: Currency.BTC_EUR,
-        instantOrderFees: 0.001 // <=> 0.25%
+        instantOrderFees: 0.001 // <=> 0.1%
     },
     account: {
-        quoteCurrency: Currency.EUR, // €, $
+        quoteCurrency: Currency.EUR, // €, $, BTC
         baseCurrency: Currency.BTC // BTC, ETH, LTC, ...
     },
     chart: {
-        rateToApproveVariation: 0.0025, // <=> 0.25% FIXME: should it be still used?
-        thresholdRateToApproveInversion: 0.4, // in %
-        thresholdMaxRateToApproveInversion: 1, // in %
-        minPriceDifferenceToApproveNewPoint: 0.07, // <=> 0.07%
         tickerInterval: 1000 * 15, // ms
         reductionOfTheTickerIntervalOnSpeedMode: 0.5, // <=> we reduce by 50% the ticker interval
-        numberOfUpPointsToValidatePump: 2,
-        numberOfDownPointsToValidateDump: 2,
+
+        minPriceDifferenceToApproveNewPoint: 0.07, // <=> 0.1%
+        smoothing: Smoothing.SAMPLE,
+
+        // Pump & dump
+        thresholdRateToApproveInversion: 1, // in %
+        thresholdMaxRateToApproveInversion: 2, // in %
+        numberOfUpPointsToValidatePump: 3,
+        numberOfDownPointsToValidateDump: 3,
         validatePumpWhenBigPumpIsDetected: true,
-        validateDumpWhenBigDumpIsDetected: true,
-        smoothing: Smoothing.MOVING_AVERAGE
+        validateDumpWhenBigDumpIsDetected: false
     }
 }
 

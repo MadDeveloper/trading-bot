@@ -33,12 +33,14 @@ class Trader implements Trading {
     lastTrade: Trade
 
     private works: ChartWork[]
+    private lastWork: ChartWork
 
     constructor(market: Market) {
         this.market = market
         this.accounts = market.accounts
         this.chartWorker = new ChartWorker(market)
         this.works = []
+        this.lastWork = null
         this.trades = []
         this.state = TraderState.WAITING_TO_BUY
         this.chartAnalyzer = new ChartAnalyzer(this.chartWorker)
@@ -246,7 +248,18 @@ class Trader implements Trading {
 
     async watchChartWorker() {
         this.workObserver = this.chartWorker.work$.subscribe((work: ChartWork) => {
-            this.analyzeWorks()
+            this.works = this.chartWorker.filterNoise(this.chartWorker.copyWorks())
+
+            const newLastWork = { ...this.works[this.works.length - 1] }
+
+            Logger.debug(`\nPrice: ${newLastWork.price}${this.quoteCurrency}`)
+
+            if (!this.worksAreEquals(newLastWork, this.lastWork)) {
+                this.lastWork = newLastWork
+                this.analyzeWorks()
+            } else {
+                Logger.debug('\nLast price does not need analyze')
+            }
 
             if (config.app.debug) {
                 this.writeDebug()
@@ -255,10 +268,7 @@ class Trader implements Trading {
     }
 
     async analyzeWorks() {
-        this.works = this.chartWorker.filterNoise(this.chartWorker.copyWorks())
-        const lastWork = this.lastWork()
-
-        Logger.debug(`\nPrice: ${lastWork.price}${this.quoteCurrency}`)
+        Logger.debug('Analyzing chart...')
 
         if (TraderState.WAITING_TO_BUY === this.state) {
             Logger.debug('Trader wants to buy.')
@@ -277,7 +287,7 @@ class Trader implements Trading {
                 if (!this.lastTrade || Number.isFinite(this.lastTrade.price)) {
                     const funds = this.fundsToUse()
 
-                    Logger.debug(`Trader is buying at ${lastWork.price}`)
+                    Logger.debug(`Trader is buying at ${this.lastWork.price}`)
 
                     // We have sold, and the current price is below since the last price we sold so we can buy
                     this.buy(funds)
@@ -295,7 +305,7 @@ class Trader implements Trading {
 
             let size
             let quoteCurrencyInvested = this.lastTrade.benefits
-            let priceToSell = lastWork.price
+            let priceToSell = this.lastWork.price
 
             try {
                 size = this.market.orders.normalizeQuantity(this.sizeToUse())
@@ -317,21 +327,21 @@ class Trader implements Trading {
             }
 
             // Strategies
-            if (config.trader.sellWhenPriceExceedsThresholdOfProfitability && lastWork.price > Equation.thresholdPriceOfProbitability(this.lastTrade.price)) {
+            if (config.trader.sellWhenPriceExceedsThresholdOfProfitability && this.lastWork.price > Equation.thresholdPriceOfProbitability(this.lastTrade.price)) {
                 /*
                  * Option sellWhenPriceExceedsThresholdOfProfitability is activated
                  * So, we sell because de price exceeds the threshold of profitability
                  */
                 Logger.debug('Threshold of profitability reached')
-                Logger.debug(`Trader is selling at ${lastWork.price}`)
+                Logger.debug(`Trader is selling at ${this.lastWork.price}`)
                 this.sell(size)
-            } else if (config.trader.useExitStrategyInCaseOfLosses && Equation.rateBetweenValues(this.lastTrade.price, lastWork.price) < -config.trader.sellWhenLossRateReaches) {
+            } else if (config.trader.useExitStrategyInCaseOfLosses && Equation.rateBetweenValues(this.lastTrade.price, this.lastWork.price) < -config.trader.sellWhenLossRateReaches) {
                 /*
                  * Option useExitStrategyInCaseOfLosses is activated
                  * So, we sell because the loss is below the limit we fixed
                  */
                 Logger.debug('Threshold of loss rate reached')
-                Logger.debug(`Trader is selling at ${lastWork.price}`)
+                Logger.debug(`Trader is selling at ${this.lastWork.price}`)
                 this.sell(size)
             } else if (!config.trader.sellWhenPriceExceedsThresholdOfProfitability && this.chartAnalyzer.detectBump(this.works)) {
                 /*
@@ -341,8 +351,8 @@ class Trader implements Trading {
                  */
                 Logger.debug('Bump detected!')
 
-                if (Equation.isProfitable(this.lastTrade.price, lastWork.price) /*&& Equation.isProfitableOnQuantity(quoteCurrencyInvested, size, priceToSell)*/) {
-                    Logger.debug(`Trader is selling at ${lastWork.price}`)
+                if (Equation.isProfitable(this.lastTrade.price, this.lastWork.price) /*&& Equation.isProfitableOnQuantity(quoteCurrencyInvested, size, priceToSell)*/) {
+                    Logger.debug(`Trader is selling at ${this.lastWork.price}`)
                     this.sell(size)
                 } else {
                     Logger.debug('Not sold! Was not profitable')
@@ -398,22 +408,20 @@ class Trader implements Trading {
                 throw new Error('Trying to buy but last trade is not of type SELL.')
             }
 
-            const lastWork = this.lastWork()
-
             // Remote work
-            const order = await this.market.orders.buyMarket(this.market.currency, funds, lastWork.price)
+            const order = await this.market.orders.buyMarket(this.market.currency, funds, this.lastWork.price)
 
             await this.updateBalances()
 
             // FIXME: order.price is always 0.00000, need to get FULL response type
             // Local work
-            const fundsUsed = lastWork.price * order.executedQuantity
+            const fundsUsed = this.lastWork.price * order.executedQuantity
             const fees = fundsUsed * config.market.instantOrderFees
 
             this.state = TraderState.WAITING_TO_SELL
             this.lastTrade = {
-                price: lastWork.price,
-                time: lastWork.time,
+                price: this.lastWork.price,
+                time: this.lastWork.time,
                 benefits: -fundsUsed,
                 fees,
                 type: TradeType.BUY,
@@ -451,22 +459,20 @@ class Trader implements Trading {
 
             Logger.debug(`Trying to sell ${size} ${this.baseCurrency}`)
 
-            const lastWork = this.lastWork()
-
             // Remote work
-            const order = await this.market.orders.sellMarket(this.market.currency, size, lastWork.price)
+            const order = await this.market.orders.sellMarket(this.market.currency, size, this.lastWork.price)
 
             await this.updateBalances()
 
             // FIXME: order.price is always 0.00000, need to get FULL response type
             // Local work
-            const fees = (lastWork.price * order.executedQuantity) * config.market.instantOrderFees
-            const quoteCurrencyQuantity = (lastWork.price * order.executedQuantity) - fees
+            const fees = (this.lastWork.price * order.executedQuantity) * config.market.instantOrderFees
+            const quoteCurrencyQuantity = (this.lastWork.price * order.executedQuantity) - fees
 
             this.state = TraderState.WAITING_TO_BUY
             this.lastTrade = {
-                price: lastWork.price,
-                time: lastWork.time,
+                price: this.lastWork.price,
+                time: this.lastWork.time,
                 benefits: quoteCurrencyQuantity - Math.abs(this.lastTrade.benefits), // lastTrade is a buy trade, and trade trade have a negative benefits
                 fees,
                 type: TradeType.SELL,
@@ -495,7 +501,7 @@ class Trader implements Trading {
         this.prepareForNewTrade()
     }
 
-    private lastWork(): ChartWork {
+    private getLastWork(): ChartWork {
         // FIXME: may introduces error with price and trend (delayed by one point with lastWork without filtering)
         if (this.works.length === 0) {
             return null
@@ -517,7 +523,7 @@ class Trader implements Trading {
         }
     }
 
-    async loadTrades() {
+    private async loadTrades() {
         try {
             const read = promisify(readFile)
 
@@ -542,7 +548,7 @@ class Trader implements Trading {
         }
     }
 
-    async persistTrades() {
+    private async persistTrades() {
         try {
             const write = promisify(writeFile)
 
@@ -551,6 +557,14 @@ class Trader implements Trading {
             Logger.error('\nError when trying to persist trades.\n')
             Logger.error(error)
         }
+    }
+
+    private worksAreEquals(workA: ChartWork, workB: ChartWork): boolean {
+        if (!workA || !workB) {
+            return false
+        }
+
+        return workA.time === workB.time
     }
 
     getDebug() {

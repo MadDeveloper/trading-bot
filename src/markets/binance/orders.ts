@@ -10,6 +10,7 @@ import { OrderStatus } from '../../vendor/interfaces/order-status.enum';
 import { OrderType } from '../../vendor/interfaces/order-type.enum';
 import { promisify } from 'util';
 import { floatSafeRemainder, truncateLongDigits } from '../../vendor/chart/maths';
+import { config } from '../../config/index';
 
 class BinanceOrders implements Orders {
     pending: OrderResult[] = []
@@ -43,7 +44,7 @@ class BinanceOrders implements Orders {
     }
 
     async buyMarket(currency: Currency, funds: number, marketPrice: number): Promise<OrderResult> {
-        const buy = promisify(this.client.marketBuy)
+        const buy = config.api.sandbox ? this.fakeBuyMarket : promisify(this.client.marketBuy)
 
         try {
             const quantity = this.normalizeQuantity(funds / marketPrice)
@@ -73,7 +74,7 @@ class BinanceOrders implements Orders {
     }
 
     async sellMarket(currency: Currency, size: number): Promise<OrderResult> {
-        const sell = promisify(this.client.marketSell)
+        const sell = config.api.sandbox ? this.fakeSellMarket : promisify(this.client.marketSell)
         const quantity = this.normalizeQuantity(size)
         const response = await sell(currency, quantity)
 
@@ -130,6 +131,38 @@ class BinanceOrders implements Orders {
         Logger.debug(`Quantity normalized: ${normalizedQuantity}`)
 
         return normalizedQuantity
+    }
+
+    private async fakeBuyMarket(currency: Currency, quantity: number) {
+        return {
+            orderId: 'fake',
+            symbol: currency,
+            clientOrderId: 'fake',
+            transactionTime: Date.now(),
+            price: '0.00000000',
+            origQty: quantity.toString(),
+            executedQty: quantity.toString(),
+            status: 'FILLED',
+            timeInForce: 'GTC',
+            type: 'MARKET',
+            side: 'BUY'
+        }
+    }
+
+    private async fakeSellMarket(currency: Currency, quantity: number) {
+        return {
+            orderId: 'fake',
+            symbol: currency,
+            clientOrderId: 'fake',
+            transactionTime: Date.now(),
+            price: '0.00000000',
+            origQty: quantity.toString(),
+            executedQty: quantity.toString(),
+            status: 'FILLED',
+            timeInForce: 'GTC',
+            type: 'MARKET',
+            side: 'SELL'
+        }
     }
 
     private getLotSizeFilter(currencyInfo: CurrencyInfo): CurrencyFilter {
