@@ -26,18 +26,18 @@ const binanceConfig: Config = {
         sellWhenPriceExceedsThresholdOfProfitability: true
     },
     market: {
-        currency: Currency.DASHBTC,
+        currency: Currency.GASBTC,
         instantOrderFees: 0.001 // <=> 0.1%
     },
     account: {
         quoteCurrency: Currency.BTC, // €, $, BTC
-        baseCurrency: Currency.DASH // BTC, ETH, LTC, ...
+        baseCurrency: Currency.GAS // BTC, ETH, LTC, ...
     },
     chart: {
         rateToApproveVariation: 0.0025, // <=> 0.25% FIXME: should it be still used?
         thresholdRateToApproveInversion: 1, // in %
         thresholdMaxRateToApproveInversion: 2, // in %
-        minPriceDifferenceToApproveNewPoint: 0.05, // <=> 0.1%
+        minPriceDifferenceToApproveNewPoint: 0.07, // <=> 0.1%
         tickerInterval: 1000 * 15, // ms
         reductionOfTheTickerIntervalOnSpeedMode: 0.5, // <=> we reduce by 50% the ticker interval
         numberOfUpPointsToValidatePump: 3,
