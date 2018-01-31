@@ -114,7 +114,13 @@ class BinanceOrders implements Orders {
         quantity = truncateLongDigits(quantity, numberOfDigits)
 
         if (quantity < minQuantity) {
-            throw new Error(`Cannot normalize quantity, the quantity is below the minQuantity (quantity: ${quantity}, minQuantity: ${minQuantity})`)
+            if (config.api.sandbox) {
+                // in sandbox mode we do not throw an error, we just notify and set to minQuantity
+                quantity = minQuantity
+                Logger.debug(`Quantity is below the minQuantity, but in sandbox mode this error can be ignored.`)
+            } else {
+                throw new Error(`Cannot normalize quantity, the quantity is below the minQuantity (quantity: ${quantity}, minQuantity: ${minQuantity})`)
+            }
         }
 
         if (floatSafeRemainder(quantity, stepSize) !== 0) { // floatSafeRemainder => reel js remainder
