@@ -317,7 +317,7 @@ class Trader implements Trading {
             }
 
             // Fast mode
-            if (!config.trader.sellWhenPriceExceedsThresholdOfProfitability && !this.chartWorker.isInFastMode() && this.chartAnalyzer.detectProfitablePump(this.works, this.lastTrade.price)) {
+            if (!this.chartWorker.isInFastMode() && this.chartAnalyzer.detectProfitablePump(this.works, this.lastTrade.price)) {
                 /*
                  * Detect pump which can be profitable to sell in
                  * We accelerate the ticker interval until we try to sell
@@ -327,7 +327,7 @@ class Trader implements Trading {
             }
 
             // Strategies
-            if (config.trader.sellWhenPriceExceedsThresholdOfProfitability && this.lastWork.price > Equation.thresholdPriceOfProbitability(this.lastTrade.price)) {
+            if (config.trader.sellWhenPriceExceedsMaxThresholdOfProfitability && this.lastWork.price > Equation.maxThresholdPriceOfProbitability(this.lastTrade.price)) {
                 /*
                  * Option sellWhenPriceExceedsThresholdOfProfitability is activated
                  * So, we sell because de price exceeds the threshold of profitability
@@ -343,7 +343,7 @@ class Trader implements Trading {
                 Logger.debug('Threshold of loss rate reached')
                 Logger.debug(`Trader is selling at ${this.lastWork.price}`)
                 this.sell(size)
-            } else if (!config.trader.sellWhenPriceExceedsThresholdOfProfitability && this.chartAnalyzer.detectBump(this.works)) {
+            } else if (this.chartAnalyzer.detectBump(this.works)) {
                 /*
                  * We found a bump, do we have already bought?
                  * If yes: we will buy only if the price is under the last sell price

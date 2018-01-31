@@ -30,7 +30,8 @@ declare interface Config {
         // Strategies
         useExitStrategyInCaseOfLosses: boolean,
         sellWhenLossRateReaches: number, // in %
-        sellWhenPriceExceedsThresholdOfProfitability: boolean
+        sellWhenPriceExceedsMaxThresholdOfProfitability: boolean,
+        maxThresholdOfProfitability: number // in %
     },
     market: {
         currency: Currency,

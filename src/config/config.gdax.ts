@@ -29,8 +29,9 @@ const gdaxConfig: Config = {
         minQuantityQuoteCurrencyToUse: 0.001, // 50€, 50 BTC
         
         // Probitability strategy & exit strategies
-        minProfitableRateWhenSelling: 0, // how many % profitability wanted when selling
-        sellWhenPriceExceedsThresholdOfProfitability: true,
+        sellWhenPriceExceedsMaxThresholdOfProfitability: true,
+        maxThresholdOfProfitability: 2, // in %
+        minProfitableRateWhenSelling: 0.5, // in %. How many % profitability wanted when selling
         useExitStrategyInCaseOfLosses: true,
         sellWhenLossRateReaches: 10 // in %
     },

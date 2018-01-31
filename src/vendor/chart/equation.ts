@@ -38,7 +38,7 @@ class Equation {
         return ((size * sellPrice) * (1 - config.market.instantOrderFees)) > quoteCurrencyInvested
     }
 
-    static thresholdPriceOfProbitability(buyPrice) {
+    static thresholdPriceOfProbitability(buyPrice: number, threshold: number = config.trader.minProfitableRateWhenSelling): number {
         const multiplierFeesIncluded = 1 - config.market.instantOrderFees
 
         if (multiplierFeesIncluded === 0) {
@@ -48,7 +48,11 @@ class Equation {
         // a = amount invested, p1 = price when bought (with "a" amount), b = amount recovered, p2 = price when sold (give "b" amount)
         // b = (1 - fees)^2 * a * (p2/p1)
         // b > a <=> p2 > p1 * ((1 + (t / 100)) / ((1 - fees)^2))
-        return buyPrice * ((1 + (config.trader.minProfitableRateWhenSelling / 100)) / Math.pow(multiplierFeesIncluded, 2))
+        return buyPrice * ((1 + (threshold / 100)) / Math.pow(multiplierFeesIncluded, 2))
+    }
+
+    static maxThresholdPriceOfProbitability(buyPrice: number): number {
+        return Equation.thresholdPriceOfProbitability(buyPrice, config.trader.maxThresholdOfProfitability)
     }
 }
 

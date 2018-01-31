@@ -1,13 +1,7 @@
-- Pouvoir lancer le bot en émulant des ordres d'achats/ventes
 - récupérer le prix exact d'achat/vente après order
-- Pouvoir vendre x% quand on détecte des pics de profitabilité
 - recréer les tendances après filtrage
-
 - Test de perf au lancement
 - si le bot est bloqué sur un trade de vente trop longtemps envoyer une alerte
-- Prendre en compte le min_base_currency pour acheter/vendre
-- Renforcer la sécurité du bot (crash)
-- Stocker le dernier état du bot (trade, charts) (si il crash, pouvoir le relancer sans rien toucher au marché)
+
 - mettre plus d'options pour controler le bot (socket ?) -> voir sur une page web ses trades, son état, le chart, etc.
-- faire des tests internet & api quand on lance le bot
-- calculer un peu plus la croissance ou décroissance d'une courbe pour estimer la faisabilité d'achat ou vente (mieux que juste tendance sur 3 points)
+- amélorer l'algo de tendances

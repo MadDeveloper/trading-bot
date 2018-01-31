@@ -25,18 +25,21 @@ const binanceConfig: Config = {
         minQuantityQuoteCurrencyToUse: 0.001, // 50€, 50 BTC
         
         // Probitability strategy & exit strategies
-        minProfitableRateWhenSelling: 0, // how many % profitability wanted when selling
-        sellWhenPriceExceedsThresholdOfProfitability: true,
+        sellWhenPriceExceedsMaxThresholdOfProfitability: true,
+        maxThresholdOfProfitability: 2, // in %
+
+        minProfitableRateWhenSelling: 0.5, // how many % profitability wanted when selling
+        
         useExitStrategyInCaseOfLosses: true,
         sellWhenLossRateReaches: 10 // in %
     },
     market: {
-        currency: Currency.GASBTC,
+        currency: Currency.PPTBTC,
         instantOrderFees: 0.001 // <=> 0.1%
     },
     account: {
         quoteCurrency: Currency.BTC, // €, $, BTC
-        baseCurrency: Currency.GAS // BTC, ETH, LTC, ...
+        baseCurrency: Currency.PPT // BTC, ETH, LTC, ...
     },
     chart: {
         tickerInterval: 1000 * 15, // ms
