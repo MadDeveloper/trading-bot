@@ -35,11 +35,11 @@ class Equation {
     }
 
     static isProfitableOnQuantity(quoteCurrencyInvested, size, sellPrice): boolean {
-        return ((size * sellPrice) * (1 - config.market.instantOrderFees)) > quoteCurrencyInvested
+        return ((size * sellPrice) * (1 - config.market.orderFees)) > quoteCurrencyInvested
     }
 
     static thresholdPriceOfProbitability(buyPrice: number, threshold: number = config.trader.minProfitableRateWhenSelling): number {
-        const multiplierFeesIncluded = 1 - config.market.instantOrderFees
+        const multiplierFeesIncluded = 1 - config.market.orderFees
 
         if (multiplierFeesIncluded === 0) {
             throw new Error(`Fees cannot be 100%. Mathematic error when trying to calculate threshold price of profitability (multiplierFeesIncluded = 0, cannot divide by zero)`)

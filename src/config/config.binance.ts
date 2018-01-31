@@ -26,16 +26,16 @@ const binanceConfig: Config = {
         
         // Probitability strategy & exit strategies
         sellWhenPriceExceedsMaxThresholdOfProfitability: true,
-        maxThresholdOfProfitability: 2, // in %
+        maxThresholdOfProfitability: 0.3, // in %
 
-        minProfitableRateWhenSelling: 0.5, // how many % profitability wanted when selling
+        minProfitableRateWhenSelling: 0.1, // how many % profitability wanted when selling
         
         useExitStrategyInCaseOfLosses: true,
         sellWhenLossRateReaches: 10 // in %
     },
     market: {
         currency: Currency.PPTBTC,
-        instantOrderFees: 0.001 // <=> 0.1%
+        orderFees: 0.000 // <=> 0.1%
     },
     account: {
         quoteCurrency: Currency.BTC, // €, $, BTC
@@ -51,8 +51,8 @@ const binanceConfig: Config = {
         // Pump & dump
         thresholdRateToApproveInversion: 1, // in %
         thresholdMaxRateToApproveInversion: 2, // in %
-        numberOfUpPointsToValidatePump: 3,
-        numberOfDownPointsToValidateDump: 3,
+        numberOfUpPointsToValidatePump: 2,
+        numberOfDownPointsToValidateDump: 1,
         validatePumpWhenBigPumpIsDetected: true,
         validateDumpWhenBigDumpIsDetected: false
     }

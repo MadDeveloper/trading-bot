@@ -37,7 +37,7 @@ const gdaxConfig: Config = {
     },
     market: {
         currency: Currency.BTC_EUR,
-        instantOrderFees: 0.001 // <=> 0.1%
+        orderFees: 0.001 // <=> 0.1%
     },
     account: {
         quoteCurrency: Currency.EUR, // €, $, BTC

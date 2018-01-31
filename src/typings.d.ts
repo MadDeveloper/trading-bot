@@ -35,7 +35,7 @@ declare interface Config {
     },
     market: {
         currency: Currency,
-        instantOrderFees: number
+        orderFees: number
     },
     account: {
         baseCurrency: Currency

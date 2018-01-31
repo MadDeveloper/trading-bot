@@ -416,7 +416,7 @@ class Trader implements Trading {
             // FIXME: order.price is always 0.00000, need to get FULL response type
             // Local work
             const fundsUsed = this.lastWork.price * order.executedQuantity
-            const fees = fundsUsed * config.market.instantOrderFees
+            const fees = fundsUsed * config.market.orderFees
 
             this.state = TraderState.WAITING_TO_SELL
             this.lastTrade = {
@@ -466,7 +466,7 @@ class Trader implements Trading {
 
             // FIXME: order.price is always 0.00000, need to get FULL response type
             // Local work
-            const fees = (this.lastWork.price * order.executedQuantity) * config.market.instantOrderFees
+            const fees = (this.lastWork.price * order.executedQuantity) * config.market.orderFees
             const quoteCurrencyQuantity = (this.lastWork.price * order.executedQuantity) - fees
 
             this.state = TraderState.WAITING_TO_BUY
