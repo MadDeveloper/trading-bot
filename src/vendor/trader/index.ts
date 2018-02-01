@@ -339,6 +339,8 @@ class Trader implements Trading {
                 let partSizeToSell = size * (config.trader.quantityToSellWhenPriceExceedsMinThresholdOfProfitability / 100)
                 const minQuantity = this.market.orders.getMinQuantity()
 
+                Logger.debug(`Quantity desired to sell: ${partSizeToSell} ${this.baseCurrency} (${config.trader.quantityToSellWhenPriceExceedsMinThresholdOfProfitability}%)`)
+
                 try {
                     partSizeToSell = this.market.orders.normalizeQuantity(partSizeToSell)
 
@@ -357,7 +359,7 @@ class Trader implements Trading {
 
                 Logger.debug(`Selling ${partSizeToSell} ${this.baseCurrency}`)
 
-                await this.sell(size)
+                await this.sell(partSizeToSell)
             } else if (config.trader.useExitStrategyInCaseOfLosses && Equation.rateBetweenValues(this.lastTrade.price, this.lastWork.price) <= -config.trader.sellWhenLossRateReaches) {
                 /*
                  * Option useExitStrategyInCaseOfLosses is activated
