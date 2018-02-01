@@ -1,3 +1,4 @@
+- pouvoir récupérer le ticker d'un symbol (wait npm update)
 - récupérer le prix exact d'achat/vente après order
 - recréer les tendances après filtrage
 - Test de perf au lancement

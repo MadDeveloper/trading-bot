@@ -74,7 +74,7 @@ class Trader implements Trading {
             Logger.debug(`    ${this.quoteCurrency}: ${this.quoteCurrencyBalance}`)
             Logger.debug(`    ${this.baseCurrency}: ${this.baseCurrencyBalance}\n`)
         } catch (error) {
-            Logger.error(`Fatal error occured while trying to retrieve account balances: ${error}`)
+            Logger.error(`Fatal error occured while trying to retrieve account balances: ${JSON.stringify(error, null, 2)}`)
 
             return
         }
@@ -360,6 +360,10 @@ class Trader implements Trading {
                 Logger.debug(`Selling ${partSizeToSell} ${this.baseCurrency}`)
 
                 await this.sell(partSizeToSell)
+
+                if (partSizeToSell < size) {
+                    this.state = TraderState.WAITING_TO_SELL // Trader sold only a part, he has to sell the rest
+                }
             } else if (config.trader.useExitStrategyInCaseOfLosses && Equation.rateBetweenValues(this.lastTrade.price, this.lastWork.price) <= -config.trader.sellWhenLossRateReaches) {
                 /*
                  * Option useExitStrategyInCaseOfLosses is activated
@@ -368,7 +372,7 @@ class Trader implements Trading {
                 Logger.debug('Threshold of loss rate reached')
                 Logger.debug(`Trader is selling at ${this.lastWork.price}`)
                 await this.sell(size)
-            } else if (this.chartAnalyzer.detectBump(this.works)) {
+            } else if (!config.trader.sellWhenPriceExceedsMinThresholdOfProfitability && this.chartAnalyzer.detectBump(this.works)) {
                 /*
                  * We found a bump, is the trader is profitable, he sells
                  */
