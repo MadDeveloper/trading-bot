@@ -320,15 +320,45 @@ class Trader implements Trading {
             }
 
             // Strategies
-            if (config.trader.sellWhenPriceExceedsMaxThresholdOfProfitability && this.lastWork.price > Equation.maxThresholdPriceOfProbitability(this.lastTrade.price)) {
+            if (config.trader.sellWhenPriceExceedsMaxThresholdOfProfitability && this.lastWork.price >= Equation.maxThresholdPriceOfProfitability(this.lastTrade.price)) {
                 /*
                  * Option sellWhenPriceExceedsThresholdOfProfitability is activated
-                 * So, we sell because de price exceeds the threshold of profitability
+                 * So, we sell because de price exceeds the max threshold of profitability defined
                  */
-                Logger.debug('Threshold of profitability reached')
+                Logger.debug(`Max threshold of profitability reached (profitability: ${config.trader.maxThresholdOfProfitability}%)`)
                 Logger.debug(`Trader is selling at ${this.lastWork.price}`)
                 await this.sell(size)
-            } else if (config.trader.useExitStrategyInCaseOfLosses && Equation.rateBetweenValues(this.lastTrade.price, this.lastWork.price) < -config.trader.sellWhenLossRateReaches) {
+            } else if (config.trader.sellWhenPriceExceedsMinThresholdOfProfitability && Equation.isProfitable(this.lastTrade.price, this.lastWork.price)) {
+                /*
+                 * Options sellWhenPriceExceedsMinThresholdOfProfitability is activated
+                 * So, we sell because de price exceeds the min threshold of profitability defined
+                 */
+                Logger.debug(`Min threshold of profitability reached (profitability: ${config.trader.minThresholdOfProfitability}%)`)
+                Logger.debug(`Trader is selling at ${this.lastWork.price}`)
+
+                let partSizeToSell = size * (config.trader.quantityToSellWhenPriceExceedsMinThresholdOfProfitability / 100)
+                const minQuantity = this.market.orders.getMinQuantity()
+
+                try {
+                    partSizeToSell = this.market.orders.normalizeQuantity(partSizeToSell)
+
+                    const quantityRemaining = this.market.orders.normalizeQuantity(size - partSizeToSell)
+
+                    if (quantityRemaining < minQuantity) {
+                        // The remaining quantity is below the minQuantity, so we sell all the quantity
+                        Logger.debug(`If we sell ${config.trader.quantityToSellWhenPriceExceedsMinThresholdOfProfitability}% of the quantity, the remaining quantity is below the minQuantity. Selling all the quantity`)
+                        partSizeToSell = size
+                    }
+                } catch (error) {
+                    // partSizeToSell is below the minQuantity, we set it to it
+                    Logger.debug(`${config.trader.quantityToSellWhenPriceExceedsMinThresholdOfProfitability}% of the quantity is below the minQuantity. Taking the minQuantity as quantity to sell`)
+                    partSizeToSell = minQuantity
+                }
+
+                Logger.debug(`Selling ${partSizeToSell} ${this.baseCurrency}`)
+
+                await this.sell(size)
+            } else if (config.trader.useExitStrategyInCaseOfLosses && Equation.rateBetweenValues(this.lastTrade.price, this.lastWork.price) <= -config.trader.sellWhenLossRateReaches) {
                 /*
                  * Option useExitStrategyInCaseOfLosses is activated
                  * So, we sell because the loss is below the limit we fixed
@@ -338,9 +368,7 @@ class Trader implements Trading {
                 await this.sell(size)
             } else if (this.chartAnalyzer.detectBump(this.works)) {
                 /*
-                 * We found a bump, do we have already bought?
-                 * If yes: we will buy only if the price is under the last sell price
-                 * If no: we do nothing, we wait an hollow to buy first
+                 * We found a bump, is the trader is profitable, he sells
                  */
                 Logger.debug('Bump detected!')
 
@@ -357,7 +385,7 @@ class Trader implements Trading {
                 /*
                  * Fast mode
                  * Detect pump which can be profitable to sell in
-                 * We accelerate the ticker interval until we try to sell
+                 * We accelerate the ticker interval until trader try to sell
                  */
                 Logger.debug('Fast mode activated')
                 this.chartWorker.fastMode()
@@ -446,7 +474,7 @@ class Trader implements Trading {
             
             `)
             Logger.debug(`Last trade: ${JSON.stringify(this.lastTrade, null, 2)}`)
-            Logger.debug(`Would be able to sell when the price will be above ${Equation.thresholdPriceOfProbitability(this.lastTrade.price).toFixed(8)}${this.quoteCurrency}`)
+            Logger.debug(`Would be able to sell when the price will be above ${Equation.thresholdPriceOfProfitability(this.lastTrade.price).toFixed(8)}${this.quoteCurrency}`)
             Logger.debug(`Funds desired to invest: ${funds}${this.quoteCurrency}`)
             Logger.debug(`Funds really invested: ${fundsUsed}${this.quoteCurrency}`)
         } catch (error) {

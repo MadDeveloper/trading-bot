@@ -30,6 +30,8 @@ export interface Orders {
     
     normalizeQuantity?(quantity: number): number
 
+    getMinQuantity?(): number;
+
     cancel(order: OrderResult): any
 }
 

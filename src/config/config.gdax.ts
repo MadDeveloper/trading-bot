@@ -30,8 +30,10 @@ const gdaxConfig: Config = {
         
         // Probitability strategy & exit strategies
         sellWhenPriceExceedsMaxThresholdOfProfitability: true,
+        sellWhenPriceExceedsMinThresholdOfProfitability: true,
+        quantityToSellWhenPriceExceedsMinThresholdOfProfitability: 30, // in %
         maxThresholdOfProfitability: 2, // in %
-        minProfitableRateWhenSelling: 0.5, // in %. How many % profitability wanted when selling
+        minThresholdOfProfitability: 0.5, // in %. How many % profitability wanted when selling
         useExitStrategyInCaseOfLosses: true,
         sellWhenLossRateReaches: 10 // in %
     },

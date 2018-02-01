@@ -2,8 +2,6 @@
 - recréer les tendances après filtrage
 - Test de perf au lancement
 - si le bot est bloqué sur un trade de vente trop longtemps envoyer une alerte
-- Sur le chart uniquement, ne pas afficher les anciens trades
-- si on repart des anciens trades, il faut repartir du timer aussi
 
 - mettre plus d'options pour controler le bot (socket ?) -> voir sur une page web ses trades, son état, le chart, etc.
 - amélorer l'algo de tendances

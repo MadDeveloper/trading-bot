@@ -25,12 +25,14 @@ declare interface Config {
         quantityOfQuoteCurrencyToUse: number, // in %
         maxQuantityQuoteCurrencyToUse: number,
         minQuantityQuoteCurrencyToUse: number,
-        minProfitableRateWhenSelling: number, // in %
+        minThresholdOfProfitability: number, // in %
 
         // Strategies
         useExitStrategyInCaseOfLosses: boolean,
         sellWhenLossRateReaches: number, // in %
         sellWhenPriceExceedsMaxThresholdOfProfitability: boolean,
+        sellWhenPriceExceedsMinThresholdOfProfitability: boolean,
+        quantityToSellWhenPriceExceedsMinThresholdOfProfitability: number, // in %
         maxThresholdOfProfitability: number // in %
     },
     market: {

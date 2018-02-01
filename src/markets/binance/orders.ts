@@ -141,6 +141,12 @@ class BinanceOrders implements Orders {
         return normalizedQuantity
     }
 
+    getMinQuantity(): number {
+        const currencyLotSizeFilter = this.getLotSizeFilter(this.market.currencyInfo)
+
+        return parseFloat(currencyLotSizeFilter.minQty)
+    }
+
     private async fakeBuyMarket(currency: Currency, quantity: number) {
         return {
             orderId: 'fake',

@@ -127,8 +127,11 @@ export enum Currency {
     INS = 'INS',
     PIVX = 'PIVX',
     IOST = 'IOST',
+    STEEM = 'STEEM',
 
     // CURRENCY EXCHANGE
+    STEEMBTC = 'STEEMBTC',
+    STEEMETH = 'STEEMETH',
     ETHBTC = 'ETHBTC',
     LTCBTC = 'LTCBTC',
     BNBBTC = 'BNBBTC',

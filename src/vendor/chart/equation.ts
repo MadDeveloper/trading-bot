@@ -29,7 +29,7 @@ class Equation {
     }
 
     static isProfitable(buyPrice, comparedPrice) {
-        const threshold = Equation.thresholdPriceOfProbitability(buyPrice)
+        const threshold = Equation.thresholdPriceOfProfitability(buyPrice)
 
         return comparedPrice >= threshold
     }
@@ -38,7 +38,7 @@ class Equation {
         return ((size * sellPrice) * (1 - config.market.orderFees)) > quoteCurrencyInvested
     }
 
-    static thresholdPriceOfProbitability(buyPrice: number, threshold: number = config.trader.minProfitableRateWhenSelling): number {
+    static thresholdPriceOfProfitability(buyPrice: number, threshold: number = config.trader.minThresholdOfProfitability): number {
         const multiplierFeesIncluded = 1 - config.market.orderFees
 
         if (multiplierFeesIncluded === 0) {
@@ -51,8 +51,8 @@ class Equation {
         return buyPrice * ((1 + (threshold / 100)) / Math.pow(multiplierFeesIncluded, 2))
     }
 
-    static maxThresholdPriceOfProbitability(buyPrice: number): number {
-        return Equation.thresholdPriceOfProbitability(buyPrice, config.trader.maxThresholdOfProfitability)
+    static maxThresholdPriceOfProfitability(buyPrice: number): number {
+        return Equation.thresholdPriceOfProfitability(buyPrice, config.trader.maxThresholdOfProfitability)
     }
 }
 

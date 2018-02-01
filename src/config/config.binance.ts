@@ -19,17 +19,21 @@ const binanceConfig: Config = {
     trader: {
         // Quantities strategy
         quantityOfBaseCurrencyToUse: 100, // in % (BTC, ETH, LTC, ...)
-
         quantityOfQuoteCurrencyToUse: 100, // in % (€, $)
         maxQuantityQuoteCurrencyToUse: 0.0022, // 100€, 100 BTC (max quantity)
         minQuantityQuoteCurrencyToUse: 0.001, // 50€, 50 BTC
         
         // Probitability strategy & exit strategies
-        sellWhenPriceExceedsMaxThresholdOfProfitability: true,
+
+        // Max threshold
+        sellWhenPriceExceedsMinThresholdOfProfitability: true,
         maxThresholdOfProfitability: 0.3, // in %
 
-        minProfitableRateWhenSelling: 0.1, // how many % profitability wanted when selling
-        
+        // Min threshold
+        sellWhenPriceExceedsMaxThresholdOfProfitability: true,
+        minThresholdOfProfitability: 0.1, // how many % profitability wanted when selling
+        quantityToSellWhenPriceExceedsMinThresholdOfProfitability: 30, // in %
+
         useExitStrategyInCaseOfLosses: true,
         sellWhenLossRateReaches: 10 // in %
     },

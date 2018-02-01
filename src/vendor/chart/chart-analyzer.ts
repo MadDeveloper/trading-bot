@@ -48,7 +48,7 @@ class ChartAnalyzer {
     }
 
     detectProfitablePump(works: ChartWork[], buyPrice: number): boolean {
-        const thresholdPriceProfitable = Equation.thresholdPriceOfProbitability(buyPrice)
+        const thresholdPriceProfitable = Equation.thresholdPriceOfProfitability(buyPrice)
         const lastWork = works[works.length - 1]
         let profitablePump = false
 
