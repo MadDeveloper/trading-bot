@@ -16,6 +16,7 @@ import { Trend } from '../chart/trend.enum';
 import { writeFile, readFile } from 'fs';
 import { OrderResult } from '../market/order';
 import { promisify } from 'util';
+import { DataStorage } from './data';
 
 class Trader implements Trading {
     market: Market
@@ -66,7 +67,7 @@ class Trader implements Trading {
         }
 
         try {
-            await this.loadTrades()
+            await this.loadData()
             await this.updateBalances()
 
             Logger.debug('\nBalances:')
@@ -246,25 +247,23 @@ class Trader implements Trading {
         // Logger.debug(this.chartAnalyzer.detectBump(worksContainingBump))
     }
 
-    async watchChartWorker() {
-        this.workObserver = this.chartWorker.work$.subscribe((work: ChartWork) => {
-            
+    watchChartWorker() {
+        this.workObserver = this.chartWorker.work$.subscribe(async (work: ChartWork) => {
+
             this.works = this.chartWorker.filterNoise(this.chartWorker.copyWorks())
-            
+
             const newLastWork = { ...this.works[this.works.length - 1] }
-            
+
             Logger.debug(`\n--------------- ${newLastWork.price} ${this.quoteCurrency} -----------------\n`)
 
             if (!this.worksAreEquals(newLastWork, this.lastWork)) {
                 this.lastWork = newLastWork
-                this.analyzeWorks()
+                await this.analyzeWorks()
             } else {
                 Logger.debug('Waiting a new point...')
             }
 
-            if (config.app.debug) {
-                this.writeDebug()
-            }
+            this.persistData()
 
             Logger.debug('\n')
         })
@@ -272,6 +271,7 @@ class Trader implements Trading {
 
     async analyzeWorks() {
         Logger.debug('Analyzing chart...')
+        Logger.debug(`Time: ${this.lastWork.time}`)
 
         if (TraderState.WAITING_TO_BUY === this.state) {
             Logger.debug('Trader wants to buy.')
@@ -293,7 +293,7 @@ class Trader implements Trading {
                     Logger.debug(`Trader is buying at ${this.lastWork.price}`)
 
                     // We have sold, and the current price is below since the last price we sold so we can buy
-                    this.buy(funds)
+                    await this.buy(funds)
                 } else {
                     Logger.debug(`Not bought! Error occured with last trade: ${JSON.stringify(this.lastTrade)}`)
 
@@ -327,7 +327,7 @@ class Trader implements Trading {
                  */
                 Logger.debug('Threshold of profitability reached')
                 Logger.debug(`Trader is selling at ${this.lastWork.price}`)
-                this.sell(size)
+                await this.sell(size)
             } else if (config.trader.useExitStrategyInCaseOfLosses && Equation.rateBetweenValues(this.lastTrade.price, this.lastWork.price) < -config.trader.sellWhenLossRateReaches) {
                 /*
                  * Option useExitStrategyInCaseOfLosses is activated
@@ -335,7 +335,7 @@ class Trader implements Trading {
                  */
                 Logger.debug('Threshold of loss rate reached')
                 Logger.debug(`Trader is selling at ${this.lastWork.price}`)
-                this.sell(size)
+                await this.sell(size)
             } else if (this.chartAnalyzer.detectBump(this.works)) {
                 /*
                  * We found a bump, do we have already bought?
@@ -346,7 +346,7 @@ class Trader implements Trading {
 
                 if (Equation.isProfitable(this.lastTrade.price, this.lastWork.price) /*&& Equation.isProfitableOnQuantity(quoteCurrencyInvested, size, priceToSell)*/) {
                     Logger.debug(`Trader is selling at ${this.lastWork.price}`)
-                    this.sell(size)
+                    await this.sell(size)
                 } else {
                     Logger.debug('Not sold! Was not profitable')
 
@@ -364,6 +364,8 @@ class Trader implements Trading {
             } else {
                 Logger.debug('No defined strategies detected. Waiting for an event...')
             }
+        } else if (TraderState.WAITING_FOR_API_RESPONSE === this.state) {
+            Logger.debug('Trader tried to analyze next work before waiting api response for the last request. Please check your network latency.')
         } else {
             Logger.error(`Trader.state does not match any action: ${this.state}`)
             this.stop() // No action to be done, trader is maybe crashed, need external intervention
@@ -407,20 +409,26 @@ class Trader implements Trading {
                 throw new Error('Trying to buy but last trade is not of type SELL.')
             }
 
+            Logger.debug(`Trying to buy with ${funds} ${this.baseCurrency}`)
+            Logger.debug('Sending order to the market...')
+
+            this.state = TraderState.WAITING_FOR_API_RESPONSE
+
+            const lastWorkBackup = { ...this.lastWork }
+
             // Remote work
-            const order = await this.market.orders.buyMarket(this.market.currency, funds, this.lastWork.price)
+            const order = await this.market.orders.buyMarket(this.market.currency, funds, lastWorkBackup.price)
 
             await this.updateBalances()
 
             // FIXME: order.price is always 0.00000, need to get FULL response type
             // Local work
-            const fundsUsed = this.lastWork.price * order.executedQuantity
+            const fundsUsed = lastWorkBackup.price * order.executedQuantity
             const fees = fundsUsed * config.market.orderFees
 
-            this.state = TraderState.WAITING_TO_SELL
             this.lastTrade = {
-                price: this.lastWork.price,
-                time: this.lastWork.time,
+                price: lastWorkBackup.price,
+                time: lastWorkBackup.time,
                 benefits: -fundsUsed,
                 fees,
                 type: TradeType.BUY,
@@ -428,6 +436,7 @@ class Trader implements Trading {
             }
 
             this.actionsPostTrade()
+            this.state = TraderState.WAITING_TO_SELL
 
             Logger.debug(`
              ____ ____ ____ 
@@ -457,21 +466,25 @@ class Trader implements Trading {
             }
 
             Logger.debug(`Trying to sell ${size} ${this.baseCurrency}`)
+            Logger.debug('Sending order to the market...')
+
+            this.state = TraderState.WAITING_FOR_API_RESPONSE
+
+            const lastWorkBackup = { ...this.lastWork }
 
             // Remote work
-            const order = await this.market.orders.sellMarket(this.market.currency, size, this.lastWork.price)
+            const order = await this.market.orders.sellMarket(this.market.currency, size, lastWorkBackup.price)
 
             await this.updateBalances()
 
             // FIXME: order.price is always 0.00000, need to get FULL response type
             // Local work
-            const fees = (this.lastWork.price * order.executedQuantity) * config.market.orderFees
-            const quoteCurrencyQuantity = (this.lastWork.price * order.executedQuantity) - fees
+            const fees = (lastWorkBackup.price * order.executedQuantity) * config.market.orderFees
+            const quoteCurrencyQuantity = (lastWorkBackup.price * order.executedQuantity) - fees
 
-            this.state = TraderState.WAITING_TO_BUY
             this.lastTrade = {
-                price: this.lastWork.price,
-                time: this.lastWork.time,
+                price: lastWorkBackup.price,
+                time: lastWorkBackup.time,
                 benefits: quoteCurrencyQuantity - Math.abs(this.lastTrade.benefits), // lastTrade is a buy trade, and trade trade have a negative benefits
                 fees,
                 type: TradeType.SELL,
@@ -479,6 +492,7 @@ class Trader implements Trading {
             }
 
             this.actionsPostTrade()
+            this.state = TraderState.WAITING_TO_BUY
 
             Logger.debug(`
              ____ ____ ____ ____ 
@@ -496,7 +510,6 @@ class Trader implements Trading {
 
     private actionsPostTrade() {
         this.trades.push({ ...this.lastTrade })
-        this.persistTrades()
         this.prepareForNewTrade()
     }
 
@@ -522,14 +535,30 @@ class Trader implements Trading {
         }
     }
 
-    private async loadTrades() {
+    private worksAreEquals(workA: ChartWork, workB: ChartWork): boolean {
+        if (!workA || !workB) {
+            return false
+        }
+
+        return workA.time === workB.time
+    }
+
+    private async loadData() {
+        Logger.debug('Loading data from data.json...')
+
         try {
             const read = promisify(readFile)
 
-            const data = await read('./trades.json', { encoding: 'utf-8' })
+            const dataString = await read('./data.json', { encoding: 'utf-8' })
 
-            if (data && data.length > 0) {
-                this.trades = JSON.parse(data)
+            if (dataString && dataString.length > 0) {
+                const data: DataStorage = JSON.parse(dataString)
+
+                this.trades = data.trades
+                this.works = data.worksSmoothed
+                this.chartWorker.initFromWorks(data.works)
+
+                Logger.debug('Data loaded.')
 
                 if (this.trades.length > 0) {
                     this.lastTrade = { ...this.trades[this.trades.length - 1] }
@@ -539,7 +568,7 @@ class Trader implements Trading {
                 }
             }
         } catch (error) {
-            Logger.debug('File trades.json does not exist or contains invalid json')
+            Logger.debug('File data.json does not exist or contains invalid json')
         }
 
         if (!this.lastTrade) {
@@ -547,46 +576,27 @@ class Trader implements Trading {
         }
     }
 
-    private async persistTrades() {
+    private async persistData() {
         try {
             const write = promisify(writeFile)
 
-            await write('./trades.json', JSON.stringify(this.trades, null, 2), { encoding: 'utf-8' })
+            await write('./data.json', JSON.stringify(this.forgeData(), null, 2), { encoding: 'utf-8' })
         } catch (error) {
-            Logger.error('\nError when trying to persist trades.\n')
+            Logger.error('\nError when trying to persist data.\n')
             Logger.error(error)
         }
     }
 
-    private worksAreEquals(workA: ChartWork, workB: ChartWork): boolean {
-        if (!workA || !workB) {
-            return false
-        }
-
-        return workA.time === workB.time
-    }
-
-    getDebug() {
+    private forgeData(): DataStorage {
         return {
-            allWorksStored: this.chartWorker.allWorks,
-            allWorksSmoothed: this.chartWorker.filterNoise(this.chartWorker.copyWorks(this.chartWorker.allWorks)),
+            works: this.chartWorker.allWorks,
+            worksSmoothed: this.chartWorker.filterNoise(this.chartWorker.copyWorks(this.chartWorker.allWorks)),
             trades: this.trades,
             baseCurrency: this.baseCurrency,
             baseCurrencyBalance: this.baseCurrencyBalance,
             quoteCurrency: this.quoteCurrency,
             quoteCurrencyBalance: this.quoteCurrencyBalance
         }
-    }
-
-    writeDebug() {
-        const debug = this.getDebug()
-
-        writeFile('./data.json', JSON.stringify(debug, null, 2), { encoding: 'utf-8' }, error => {
-            if (error) {
-                Logger.debug('An error occured while trying to write in debug file')
-                Logger.debug(error)
-            }
-        })
     }
 }
 

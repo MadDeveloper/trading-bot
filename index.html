@@ -50,14 +50,14 @@
       baseCurrency = data.baseCurrency
       baseCurrencyBalance = data.baseCurrencyBalance
 
-      data.allWorksStored.forEach(work => {
+      data.works.forEach(work => {
         works.push(Object.assign({}, work, {
           x: work.time / 1000,
           y: work.price
         }))
       })
 
-      data.allWorksSmoothed.forEach(work => {
+      data.worksSmoothed.forEach(work => {
         filteredWorks.push(Object.assign({}, work, {
           x: work.time / 1000,
           y: work.price

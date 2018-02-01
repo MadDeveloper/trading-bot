@@ -48,6 +48,26 @@ class ChartWorker {
         this.lastPrice = null
     }
 
+    initFromWorks(works: ChartWork[]) {
+        this.allWorks = this.copyWorks(works)
+
+        if (this.allWorks.length > 0) {
+            this.lastWork = this.allWorks[this.allWorks.length - 1]
+            this.lastTime = this.lastWork.time + this.tickerInterval
+            this.lastPrice = this.lastWork.lastPrice
+            this.price = this.lastWork.price
+            this.trend = this.lastWork.trend
+            this.lastTrend = this.lastWork.lastTrend
+            this.lastId = this.lastWork.id + 1
+
+            works.forEach(work => {
+                const point = this.extractPointFromWork(work)
+
+                this.chart.createPoint(point.x, point.y)
+            })
+        }
+    }
+
     workOnPriceTicker() {
         if (this.tickerIntervalRef) {
             clearInterval(this.tickerIntervalRef)

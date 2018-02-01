@@ -20,6 +20,10 @@ class Chart {
         return Object.assign({}, point)
     }
 
+    addPoint(point: Point) {
+        this.points.push(point)
+    }
+
     lastPoint(): Point {
         if (this.points.length === 0) {
             return null

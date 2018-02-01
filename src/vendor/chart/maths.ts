@@ -1,4 +1,4 @@
-export function floatSafeRemainder(val, step) {
+export function floatSafeRemainder(val: number, step: number): number {
     const valDecCount = (val.toString().split('.')[1] || '').length
     const stepDecCount = (step.toString().split('.')[1] || '').length
     const decCount = valDecCount > stepDecCount ? valDecCount : stepDecCount
