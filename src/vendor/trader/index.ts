@@ -457,11 +457,11 @@ class Trader implements Trading {
 
             // FIXME: order.price is always 0.00000, need to get FULL response type
             // Local work
-            const fundsUsed = lastWorkBackup.price * order.executedQuantity
+            const fundsUsed = order.price * order.executedQuantity
             const fees = fundsUsed * config.market.orderFees
 
             this.lastTrade = {
-                price: lastWorkBackup.price,
+                price: order.price,
                 time: lastWorkBackup.time,
                 benefits: -fundsUsed,
                 fees,
@@ -513,11 +513,11 @@ class Trader implements Trading {
 
             // FIXME: order.price is always 0.00000, need to get FULL response type
             // Local work
-            const fees = (lastWorkBackup.price * order.executedQuantity) * config.market.orderFees
-            const quoteCurrencyQuantity = (lastWorkBackup.price * order.executedQuantity) - fees
+            const fees = (order.price * order.executedQuantity) * config.market.orderFees
+            const quoteCurrencyQuantity = (order.price * order.executedQuantity) - fees
 
             this.lastTrade = {
-                price: lastWorkBackup.price,
+                price: order.price,
                 time: lastWorkBackup.time,
                 benefits: quoteCurrencyQuantity - Math.abs(this.lastTrade.benefits), // lastTrade is a buy trade, and trade trade have a negative benefits
                 fees,

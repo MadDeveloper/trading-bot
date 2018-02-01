@@ -11,8 +11,16 @@ export interface BaseOrderInfo {
     originQuantity: number;
     executedQuantity: number;
     transactionTime: number;
+    fills?: OrderFill[]
 }
 
 export interface OrderResult extends BaseOrderInfo {
     timeInForce: 'GTC' | 'GTT' | 'IOC' | 'FOK';
+}
+
+export interface OrderFill {
+    price: number
+    quantity: number
+    commission: number
+    commissionAsset: Currency
 }

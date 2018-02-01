@@ -1,5 +1,3 @@
-- pouvoir récupérer le ticker d'un symbol (wait npm update)
-- récupérer le prix exact d'achat/vente après order
 - recréer les tendances après filtrage
 - Test de perf au lancement
 - si le bot est bloqué sur un trade de vente trop longtemps envoyer une alerte

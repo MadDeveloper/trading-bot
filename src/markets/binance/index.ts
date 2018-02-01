@@ -62,7 +62,7 @@ class BinanceMarket implements Market {
 
         const prices = promisify(this.client.prices)
 
-        this.lastTicker = await prices()
+        this.lastTicker = await prices(this.currency)
 
         const currencyTicker = this.lastTicker[this.currency]
 

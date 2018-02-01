@@ -1,6 +1,6 @@
 {
   "name": "bot",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -15,7 +15,7 @@
   "dependencies": {
     "delay": "^2.0.0",
     "gdax": "^0.5.1",
-    "node-binance-api": "^0.4.6",
+    "node-binance-api": "^0.4.8",
     "rxjs": "^5.5.6"
   },
   "devDependencies": {

@@ -4,7 +4,7 @@ import Market from '../../vendor/interfaces/market';
 import { Currency } from '../../vendor/interfaces/currency.enum';
 import { CurrencyFilter, CurrencyInfo } from '../../vendor/market/currency-info';
 import { LimitOrder } from 'gdax';
-import { OrderResult } from '../../vendor/market/order';
+import { OrderResult, OrderFill } from '../../vendor/market/order';
 import { Orders } from '../../vendor/market/orders';
 import { OrderStatus } from '../../vendor/interfaces/order-status.enum';
 import { OrderType } from '../../vendor/interfaces/order-type.enum';
@@ -48,7 +48,7 @@ class BinanceOrders implements Orders {
 
         try {
             const quantity = this.normalizeQuantity(funds / marketPrice)
-            const response = await buy(currency, quantity)
+            const response = await buy(currency, quantity, { newOrderRespType: 'FULL' })
 
             if (!response) {
                 throw Error(`Error when trying to buy with a market order: ${JSON.stringify(response, null, 2)}`)
@@ -58,6 +58,7 @@ class BinanceOrders implements Orders {
             Logger.debug(JSON.stringify(response, null, 2))
 
             this.lastOrder = this.forgeOrderResult(response)
+            this.lastOrder.price = this.computeFillsWeightedAveragePrice(response)
             this.done.push({ ...this.lastOrder })
 
             return this.lastOrder
@@ -87,6 +88,7 @@ class BinanceOrders implements Orders {
         Logger.debug(JSON.stringify(response, null, 2))
 
         this.lastOrder = this.forgeOrderResult(response)
+        this.lastOrder.price = this.computeFillsWeightedAveragePrice(response)
         this.done.push({ ...this.lastOrder })
 
         return this.lastOrder
@@ -215,8 +217,40 @@ class BinanceOrders implements Orders {
             status: order.status,
             timeInForce: order.timeInForce,
             type: order.type,
-            side: order.side
+            side: order.side,
+            fills: this.forgeOrderResultFills(order)
         }
+    }
+
+    private forgeOrderResultFills(order: any): OrderFill[] {
+        const fills = order.fills
+
+        if (!Array.isArray(fills)) {
+            return null
+        }
+
+        return fills.map((fill: any): OrderFill => ({
+            price: parseFloat(fill.price),
+            quantity: parseFloat(fill.qty),
+            commission: parseFloat(fill.commission),
+            commissionAsset: fill.commissionAsset
+        }))
+    }
+
+    private computeFillsWeightedAveragePrice(order: OrderResult): number {
+        if (!Array.isArray(order.fills)) {
+            return null
+        }
+
+        let quantitySum = 0
+        let sum = 0
+
+        order.fills.forEach(fill => {
+            sum += (fill.quantity * fill.price)
+            quantitySum += fill.quantity
+        })
+
+        return parseFloat((sum / quantitySum).toFixed(8))
     }
 }
 
