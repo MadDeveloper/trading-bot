@@ -495,9 +495,7 @@ class Trader implements Trading {
                 throw new Error(`Cannot sell, funds are invalid: ${size}`)
             }
 
-            if (this.lastTrade.type !== TradeType.BUY) {
-                throw new Error('Trying to sell but last trade is not of type BUY.')
-            }
+            // do not check last trade type, because trader might wants to sell only a part on the quantity, and sell the rest later
 
             Logger.debug(`Trying to sell ${size} ${this.baseCurrency}`)
             Logger.debug('Sending order to the market...')
