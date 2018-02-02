@@ -1,3 +1,5 @@
+- sur le chart, distinguer les achats des ventes
+- checker la corrélation entre les balances et les configs (quantity)
 - recréer les tendances après filtrage
 - Test de perf au lancement
 - si le bot est bloqué sur un trade de vente trop longtemps envoyer une alerte

@@ -58,7 +58,7 @@ class BinanceOrders implements Orders {
             Logger.debug(JSON.stringify(response, null, 2))
 
             this.lastOrder = this.forgeOrderResult(response)
-            this.lastOrder.price = this.computeFillsWeightedAveragePrice(response)
+            this.lastOrder.price = this.computeFillsWeightedAveragePrice(this.lastOrder)
             this.done.push({ ...this.lastOrder })
 
             return this.lastOrder
@@ -88,7 +88,7 @@ class BinanceOrders implements Orders {
         Logger.debug(JSON.stringify(response, null, 2))
 
         this.lastOrder = this.forgeOrderResult(response)
-        this.lastOrder.price = this.computeFillsWeightedAveragePrice(response)
+        this.lastOrder.price = this.computeFillsWeightedAveragePrice(this.lastOrder)
         this.done.push({ ...this.lastOrder })
 
         return this.lastOrder
