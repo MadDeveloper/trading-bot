@@ -78,7 +78,7 @@ class BinanceOrders implements Orders {
     async sellMarket(currency: Currency, size: number): Promise<OrderResult> {
         const sell = config.api.sandbox ? this.fakeSellMarket : promisify(this.client.marketSell)
         const quantity = this.normalizeQuantity(size)
-        const response = await sell(currency, quantity)
+        const response = await sell(currency, quantity, { newOrderRespType: 'FULL' })
 
         if (!response) {
             throw Error(`Error when trying to sell with a market order: ${JSON.stringify(response, null, 2)}`)

@@ -321,7 +321,7 @@ class Trader implements Trading {
                 Logger.debug(`Max threshold of profitability reached (profitability: ${config.trader.maxThresholdOfProfitability}%)`)
                 Logger.debug(`Trader is selling at ${this.lastWork.price}`)
                 await this.sell(size)
-            } else if (config.trader.sellWhenPriceExceedsMinThresholdOfProfitability && Equation.isProfitable(this.lastBuyTrade.price, this.lastWork.price)) {
+            } else if (config.trader.sellWhenPriceExceedsMinThresholdOfProfitability && Equation.isProfitable(this.lastBuyTrade.price, this.lastWork.price) && !Equation.isProfitable(this.lastBuyTrade.price, this.lastWork.lastPrice)) {
                 /*
                  * Options sellWhenPriceExceedsMinThresholdOfProfitability is activated
                  * So, we sell because de price exceeds the min threshold of profitability defined
@@ -445,6 +445,14 @@ class Trader implements Trading {
 
             await this.updateBalances()
 
+            Logger.debug(`Order formatted: ${JSON.stringify(order, null, 2)}`)
+            
+            if (lastWorkBackup.price !== price) {
+                Logger.debug(`WARN: prices have diverged when bot wanted to buy.`)
+                Logger.debug(`Bot buy price desired: ${lastWorkBackup.price}`)
+                Logger.debug(`Real order price: ${price} ${this.quoteCurrency}`)
+            }
+
             // Local work
             const fundsUsed = price * order.executedQuantity
             const fees = fundsUsed * config.market.orderFees
@@ -497,6 +505,14 @@ class Trader implements Trading {
             const price = order.price || lastWorkBackup.price
 
             await this.updateBalances()
+
+            Logger.debug(`Order formatted: ${JSON.stringify(order, null, 2)}`)
+            
+            if (lastWorkBackup.price !== price) {
+                Logger.debug(`WARN: prices have diverged when bot wanted to sell.`)
+                Logger.debug(`Bot sell price desired: ${lastWorkBackup.price}`)
+                Logger.debug(`Real order price: ${price} ${this.quoteCurrency}`)
+            }
 
             // Local work
             const fees = (price * order.executedQuantity) * config.market.orderFees

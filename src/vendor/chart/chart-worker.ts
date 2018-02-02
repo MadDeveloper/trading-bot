@@ -162,6 +162,10 @@ class ChartWorker {
     filterNoise(works: ChartWork[]): ChartWork[] {
         const smooting = config.chart.smoothing
 
+        // FIXME: relink here works between them
+        // Remap lastPrice, lastTrend, etc., in order to keep the chain logical
+        // WARN: lastPrice is used for the minThresholdOfProfitability strategy for exemple! So it is important
+
         switch (smooting) {
             case Smoothing.MOVING_AVERAGE:
                 return this.removePointsTooClose(this.smoothMovingAverage(works))
