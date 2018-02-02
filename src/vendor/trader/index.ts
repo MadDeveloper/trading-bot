@@ -452,16 +452,16 @@ class Trader implements Trading {
 
             // Remote work
             const order = await this.market.orders.buyMarket(this.market.currency, funds, lastWorkBackup.price)
+            const price = order.price || lastWorkBackup.price
 
             await this.updateBalances()
 
-            // FIXME: order.price is always 0.00000, need to get FULL response type
             // Local work
-            const fundsUsed = order.price * order.executedQuantity
+            const fundsUsed = price * order.executedQuantity
             const fees = fundsUsed * config.market.orderFees
 
             this.lastTrade = {
-                price: order.price,
+                price,
                 time: lastWorkBackup.time,
                 benefits: -fundsUsed,
                 fees,
@@ -506,16 +506,16 @@ class Trader implements Trading {
 
             // Remote work
             const order = await this.market.orders.sellMarket(this.market.currency, size, lastWorkBackup.price)
+            const price = order.price || lastWorkBackup.price
 
             await this.updateBalances()
 
-            // FIXME: order.price is always 0.00000, need to get FULL response type
             // Local work
-            const fees = (order.price * order.executedQuantity) * config.market.orderFees
-            const quoteCurrencyQuantity = (order.price * order.executedQuantity) - fees
+            const fees = (price * order.executedQuantity) * config.market.orderFees
+            const quoteCurrencyQuantity = (price * order.executedQuantity) - fees
 
             this.lastTrade = {
-                price: order.price,
+                price,
                 time: lastWorkBackup.time,
                 benefits: quoteCurrencyQuantity - Math.abs(this.lastTrade.benefits), // lastTrade is a buy trade, and trade trade have a negative benefits
                 fees,
