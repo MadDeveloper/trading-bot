@@ -31,7 +31,8 @@ class Trader implements Trading {
     baseCurrencyBalance: number // BTC, ETH, LTC, etc.
 
     trades: Trade[]
-    lastTrade: Trade
+    lastBuyTrade: Trade
+    lastSellTrade: Trade
 
     private works: ChartWork[]
     private lastWork: ChartWork
@@ -43,6 +44,8 @@ class Trader implements Trading {
         this.works = []
         this.lastWork = null
         this.trades = []
+        this.lastBuyTrade = null
+        this.lastSellTrade = null
         this.state = TraderState.WAITING_TO_BUY
         this.chartAnalyzer = new ChartAnalyzer(this.chartWorker)
 
@@ -283,31 +286,21 @@ class Trader implements Trading {
             if (this.chartAnalyzer.detectHollow(this.works)) {
                 Logger.debug('Hollow detected!')
                 /*
-                 * We found a hollow, do we have already sold?
-                 * If yes: we will buy only if the price is under the last sell price (we want a negative enough pct difference)
-                 * If no: we can just buy at the current price
+                 * We found a hollow
                  */
-                if (!this.lastTrade || Number.isFinite(this.lastTrade.price)) {
-                    const funds = this.fundsToUse()
+                const funds = this.fundsToUse()
 
-                    Logger.debug(`Trader is buying at ${this.lastWork.price}`)
+                Logger.debug(`Trader is buying at ${this.lastWork.price}`)
 
-                    // We have sold, and the current price is below since the last price we sold so we can buy
-                    await this.buy(funds)
-                } else {
-                    Logger.debug(`Not bought! Error occured with last trade: ${JSON.stringify(this.lastTrade)}`)
-
-                    // Hollow was not enough down in order to buy, but we clear works in order to avoid to loop through it later in analyzer
-                    this.prepareForNewTrade()
-                }
+                // We have sold, and the current price is below since the last price we sold so we can buy
+                await this.buy(funds)
             } else {
                 Logger.debug('Waiting for an hollow...')
             }
-        } else if (TraderState.WAITING_TO_SELL === this.state && this.lastTrade && Number.isFinite(this.lastTrade.price)) {
+        } else if (TraderState.WAITING_TO_SELL === this.state && this.lastBuyTrade && Number.isFinite(this.lastBuyTrade.price)) {
             Logger.debug('Trader wants to sell.')
 
             let size
-            let quoteCurrencyInvested = this.lastTrade.benefits
             let priceToSell = this.lastWork.price
 
             try {
@@ -320,7 +313,7 @@ class Trader implements Trading {
             }
 
             // Strategies
-            if (config.trader.sellWhenPriceExceedsMaxThresholdOfProfitability && this.lastWork.price >= Equation.maxThresholdPriceOfProfitability(this.lastTrade.price)) {
+            if (config.trader.sellWhenPriceExceedsMaxThresholdOfProfitability && this.lastWork.price >= Equation.maxThresholdPriceOfProfitability(this.lastBuyTrade.price)) {
                 /*
                  * Option sellWhenPriceExceedsThresholdOfProfitability is activated
                  * So, we sell because de price exceeds the max threshold of profitability defined
@@ -328,7 +321,7 @@ class Trader implements Trading {
                 Logger.debug(`Max threshold of profitability reached (profitability: ${config.trader.maxThresholdOfProfitability}%)`)
                 Logger.debug(`Trader is selling at ${this.lastWork.price}`)
                 await this.sell(size)
-            } else if (config.trader.sellWhenPriceExceedsMinThresholdOfProfitability && Equation.isProfitable(this.lastTrade.price, this.lastWork.price)) {
+            } else if (config.trader.sellWhenPriceExceedsMinThresholdOfProfitability && Equation.isProfitable(this.lastBuyTrade.price, this.lastWork.price)) {
                 /*
                  * Options sellWhenPriceExceedsMinThresholdOfProfitability is activated
                  * So, we sell because de price exceeds the min threshold of profitability defined
@@ -364,7 +357,7 @@ class Trader implements Trading {
                 if (partSizeToSell < size) {
                     this.state = TraderState.WAITING_TO_SELL // Trader sold only a part, he has to sell the rest
                 }
-            } else if (config.trader.useExitStrategyInCaseOfLosses && Equation.rateBetweenValues(this.lastTrade.price, this.lastWork.price) <= -config.trader.sellWhenLossRateReaches) {
+            } else if (config.trader.useExitStrategyInCaseOfLosses && Equation.rateBetweenValues(this.lastBuyTrade.price, this.lastWork.price) <= -config.trader.sellWhenLossRateReaches) {
                 /*
                  * Option useExitStrategyInCaseOfLosses is activated
                  * So, we sell because the loss is below the limit we fixed
@@ -378,7 +371,7 @@ class Trader implements Trading {
                  */
                 Logger.debug('Bump detected!')
 
-                if (Equation.isProfitable(this.lastTrade.price, this.lastWork.price) /*&& Equation.isProfitableOnQuantity(quoteCurrencyInvested, size, priceToSell)*/) {
+                if (Equation.isProfitable(this.lastBuyTrade.price, this.lastWork.price)) {
                     Logger.debug(`Trader is selling at ${this.lastWork.price}`)
                     await this.sell(size)
                 } else {
@@ -387,7 +380,7 @@ class Trader implements Trading {
                     // Bump was not enough up in order to sell, but we clear works in order to avoid to loop through it later in analyzer
                     this.prepareForNewTrade()
                 }
-            } else if (!this.chartWorker.isInFastMode() && this.chartAnalyzer.detectProfitablePump(this.works, this.lastTrade.price)) {
+            } else if (!this.chartWorker.isInFastMode() && this.chartAnalyzer.detectProfitablePump(this.works, this.lastBuyTrade.price)) {
                 /*
                  * Fast mode
                  * Detect pump which can be profitable to sell in
@@ -439,10 +432,6 @@ class Trader implements Trading {
                 throw new Error(`Cannot buy, funds are invalid: ${funds}`)
             }
 
-            if (this.lastTrade && this.lastTrade.type !== TradeType.SELL) {
-                throw new Error('Trying to buy but last trade is not of type SELL.')
-            }
-
             Logger.debug(`Trying to buy with ${funds} ${this.baseCurrency}`)
             Logger.debug('Sending order to the market...')
 
@@ -460,7 +449,7 @@ class Trader implements Trading {
             const fundsUsed = price * order.executedQuantity
             const fees = fundsUsed * config.market.orderFees
 
-            this.lastTrade = {
+            this.lastBuyTrade = {
                 price,
                 time: lastWorkBackup.time,
                 benefits: -fundsUsed,
@@ -469,8 +458,7 @@ class Trader implements Trading {
                 quantity: order.executedQuantity
             }
 
-            this.actionsPostTrade()
-            this.state = TraderState.WAITING_TO_SELL
+            this.actionsPostBuyTrade()
 
             Logger.debug(`
              ____ ____ ____ 
@@ -479,8 +467,8 @@ class Trader implements Trading {
             |/__\\|/__\\|/__\\|            
             
             `)
-            Logger.debug(`Last trade: ${JSON.stringify(this.lastTrade, null, 2)}`)
-            Logger.debug(`Would be able to sell when the price will be above ${Equation.thresholdPriceOfProfitability(this.lastTrade.price).toFixed(8)}${this.quoteCurrency}`)
+            Logger.debug(`Last buy trade: ${JSON.stringify(this.lastBuyTrade, null, 2)}`)
+            Logger.debug(`Would be able to sell when the price will be above ${Equation.thresholdPriceOfProfitability(this.lastBuyTrade.price).toFixed(8)}${this.quoteCurrency}`)
             Logger.debug(`Funds desired to invest: ${funds}${this.quoteCurrency}`)
             Logger.debug(`Funds really invested: ${fundsUsed}${this.quoteCurrency}`)
         } catch (error) {
@@ -514,17 +502,16 @@ class Trader implements Trading {
             const fees = (price * order.executedQuantity) * config.market.orderFees
             const quoteCurrencyQuantity = (price * order.executedQuantity) - fees
 
-            this.lastTrade = {
+            this.lastSellTrade = {
                 price,
                 time: lastWorkBackup.time,
-                benefits: quoteCurrencyQuantity - Math.abs(this.lastTrade.benefits), // lastTrade is a buy trade, and trade trade have a negative benefits
+                benefits: quoteCurrencyQuantity - Math.abs(this.lastBuyTrade.benefits), // lastBuyTrade is a buy trade, and trade trade have a negative benefits
                 fees,
                 type: TradeType.SELL,
                 quantity: quoteCurrencyQuantity
             }
 
-            this.actionsPostTrade()
-            this.state = TraderState.WAITING_TO_BUY
+            this.actionsPostSellTrade()
 
             Logger.debug(`
              ____ ____ ____ ____ 
@@ -533,16 +520,23 @@ class Trader implements Trading {
             |/__\\|/__\\|/__\\|/__\\|
             
             `)
-            Logger.debug(`Last trade: ${JSON.stringify(this.lastTrade, null, 2)}`)
+            Logger.debug(`Last trade: ${JSON.stringify(this.lastSellTrade, null, 2)}`)
         } catch (error) {
             Logger.error(`Error when trying to sell: ${error}`)
             this.stop()
         }
     }
 
-    private actionsPostTrade() {
-        this.trades.push({ ...this.lastTrade })
+    private actionsPostBuyTrade() {
+        this.trades.push({ ...this.lastBuyTrade })
         this.prepareForNewTrade()
+        this.state = TraderState.WAITING_TO_SELL
+    }
+
+    private actionsPostSellTrade() {
+        this.trades.push({ ...this.lastSellTrade })
+        this.prepareForNewTrade()
+        this.state = TraderState.WAITING_TO_BUY
     }
 
     private getLastWork(): ChartWork {
@@ -593,19 +587,31 @@ class Trader implements Trading {
                 Logger.debug('Data loaded.')
 
                 if (this.trades.length > 0) {
-                    this.lastTrade = { ...this.trades[this.trades.length - 1] }
-                    this.state = this.lastTrade.type === TradeType.BUY ? TraderState.WAITING_TO_SELL : TraderState.WAITING_TO_BUY
+                    this.lastBuyTrade = this.findLastBuyTrade(this.trades)
+                    this.lastSellTrade = this.findLastSellTrade(this.trades)
 
-                    Logger.debug(`Starting from a previous trade: ${JSON.stringify(this.lastTrade, null, 2)}`)
+                    const lastTrade = this.trades[this.trades.length - 1]
+
+                    this.state = lastTrade.type === TradeType.BUY ? TraderState.WAITING_TO_SELL : TraderState.WAITING_TO_BUY
+
+                    Logger.debug(`Starting from a previous trade: ${JSON.stringify(lastTrade, null, 2)}`)
                 }
             }
         } catch (error) {
             Logger.debug('File data.json does not exist or contains invalid json')
         }
 
-        if (!this.lastTrade) {
+        if (!this.lastBuyTrade && !this.lastSellTrade) {
             Logger.debug('\nNo old trades found, starting from scratch.\n')
         }
+    }
+
+    private findLastBuyTrade(trades: Trade[]): Trade {
+        return trades.slice().reverse().find(trade => trade.type === TradeType.BUY)
+    }
+
+    private findLastSellTrade(trades: Trade[]): Trade {
+        return trades.slice().reverse().find(trade => trade.type === TradeType.SELL)
     }
 
     private async persistData() {
