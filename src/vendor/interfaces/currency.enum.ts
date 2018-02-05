@@ -128,8 +128,10 @@ export enum Currency {
     PIVX = 'PIVX',
     IOST = 'IOST',
     STEEM = 'STEEM',
+    CHAT = 'CHAT',
 
     // CURRENCY EXCHANGE
+    CHATBTC = 'CHATBTC',
     STEEMBTC = 'STEEMBTC',
     STEEMETH = 'STEEMETH',
     ETHBTC = 'ETHBTC',
