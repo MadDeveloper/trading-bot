@@ -1,8 +1,12 @@
 - sur le chart, distinguer les achats des ventes
+- choisir la monnaie
+    - regarder les variations sur 24h du prix
+    - volume
+    - écart entre les pics (spread)
 - checker la corrélation entre les balances et les configs (quantity)
-- recréer les tendances après filtrage
+- recréer les tendances après filtrage, les lastPrice/trend aussi (relink les points entre eux)
 - Test de perf au lancement
-- si le bot est bloqué sur un trade de vente trop longtemps envoyer une alerte
 
 - mettre plus d'options pour controler le bot (socket ?) -> voir sur une page web ses trades, son état, le chart, etc.
 - amélorer l'algo de tendances
+- MAYBE: au lieu de faire le nombre de points pour détecter une tendances, faire avec un % (WARN: aux pics isolés)

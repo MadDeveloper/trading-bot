@@ -290,7 +290,7 @@ class Trader implements Trading {
                  */
                 const funds = this.fundsToUse()
 
-                Logger.debug(`Trader is buying at ${this.lastWork.price}`)
+                Logger.debug(`Trader is buying at ${this.lastWork.price} ${this.quoteCurrency}`)
 
                 // We have sold, and the current price is below since the last price we sold so we can buy
                 await this.buy(funds)
@@ -432,7 +432,7 @@ class Trader implements Trading {
                 throw new Error(`Cannot buy, funds are invalid: ${funds}`)
             }
 
-            Logger.debug(`Trying to buy with ${funds} ${this.baseCurrency}`)
+            Logger.debug(`Trying to buy with ${funds} ${this.quoteCurrency}`)
             Logger.debug('Sending order to the market...')
 
             this.state = TraderState.WAITING_FOR_API_RESPONSE

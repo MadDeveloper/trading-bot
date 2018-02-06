@@ -10,7 +10,7 @@ const binanceConfig: Config = {
         platform: Platform.BINANCE
     },
     network: {
-        retryIntervalWhenConnectionIsLost: 5000 // ms
+        retryIntervalWhenConnectionIsLost: 3000 // ms
     },
     api: {
         ...keysBinance,
@@ -20,36 +20,36 @@ const binanceConfig: Config = {
         // Quantities strategy
         quantityOfBaseCurrencyToUse: 100, // in % (BTC, ETH, LTC, ...)
         quantityOfQuoteCurrencyToUse: 100, // in % (€, $)
-        maxQuantityQuoteCurrencyToUse: 0.0035, // 100€, 100 BTC (max quantity)
+        maxQuantityQuoteCurrencyToUse: 0.0022, // 100€, 100 BTC (max quantity)
         minQuantityQuoteCurrencyToUse: 0.001, // 50€, 50 BTC
         
         // Probitability strategy & exit strategies
 
         // Max threshold
         sellWhenPriceExceedsMaxThresholdOfProfitability: true,
-        maxThresholdOfProfitability: 0.5, // in %
+        maxThresholdOfProfitability: 0.6, // in %
         
         // Min threshold
         sellWhenPriceExceedsMinThresholdOfProfitability: true,
-        minThresholdOfProfitability: 0.22, // how many % profitability wanted when selling
+        minThresholdOfProfitability: 0.3, // how many % profitability wanted when selling
         quantityToSellWhenPriceExceedsMinThresholdOfProfitability: 25, // in %
 
         useExitStrategyInCaseOfLosses: true,
-        sellWhenLossRateReaches: 10 // in %
+        sellWhenLossRateReaches: 3 // in %
     },
     market: {
-        currency: Currency.DGDBTC,
+        currency: Currency.STEEMBTC,
         orderFees: 0.001 // <=> 0.1%
     },
     account: {
         quoteCurrency: Currency.BTC, // €, $, BTC
-        baseCurrency: Currency.DGD // BTC, ETH, LTC, ...
+        baseCurrency: Currency.STEEM // BTC, ETH, LTC, ...
     },
     chart: {
         tickerInterval: 1000 * 15, // ms
         reductionOfTheTickerIntervalOnSpeedMode: 0.5, // <=> we reduce by 50% the ticker interval
 
-        minPriceDifferenceToApproveNewPoint: 0.07, // <=> 0.1%
+        minPriceDifferenceToApproveNewPoint: 0.15, // in %. <=> 0.1%
         smoothing: Smoothing.SAMPLE,
 
         // Pump & dump
