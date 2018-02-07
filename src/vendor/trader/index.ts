@@ -439,11 +439,17 @@ class Trader implements Trading {
 
             const lastWorkBackup = { ...this.lastWork }
 
-            // Remote work
             const order = await this.market.orders.buyMarket(this.market.currency, funds, lastWorkBackup.price)
             const price = order.price || lastWorkBackup.price
+            const fundsUsed = price * order.executedQuantity
+            const fees = fundsUsed * config.market.orderFees
 
-            await this.updateBalances()
+            if (config.api.sandbox) {
+                this.quoteCurrencyBalance -= fundsUsed
+                this.baseCurrencyBalance += order.executedQuantity
+            } else {
+                await this.updateBalances()
+            }
 
             Logger.debug(`Order formatted: ${JSON.stringify(order, null, 2)}`)
             
@@ -452,10 +458,6 @@ class Trader implements Trading {
                 Logger.debug(`Bot buy price desired: ${lastWorkBackup.price}`)
                 Logger.debug(`Real order price: ${price} ${this.quoteCurrency}`)
             }
-
-            // Local work
-            const fundsUsed = price * order.executedQuantity
-            const fees = fundsUsed * config.market.orderFees
 
             this.lastBuyTrade = {
                 price,
@@ -500,11 +502,17 @@ class Trader implements Trading {
 
             const lastWorkBackup = { ...this.lastWork }
 
-            // Remote work
             const order = await this.market.orders.sellMarket(this.market.currency, size, lastWorkBackup.price)
             const price = order.price || lastWorkBackup.price
+            const fees = (price * order.executedQuantity) * config.market.orderFees
+            const quoteCurrencyQuantity = (price * order.executedQuantity) - fees
 
-            await this.updateBalances()
+            if (config.api.sandbox) {
+                this.quoteCurrencyBalance += quoteCurrencyQuantity
+                this.baseCurrencyBalance -= order.executedQuantity
+            } else {
+                await this.updateBalances()
+            }
 
             Logger.debug(`Order formatted: ${JSON.stringify(order, null, 2)}`)
             
@@ -513,10 +521,6 @@ class Trader implements Trading {
                 Logger.debug(`Bot sell price desired: ${lastWorkBackup.price}`)
                 Logger.debug(`Real order price: ${price} ${this.quoteCurrency}`)
             }
-
-            // Local work
-            const fees = (price * order.executedQuantity) * config.market.orderFees
-            const quoteCurrencyQuantity = (price * order.executedQuantity) - fees
 
             this.lastSellTrade = {
                 price,
