@@ -27,7 +27,7 @@ const binanceConfig: Config = {
 
         // Max threshold
         sellWhenPriceExceedsMaxThresholdOfProfitability: true,
-        maxThresholdOfProfitability: 0.6, // in %
+        maxThresholdOfProfitability: 0.7, // in %
         
         // Min threshold
         sellWhenPriceExceedsMinThresholdOfProfitability: true,
@@ -49,16 +49,17 @@ const binanceConfig: Config = {
         tickerInterval: 1000 * 15, // ms
         reductionOfTheTickerIntervalOnSpeedMode: 0.5, // <=> we reduce by 50% the ticker interval
 
-        minPriceDifferenceToApproveNewPoint: 0.15, // in %. <=> 0.1%
+        minPriceDifferenceToApproveNewPoint: 0.09, // in %. <=> 0.1%
         smoothing: Smoothing.SAMPLE,
 
         // Pump & dump
-        thresholdRateToApproveInversion: 1, // in %
-        thresholdMaxRateToApproveInversion: 2, // in %
+        thresholdRateToApproveInversion: 0.6, // in % (Pump/Dump)
+        thresholdMaxRateToApproveInversion: 1, // in % (Pump/Dump)
         numberOfUpPointsToValidatePump: 2,
         numberOfDownPointsToValidateDump: 3,
         validatePumpWhenBigPumpIsDetected: false,
-        validateDumpWhenBigDumpIsDetected: true
+        ignoreBigPumpWhenBuying: true, // when price rate between two points exceeds thresholdMaxRateToApproveInversion
+        validateDumpWhenBigDumpIsDetected: false
     }
 }
 

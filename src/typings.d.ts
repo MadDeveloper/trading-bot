@@ -52,6 +52,7 @@ declare interface Config {
         numberOfUpPointsToValidatePump: number,
         numberOfDownPointsToValidateDump: number,
         validatePumpWhenBigPumpIsDetected: boolean,
+        ignoreBigPumpWhenBuying: boolean,
         validateDumpWhenBigDumpIsDetected: boolean,
         smoothing: Smoothing
     }

@@ -58,6 +58,7 @@ const gdaxConfig: Config = {
         numberOfUpPointsToValidatePump: 3,
         numberOfDownPointsToValidateDump: 3,
         validatePumpWhenBigPumpIsDetected: true,
+        ignoreBigPumpWhenBuying: true,
         validateDumpWhenBigDumpIsDetected: false
     }
 }

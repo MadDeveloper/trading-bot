@@ -18,7 +18,7 @@ class ChartAnalyzer {
         let upwardTrendConfirmed = false
 
         works.forEach(work => {
-            if (downwardTrendConfirmed && !upwardTrendConfirmed && this.isUpwardTrendConfirmed(work, works)) {
+            if (downwardTrendConfirmed && !upwardTrendConfirmed && this.isUpwardTrendConfirmed(work, works) && !this.ignorePump(work)) {
                 upwardTrendConfirmed = true
             } else if (!downwardTrendConfirmed && this.isDownwardTrendConfirmed(work, works)) {
                 downwardTrendConfirmed = true
@@ -67,6 +67,10 @@ class ChartAnalyzer {
 
     isUpwardTrendConfirmed(work: ChartWork, works: ChartWork[]): boolean {
         return this.isBigPumpConfirmed(work) || this.trendsConfirmUpward(work, works)
+    }
+
+    ignorePump(work: ChartWork): boolean {
+        return config.chart.ignoreBigPumpWhenBuying && Math.abs(Equation.rateBetweenValues(work.lastPrice, work.price)) > config.chart.thresholdMaxRateToApproveInversion
     }
 
     isBigDumpConfirmed(work): boolean {
