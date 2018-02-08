@@ -23,24 +23,32 @@
 
 <body>
   <canvas id="myChart"></canvas>
-  <div>Total benefits: <span id="benefits"></span></div>
+  <div>Total benefits:
+    <span id="benefits"></span>%</div>
   <div>
     <strong>Balances</strong>
     <br>
-    <span id="quote-currency-balance"></span> <span id="quote-currency"></span>
+    <span id="quote-currency-balance"></span>
+    <span id="quote-currency"></span>
     <br>
-    <span id="base-currency-balance"></span> <span id="base-currency"></span>
+    <span id="base-currency-balance"></span>
+    <span id="base-currency"></span>
   </div>
-  <div>Last trade: <span id="lastTrade"></span></div>
+  <div>Last trade:
+    <span id="lastTrade"></span>
+  </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
   <script>
     const works = []
     const filteredWorks = []
-    const allTrades = []
+    const buyTrades = []
+    const sellTrades = []
+    const SELL_TRADE_TYPE = 0
+    const BUY_TRADE_TYPE = 1
     let quoteCurrency = ''
     let quoteCurrencyBalance = 0
     let baseCurrency = ''
-    let baseCurrencyBalance = 0 
+    let baseCurrencyBalance = 0
 
     async function extractData() {
       const data = await loadData()
@@ -65,10 +73,16 @@
       })
 
       data.trades.forEach(trade => {
-        allTrades.push(Object.assign({}, trade, {
+        const formattedTrade = Object.assign({}, trade, {
           x: trade.time / 1000,
           y: trade.price,
-        }))
+        })
+
+        if (trade.type === BUY_TRADE_TYPE) {
+          buyTrades.push(formattedTrade)
+        } else {
+          sellTrades.push(formattedTrade)
+        }
       })
     }
 
@@ -77,30 +91,48 @@
       const newChart = new Chart(context, {
         type: 'scatter',
         data: {
-          labels: works.map(work => work.x / 1000),
           datasets: [
             {
-              label: 'Trades',
+              label: 'Buy trades',
               backgroundColor: 'transparent',
-              borderColor: 'green',
-              borderWidth: 3,
-              data: allTrades
+              borderColor: 'rgb(39, 174, 96)',
+              borderWidth: 7,
+              data: buyTrades,
+              type: 'bubble',
+            },
+            {
+              label: 'Sell trades',
+              backgroundColor: 'transparent',
+              borderColor: 'rgb(192, 57, 43)',
+              borderWidth: 7,
+              data: sellTrades,
+              type: 'bubble',
             },
             {
               label: 'Filtered currency prices',
-              backgroundColor: 'rgba(41, 128, 185, .5)',
+              backgroundColor: 'rgba(41, 128, 185, .3)',
               borderColor: 'rgb(41, 128, 185)',
-              data: filteredWorks
+              data: filteredWorks,
+              tension: 0,
             },
             {
               label: 'Currency prices',
-              backgroundColor: 'rgba(255, 99, 132, .2)',
+              backgroundColor: 'rgba(255, 99, 132, .1)',
               borderColor: 'rgb(255, 99, 132)',
-              data: works
+              data: works,
+              tension: 0
             }
           ]
         }
       })
+
+      for (i = 0; i < myChart.data.datasets[0].data.length; i++) {
+        if (myChart.data.datasets[0].data[i] > 100) {
+          pointBackgroundColors.push("#90cd8a");
+        } else {
+          pointBackgroundColors.push("#f58368");
+        }
+      }
     }
 
     function readTextFile(file) {
@@ -128,7 +160,7 @@
         return total
       }, 0)
 
-      $benefits.innerHTML = `${benefits.toFixed(8)}${quoteCurrency}`
+      $benefits.innerHTML = benefits.toFixed(2)
     }
 
     function printLastTrade(trades) {
