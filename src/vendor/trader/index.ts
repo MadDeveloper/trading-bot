@@ -525,7 +525,7 @@ class Trader implements Trading {
             this.lastSellTrade = {
                 price,
                 time: lastWorkBackup.time,
-                benefits: Equation.rateBetweenValues(this.lastBuyTrade.price, price) - (2 * config.market.orderFees), // lastBuyTrade is a buy trade, and trade trade have a negative benefits
+                benefits: Equation.rateBetweenValues(this.lastBuyTrade.price, price) - (2 * (config.market.orderFees * 100)), // lastBuyTrade is a buy trade, and trade trade have a negative benefits
                 fees,
                 type: TradeType.SELL,
                 quantity: quoteCurrencyQuantity

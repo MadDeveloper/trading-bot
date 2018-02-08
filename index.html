@@ -9,38 +9,64 @@
   <style>
     html,
     body {
-      margin: 10px;
+      padding: 0;
+      margin: 0;
+      width: 100%;
+      min-height: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif
     }
 
-    html,
-    body,
     #myChart {
-      width: 100%;
-      height: 90%;
+      width: 99% !important;
+      height: 80% !important;
+      margin: 0;
+      padding: 0;
+    }
+
+    #content {
+      padding: 10px;
+    }
+
+    #balances {
+      margin: 10px 0;
     }
   </style>
 </head>
 
 <body>
   <canvas id="myChart"></canvas>
-  <div>Total benefits:
-    <span id="benefits"></span>%</div>
-  <div>
-    <strong>Balances</strong>
-    <br>
-    <span id="quote-currency-balance"></span>
-    <span id="quote-currency"></span>
-    <br>
-    <span id="base-currency-balance"></span>
-    <span id="base-currency"></span>
-  </div>
-  <div>Last trade:
-    <span id="lastTrade"></span>
-  </div>
+  <section id="content">
+    <div>
+      <div>
+        <strong>Total benefits</strong>
+      </div>
+      <span id="benefits"></span>%</div>
+    <div id="balances">
+      <div>
+        <strong>Balances</strong>
+      </div>
+      <div>
+        <span id="quote-currency-balance"></span>
+        <span id="quote-currency"></span>
+      </div>
+      <div>
+        <span id="base-currency-balance"></span>
+        <span id="base-currency"></span>
+      </div>
+    </div>
+    <div id="lastTrade">
+      <div>
+        <strong>Last trade</strong>
+      </div>
+      <span id="lastTradeJson"></span>
+    </div>
+  </section>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
   <script>
     const works = []
     const filteredWorks = []
+    const allTrades = []
     const buyTrades = []
     const sellTrades = []
     const SELL_TRADE_TYPE = 0
@@ -83,6 +109,8 @@
         } else {
           sellTrades.push(formattedTrade)
         }
+
+        allTrades.push(formattedTrade)
       })
     }
 
@@ -96,7 +124,7 @@
               label: 'Buy trades',
               backgroundColor: 'transparent',
               borderColor: 'rgb(39, 174, 96)',
-              borderWidth: 7,
+              borderWidth: 6,
               data: buyTrades,
               type: 'bubble',
             },
@@ -104,7 +132,7 @@
               label: 'Sell trades',
               backgroundColor: 'transparent',
               borderColor: 'rgb(192, 57, 43)',
-              borderWidth: 7,
+              borderWidth: 6,
               data: sellTrades,
               type: 'bubble',
             },
@@ -125,14 +153,6 @@
           ]
         }
       })
-
-      for (i = 0; i < myChart.data.datasets[0].data.length; i++) {
-        if (myChart.data.datasets[0].data[i] > 100) {
-          pointBackgroundColors.push("#90cd8a");
-        } else {
-          pointBackgroundColors.push("#f58368");
-        }
-      }
     }
 
     function readTextFile(file) {
@@ -152,15 +172,9 @@
 
     function calculateBenefits(trades) {
       const $benefits = document.querySelector('#benefits')
-      const benefits = trades.reduce((total, trade) => {
-        if (trade.type === 0) { // sell type only, buy is 1
-          return total + trade.benefits
-        }
+      const benefits = trades.reduce((total, trade) => total + trade.benefits, 0)
 
-        return total
-      }, 0)
-
-      $benefits.innerHTML = benefits.toFixed(2)
+      $benefits.innerHTML = benefits.toFixed(8)
     }
 
     function printLastTrade(trades) {
@@ -169,9 +183,9 @@
       }
 
       const lastTrade = trades[trades.length - 1]
-      const $lastTrade = document.querySelector('#lastTrade')
+      const $lastTrade = document.querySelector('#lastTradeJson')
 
-      $lastTrade.innerHTML = JSON.stringify(lastTrade, null, 2)
+      $lastTrade.innerHTML = `<pre>${JSON.stringify(lastTrade, null, 2)}</pre>`
     }
 
     function printBalances() {
@@ -193,7 +207,7 @@
     window.onload = async () => {
       await extractData()
       drawChart()
-      calculateBenefits(allTrades)
+      calculateBenefits(sellTrades)
       printLastTrade(allTrades)
       printBalances()
     }

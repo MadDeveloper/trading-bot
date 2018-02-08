@@ -8,7 +8,6 @@ async function start() {
     // Load market
     const market: Market = new (require(`./markets/${config.app.platform}`).default)()
 
-    market.sandbox = config.api.sandbox
     await market.init()
 
     // Make trader trade

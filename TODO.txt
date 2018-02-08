@@ -1,12 +1,12 @@
-- quand il a vendu au x% au seuil min, si ce n'est pas tout, il faut pas reset au point de vente au seuil min
+- quand il a vendu au x% au seuil min, si ce n'est pas tout, il faut pas reset au point de vente au seuil min (pour vendre en bump)
 - checker la corrélation entre les balances et les configs (quantity)
-- sur le chart, distinguer les achats des ventes
+- recréer les tendances après filtrage, les lastPrice/trend aussi (relink les points entre eux)
 - choisir la monnaie
     - regarder les variations sur 24h du prix
     - volume
     - écart entre les pics (spread)
-- recréer les tendances après filtrage, les lastPrice/trend aussi (relink les points entre eux)
-- Test de perf au lancement
 
 - mettre plus d'options pour controler le bot (socket ?) -> voir sur une page web ses trades, son état, le chart, etc.
 - amélorer l'algo de tendances
+- refactor
+- améliorer le chart
