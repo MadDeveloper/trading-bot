@@ -1,5 +1,3 @@
-- quand il a vendu au x% au seuil min, si ce n'est pas tout, il faut pas reset au point de vente au seuil min (pour vendre en bump)
-- checker la corrélation entre les balances et les configs (quantity)
 - recréer les tendances après filtrage, les lastPrice/trend aussi (relink les points entre eux)
 - choisir la monnaie
     - regarder les variations sur 24h du prix
