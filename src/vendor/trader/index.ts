@@ -143,13 +143,9 @@ class Trader implements Trading {
 
         /*
          * Trader is waiting to buy
-         * we will try to know if we are in a hollow case
+         * we will try to know if we are in a hollow case or upward trend
          */
-        if (this.chartAnalyzer.detectHollow(this.works)) {
-            Logger.debug('Hollow detected!')
-            /*
-             * We found a hollow
-             */
+        if (this.chartAnalyzer.detectHollow(this.works) || this.chartAnalyzer.isUpwardTrendConfirmed(this.lastWork, this.works)) {
             const funds = this.fundsToUse()
 
             Logger.debug(`Trader is buying at ${this.lastWork.price} ${this.quoteCurrency}`)
@@ -157,7 +153,7 @@ class Trader implements Trading {
             // We have sold, and the current price is below since the last price we sold so we can buy
             await this.buy(funds)
         } else {
-            Logger.debug('Waiting for an hollow...')
+            Logger.debug('Waiting for a buy signal...')
         }
     }
 
@@ -254,7 +250,7 @@ class Trader implements Trading {
             Logger.debug('Fast mode activated')
             this.chartWorker.fastMode()
         } else {
-            Logger.debug('No defined strategies detected. Waiting for an event...')
+            Logger.debug('Waiting for a sell signal...')
         }
     }
 

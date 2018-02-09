@@ -38,12 +38,12 @@ const binanceConfig: Config = {
         sellWhenLossRateReaches: 3 // in %
     },
     market: {
-        currency: Currency.STEEMBTC,
-        orderFees: 0.001 // <=> 0.1%
+        currency: Currency.IOSTBTC,
+        orderFees: 0.0003 // <=> 0.1%
     },
     account: {
         quoteCurrency: Currency.BTC, // €, $, BTC
-        baseCurrency: Currency.STEEM // BTC, ETH, LTC, ...
+        baseCurrency: Currency.IOST // BTC, ETH, LTC, ...
     },
     chart: {
         tickerInterval: 1000 * 15, // ms
@@ -55,7 +55,7 @@ const binanceConfig: Config = {
         // Pump & dump
         thresholdRateToApproveInversion: 0.6, // in % (Pump/Dump)
         thresholdMaxRateToApproveInversion: 1, // in % (Pump/Dump)
-        numberOfUpPointsToValidatePump: 2,
+        numberOfUpPointsToValidatePump: 3,
         numberOfDownPointsToValidateDump: 3,
         validatePumpWhenBigPumpIsDetected: false,
         ignoreBigPumpWhenBuying: true, // when price rate between two points exceeds thresholdMaxRateToApproveInversion

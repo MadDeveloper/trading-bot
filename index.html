@@ -18,7 +18,7 @@
 
     #myChart {
       width: 99% !important;
-      height: 80% !important;
+      max-height: 700px !important;
       margin: 0;
       padding: 0;
     }
@@ -123,7 +123,7 @@
             {
               label: 'Buy trades',
               backgroundColor: 'transparent',
-              borderColor: 'rgb(39, 174, 96)',
+              borderColor: 'rgb(0, 230, 64)',
               borderWidth: 6,
               data: buyTrades,
               type: 'bubble',
@@ -138,14 +138,14 @@
             },
             {
               label: 'Filtered currency prices',
-              backgroundColor: 'rgba(41, 128, 185, .3)',
+              backgroundColor: 'rgba(41, 128, 185, .2)',
               borderColor: 'rgb(41, 128, 185)',
               data: filteredWorks,
               tension: 0,
             },
             {
               label: 'Currency prices',
-              backgroundColor: 'rgba(255, 99, 132, .1)',
+              backgroundColor: 'transparent',
               borderColor: 'rgb(255, 99, 132)',
               data: works,
               tension: 0
