@@ -17,6 +17,8 @@ import { writeFile, readFile } from 'fs';
 import { OrderResult } from '../market/order';
 import { promisify } from 'util';
 import { DataStorage } from './data';
+import Slack from '../slack/index';
+
 
 class Trader implements Trading {
     market: Market
@@ -340,6 +342,7 @@ class Trader implements Trading {
             Logger.debug(`Would be able to sell when the price will be above ${Equation.thresholdPriceOfProfitability(this.lastBuyTrade.price).toFixed(8)}${this.quoteCurrency}`)
             Logger.debug(`Funds desired to invest: ${funds}${this.quoteCurrency}`)
             Logger.debug(`Funds really invested: ${fundsUsed}${this.quoteCurrency}`)
+            Slack.BuyMessage(this);
         } catch (error) {
             Logger.error(`Error when trying to buy: ${JSON.stringify(error, null, 2)}`)
             this.stop()
@@ -400,6 +403,7 @@ class Trader implements Trading {
             
             `)
             Logger.debug(`Last trade: ${JSON.stringify(this.lastSellTrade, null, 2)}`)
+            Slack.SellMessage(this)
         } catch (error) {
             Logger.error(`Error when trying to sell: ${error}`)
             this.stop()

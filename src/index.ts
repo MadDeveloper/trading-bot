@@ -3,6 +3,7 @@ import Trader from './vendor/trader/index';
 import {  config } from './config';
 import { Platform } from './config/platform';
 import Market from './vendor/interfaces/market';
+import Slack from './vendor/slack/index';
 
 async function start() {
     // Load market
