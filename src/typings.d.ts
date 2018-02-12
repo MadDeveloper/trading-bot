@@ -11,9 +11,6 @@ declare interface Config {
         retryIntervalWhenConnectionIsLost: number // ms
     },
     api: {
-        key: string;
-        secret: string;
-        passphrase?: string;
         uri?: string;
         websocketURI?: string;
         sandboxWebsocketURI?: string;

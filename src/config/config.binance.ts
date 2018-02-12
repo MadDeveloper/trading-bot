@@ -13,7 +13,6 @@ const binanceConfig: Config = {
         retryIntervalWhenConnectionIsLost: 3000 // ms
     },
     api: {
-        ...keysBinance,
         sandbox: true
     },
     trader: {

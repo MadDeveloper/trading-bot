@@ -13,7 +13,6 @@ const gdaxConfig: Config = {
         retryIntervalWhenConnectionIsLost: 5000 // ms
     },
     api: {
-        ...keysGdax,
         uri: 'https://api.gdax.com',
         websocketURI: 'wss://ws-feed.gdax.com',
         sandboxWebsocketURI: 'wss://ws-feed-public.sandbox.gdax.com',

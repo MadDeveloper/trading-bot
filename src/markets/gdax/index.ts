@@ -36,9 +36,9 @@ class GdaxService implements Market {
         const restURI = this.sandbox ? config.api.sandboxURI : config.api.uri
         const websocketURI = this.sandbox ? config.api.sandboxWebsocketURI : config.api.websocketURI
         const websocketAuth = this.sandbox ? null : {
-            key: config.api.key,
-            secret: config.api.secret,
-            passphrase: config.api.passphrase
+            key: process.env.GDAX_API_KEY,
+            secret: process.env.GDAX_API_SECRET,
+            passphrase: process.env.BINANCE_API_PASSPHRASE
         }
 
         this.publicClient = new Gdax.PublicClient(restURI)
