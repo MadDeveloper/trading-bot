@@ -149,7 +149,7 @@ class Trader implements Trading {
          * Trader is waiting to buy
          * we will try to know if we are in a hollow case or upward trend
          */
-        if (this.chartAnalyzer.detectHollow(this.works) || this.chartAnalyzer.isUpwardTrendConfirmed(this.lastWork, this.works)) {
+        if (this.chartAnalyzer.detectHollow(this.works)/* || this.chartAnalyzer.isUpwardTrendConfirmed(this.lastWork, this.works)*/) {
             const funds = this.fundsToUse()
 
             Logger.debug(`Trader is buying at ${this.lastWork.price} ${this.quoteCurrency}`)
