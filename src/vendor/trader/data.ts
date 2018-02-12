@@ -6,6 +6,8 @@ export interface DataStorage {
     works: ChartWork[]
     worksSmoothed: ChartWork[]
     trades: Trade[]
+    nextMinProfitablePrice: number
+    nextMaxProfitablePrice: number
     baseCurrency: Currency
     baseCurrencyBalance: number
     quoteCurrency: Currency

@@ -13,7 +13,8 @@
       margin: 0;
       width: 100%;
       min-height: 100%;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 13px;
     }
 
     #myChart {
@@ -27,38 +28,88 @@
       padding: 10px;
     }
 
-    #balances {
-      margin: 10px 0;
+    #content .item {
+      margin: 0 20px;
+    }
+
+    .flex {
+      display: flex;
+    }
+
+    .flex .align-start {
+      align-items: flex-start;
+    }
+
+    .item .heading {
+      margin: 0;
+      padding: 0;
+      padding-bottom: 10px;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .item .sub-heading {
+      margin: 0;
+      padding: 5px 0;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .bold {
+      font-weight: bold;
+    }
+
+    .italic {
+      font-style: italic;
+    }
+
+    .uppercase {
+      text-transform: uppercase;
+    }
+
+    .currency {
+      text-transform: uppercase;
+      font-style: italic;
     }
   </style>
 </head>
 
 <body>
   <canvas id="myChart"></canvas>
-  <section id="content">
-    <div>
-      <div>
-        <strong>Total benefits</strong>
-      </div>
-      <span id="benefits"></span>%</div>
-    <div id="balances">
-      <div>
-        <strong>Balances</strong>
-      </div>
+  <section id="content" class="flex align-start">
+    <div class="item">
+      <h3 class="heading">Benefits</h3>
+      <span id="benefits"></span>%
+    </div>
+    <div class="item">
+      <h3 class="heading">Last price</h3>
+      <span id="last-price"></span>
+    </div>
+    <div id="balances" class="item">
+      <h3 class="heading">Balances</h3>
       <div>
         <span id="quote-currency-balance"></span>
-        <span id="quote-currency"></span>
+        <span id="quote-currency" class="currency"></span>
       </div>
       <div>
         <span id="base-currency-balance"></span>
-        <span id="base-currency"></span>
+        <span id="base-currency" class="currency"></span>
       </div>
     </div>
-    <div id="lastTrade">
-      <div>
-        <strong>Last trade</strong>
-      </div>
+    <div class="item">
+      <h3 class="heading">Last trade</h3>
       <span id="lastTradeJson"></span>
+    </div>
+    <div class="item">
+      <h3 class="heading">Thresholds</h3>
+      <div>
+        <h4 class="sub-heading">Next min price of profitability</h4>
+        <span id="next-min-price-profitability"></span>
+      </div>
+      <div>
+        <h4 class="sub-heading">Next max price of profitability</h4>
+        <span id="next-max-price-profitability"></span>
+      </div>
     </div>
   </section>
 
@@ -75,6 +126,8 @@
     let quoteCurrencyBalance = 0
     let baseCurrency = ''
     let baseCurrencyBalance = 0
+    let nextMinProfitablePrice
+    let nextMaxProfitablePrice
 
     async function extractData() {
       const data = await loadData()
@@ -112,6 +165,14 @@
 
         allTrades.push(formattedTrade)
       })
+
+      if (data.nextMinProfitablePrice) {
+        nextMinProfitablePrice = data.nextMinProfitablePrice
+      }
+
+      if (data.nextMaxProfitablePrice) {
+        nextMaxProfitablePrice = data.nextMaxProfitablePrice
+      }
     }
 
     function drawChart() {
@@ -200,6 +261,28 @@
       $baseCurrencyBalance.innerHTML = baseCurrencyBalance.toFixed(8)
     }
 
+    function printLastPrice(works) {
+      const $lastPrice = document.querySelector('#last-price')
+
+      if (Array.isArray(works) && works.length > 0) {
+        const lastWork = works[works.length - 1]
+
+        $lastPrice.innerHTML = `${lastWork.price} <span class="currency">${quoteCurrency}</span>`
+      }
+    }
+
+    function printThresholdsOfProfitability() {
+      if (nextMinProfitablePrice) {
+        $nextMinPriceProfitability = document.querySelector('#next-min-price-profitability')
+        $nextMinPriceProfitability.innerHTML = `${nextMinProfitablePrice.toFixed(8)} <span class="currency">${quoteCurrency}</span>`
+      }
+      
+      if (nextMaxProfitablePrice) {
+        $nextMaxPriceProfitability = document.querySelector('#next-max-price-profitability')
+        $nextMaxPriceProfitability.innerHTML = `${nextMaxProfitablePrice.toFixed(8)} <span class="currency">${quoteCurrency}</span>`
+      }
+    }
+
     async function loadData() {
       return JSON.parse(await readTextFile('data.json'))
     }
@@ -210,6 +293,8 @@
       calculateBenefits(sellTrades)
       printLastTrade(allTrades)
       printBalances()
+      printLastPrice(works)
+      printThresholdsOfProfitability()
     }
   </script>
 </body>

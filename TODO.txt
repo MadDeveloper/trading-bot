@@ -1,5 +1,4 @@
 - Pour la nouvelle strat d'achat (après x points de montée) il faudrait la maximiser à 2-3 fois max par montée, on bien si la montée excède un certains % depuis le dernier vrai creux
-- quand on relance avec un data.json, il faudrait récupérer le time du dernier trade, et récupérer le work smoothed depuis ce time et le mettre dans la propriété du trader et worker 
 - Eliminer les pics de plus de x%
 - Changer de monnaie quand on a fait x% de bénef
 - Changer de monnaie quand on a fait x% de pertes
@@ -11,4 +10,3 @@
 - mettre plus d'options pour controler le bot (socket ?) -> voir sur une page web ses trades, son état, le chart, etc.
 - amélorer l'algo de tendances
 - refactor
-- améliorer le chart

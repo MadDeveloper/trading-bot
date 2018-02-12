@@ -35,15 +35,15 @@ const binanceConfig: Config = {
         quantityToSellWhenPriceExceedsMinThresholdOfProfitability: 25, // in %
 
         useExitStrategyInCaseOfLosses: true,
-        sellWhenLossRateReaches: 2 // in %
+        sellWhenLossRateReaches: 1.5 // in %
     },
     market: {
-        currency: Currency.ARNBTC,
+        currency: Currency.DLTBTC,
         orderFees: 0.0003 // <=> 0.1%
     },
     account: {
         quoteCurrency: Currency.BTC, // €, $, BTC
-        baseCurrency: Currency.ARN // BTC, ETH, LTC, ...
+        baseCurrency: Currency.DLT // BTC, ETH, LTC, ...
     },
     chart: {
         tickerInterval: 1000 * 15, // ms

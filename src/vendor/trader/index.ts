@@ -106,10 +106,9 @@ class Trader implements Trading {
 
     watchChartWorker() {
         this.workObserver = this.chartWorker.work$.subscribe(async (work: ChartWork) => {
-
             this.works = this.chartWorker.filterNoise(this.chartWorker.copyWorks())
 
-            const newLastWork = { ...this.works[this.works.length - 1] }
+            const newLastWork = this.getLastWork()
 
             Logger.debug(`\n--------------- ${newLastWork.price} ${this.quoteCurrency} -----------------\n`)
 
@@ -199,7 +198,7 @@ class Trader implements Trading {
 
             try {
                 partSizeToSell = this.market.orders.normalizeQuantity(partSizeToSell)
-                this.clearWorksAfterTrade = false // We will want to sell on a bump after this min threshold
+                this.clearWorksAfterTrade = false // We will want to sell if there is a bump after min threshold and max threshold not reached
 
                 const quantityRemaining = this.market.orders.normalizeQuantity(size - partSizeToSell)
 
@@ -217,11 +216,9 @@ class Trader implements Trading {
 
             Logger.debug(`Selling ${partSizeToSell} ${this.baseCurrency}`)
 
-            await this.sell(partSizeToSell)
+            const partial = partSizeToSell !== size // if we don't sell all the size, this means we only sell a part
 
-            if (partSizeToSell < size) {
-                this.state = TraderState.WAITING_TO_SELL // Trader sold only a part, he has to sell the rest
-            }
+            await this.sell(partSizeToSell, partial)
         } else if (config.trader.useExitStrategyInCaseOfLosses && Equation.rateBetweenValues(this.lastBuyTrade.price, this.lastWork.price) <= -config.trader.sellWhenLossRateReaches) {
             /*
              * Option useExitStrategyInCaseOfLosses is activated
@@ -230,7 +227,7 @@ class Trader implements Trading {
             Logger.debug('Threshold of loss rate reached')
             Logger.debug(`Trader is selling at ${this.lastWork.price}`)
             await this.sell(size)
-        } else if (!config.trader.sellWhenPriceExceedsMinThresholdOfProfitability && this.chartAnalyzer.detectBump(this.works)) {
+        } else if (this.chartAnalyzer.detectBump(this.works)) {
             /*
              * We found a bump, is the trader is profitable, he sells
              */
@@ -350,7 +347,7 @@ class Trader implements Trading {
         }
     }
 
-    async sell(size: number) {
+    async sell(size: number, partial?: boolean) {
         try {
             if (!Number.isFinite(size)) {
                 throw new Error(`Cannot sell, funds are invalid: ${size}`)
@@ -390,11 +387,15 @@ class Trader implements Trading {
                 time: lastWorkBackup.time,
                 benefits: Equation.rateBetweenValues(this.lastBuyTrade.price, price) - (2 * (config.market.orderFees * 100)), // lastBuyTrade is a buy trade, and trade trade have a negative benefits
                 fees,
-                type: TradeType.SELL,
+                type: partial ? TradeType.SELL_PARTIAL : TradeType.SELL,
                 quantity: order.executedQuantity
             }
 
             this.actionsPostSellTrade()
+
+            if (partial) {
+                this.state = TraderState.WAITING_TO_SELL // Trader sold only a part, he has to sell the rest
+            }
 
             Logger.debug(`
              ____ ____ ____ ____ 
@@ -425,7 +426,6 @@ class Trader implements Trading {
     }
 
     private getLastWork(): ChartWork {
-        // FIXME: may introduces error with price and trend (delayed by one point with lastWork without filtering)
         if (this.works.length === 0) {
             return null
         }
@@ -466,21 +466,26 @@ class Trader implements Trading {
                 const data: DataStorage = JSON.parse(dataString)
 
                 this.trades = data.trades
-                this.works = data.worksSmoothed
-                this.chartWorker.initFromWorks(data.works)
+                
+                const lastTrade = this.trades.length > 0 ? this.trades[this.trades.length - 1] : null
+                const restartFromTime = lastTrade ? lastTrade.time : 0
 
-                Logger.debug('Data loaded.')
+                this.chartWorker.initFromWorks(data.works, restartFromTime)
 
-                if (this.trades.length > 0) {
+                if (lastTrade) {
                     this.lastBuyTrade = this.findLastBuyTrade(this.trades)
                     this.lastSellTrade = this.findLastSellTrade(this.trades)
 
-                    const lastTrade = this.trades[this.trades.length - 1]
-
-                    this.state = lastTrade.type === TradeType.BUY ? TraderState.WAITING_TO_SELL : TraderState.WAITING_TO_BUY
+                    if (TradeType.BUY === lastTrade.type || TradeType.SELL_PARTIAL === lastTrade.type) {
+                        this.state = TraderState.WAITING_TO_SELL
+                    } else {
+                        this.state = TraderState.WAITING_TO_BUY
+                    }
 
                     Logger.debug(`Starting from a previous trade: ${JSON.stringify(lastTrade, null, 2)}`)
                 }
+
+                Logger.debug('Data loaded.')
             }
         } catch (error) {
             Logger.debug('File data.json does not exist or contains invalid json')
@@ -496,7 +501,7 @@ class Trader implements Trading {
     }
 
     private findLastSellTrade(trades: Trade[]): Trade {
-        return trades.slice().reverse().find(trade => trade.type === TradeType.SELL)
+        return trades.slice().reverse().find(trade => trade.type === TradeType.SELL || trade.type === TradeType.SELL_PARTIAL)
     }
 
     private async persistData() {
@@ -515,6 +520,8 @@ class Trader implements Trading {
             works: this.chartWorker.allWorks,
             worksSmoothed: this.chartWorker.filterNoise(this.chartWorker.copyWorks(this.chartWorker.allWorks)),
             trades: this.trades,
+            nextMinProfitablePrice: this.state === TraderState.WAITING_TO_SELL ? Equation.thresholdPriceOfProfitability(this.lastBuyTrade.price) : null,
+            nextMaxProfitablePrice: this.state === TraderState.WAITING_TO_SELL ? Equation.maxThresholdPriceOfProfitability(this.lastBuyTrade.price) : null,
             baseCurrency: this.baseCurrency,
             baseCurrencyBalance: this.baseCurrencyBalance,
             quoteCurrency: this.quoteCurrency,

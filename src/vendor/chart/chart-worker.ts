@@ -48,7 +48,7 @@ class ChartWorker {
         this.lastPrice = null
     }
 
-    initFromWorks(works: ChartWork[]) {
+    initFromWorks(works: ChartWork[], restartFromTime: number) {
         this.allWorks = this.copyWorks(works)
 
         if (this.allWorks.length > 0) {
@@ -64,6 +64,10 @@ class ChartWorker {
                 const point = this.extractPointFromWork(work)
 
                 this.chart.createPoint(point.x, point.y)
+
+                if (Number.isFinite(restartFromTime) && work.time >= restartFromTime) {
+                    this.works.push({ ...work })
+                }
             })
         }
     }
