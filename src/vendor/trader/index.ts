@@ -391,7 +391,7 @@ class Trader implements Trading {
                 benefits: Equation.rateBetweenValues(this.lastBuyTrade.price, price) - (2 * (config.market.orderFees * 100)), // lastBuyTrade is a buy trade, and trade trade have a negative benefits
                 fees,
                 type: TradeType.SELL,
-                quantity: quoteCurrencyQuantity
+                quantity: order.executedQuantity
             }
 
             this.actionsPostSellTrade()
