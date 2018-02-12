@@ -1,36 +1,36 @@
+import * as SlackWebhook from 'slack-webhook';
 import Trader from '../trader/index';
-import { debug } from 'util';
 
-const SlackWebhook = require('slack-webhook')
- 
-const slack = new SlackWebhook('https://hooks.slack.com/services/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', {
-  defaults: {
-    username: 'Bot',
-    channel: '#trades',
-    icon_emoji: ':robot_face:'
-  }
-})
+class Slack {
+    private trader: Trader
+    private webhook: SlackWebhook
 
-class Slack{
+    constructor(trader: Trader) {
+        this.webhook = new SlackWebhook('https://hooks.slack.com/services/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', {
+            defaults: {
+                username: 'Bot',
+                channel: '#trades',
+                icon_emoji: ':robot_face:'
+            }
+        })
+        this.trader = trader
+    }
 
-    static BuyMessage(trader: Trader){
-    slack.send({
-      text: `I have buyed ${trader.lastBuyTrade.quantity} ${trader.baseCurrency} at ${trader.lastBuyTrade.price} ${trader.quoteCurrency}`,
-      username: 'Theddy The Ruin',
-      icon_emoji: ':scream_cat:'
-    })
-  }
+    buyMessage() {
+        this.webhook.send({
+            text: `I have buyed ${this.trader.lastBuyTrade.quantity} ${this.trader.baseCurrency} at ${this.trader.lastBuyTrade.price} ${this.trader.quoteCurrency}`,
+            username: 'Theddy The Ruin',
+            icon_emoji: ':scream_cat:'
+        })
+    }
 
-  static SellMessage(trader: Trader){
-    slack.send({
-      text: `I have selled  ${trader.lastBuyTrade.quantity} ${trader.baseCurrency} at ${trader.lastBuyTrade.price} ${trader.quoteCurrency} - Benefits : ${trader.lastSellTrade.benefits}`,
-      username: 'Theddy The Ruin',
-      icon_emoji: ':scream_cat:'
-    })
-  }
-
-
-
+    sellMessage() {
+        this.webhook.send({
+            text: `I have selled  ${this.trader.lastBuyTrade.quantity} ${this.trader.baseCurrency} at ${this.trader.lastBuyTrade.price} ${this.trader.quoteCurrency} - Benefits : ${this.trader.lastSellTrade.benefits}`,
+            username: 'Theddy The Ruin',
+            icon_emoji: ':scream_cat:'
+        })
+    }
 }
 
 export default Slack

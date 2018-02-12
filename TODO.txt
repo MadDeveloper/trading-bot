@@ -1,3 +1,4 @@
+- Eliminer les pics de plus de x%
 - recréer les tendances après filtrage, les lastPrice/trend aussi (relink les points entre eux)
 - choisir la monnaie
     - regarder les variations sur 24h du prix

@@ -39,6 +39,7 @@ class Trader implements Trading {
     private works: ChartWork[]
     private lastWork: ChartWork
     private clearWorksAfterTrade: boolean
+    private slack: Slack
 
     constructor(market: Market) {
         this.market = market
@@ -52,6 +53,7 @@ class Trader implements Trading {
         this.state = TraderState.WAITING_TO_BUY
         this.chartAnalyzer = new ChartAnalyzer(this.chartWorker)
         this.clearWorksAfterTrade = true
+        this.slack = new Slack(this)
 
         // Currencies
         this.quoteCurrency = config.account.quoteCurrency
@@ -342,7 +344,6 @@ class Trader implements Trading {
             Logger.debug(`Would be able to sell when the price will be above ${Equation.thresholdPriceOfProfitability(this.lastBuyTrade.price).toFixed(8)}${this.quoteCurrency}`)
             Logger.debug(`Funds desired to invest: ${funds}${this.quoteCurrency}`)
             Logger.debug(`Funds really invested: ${fundsUsed}${this.quoteCurrency}`)
-            Slack.BuyMessage(this);
         } catch (error) {
             Logger.error(`Error when trying to buy: ${JSON.stringify(error, null, 2)}`)
             this.stop()
@@ -403,7 +404,6 @@ class Trader implements Trading {
             
             `)
             Logger.debug(`Last trade: ${JSON.stringify(this.lastSellTrade, null, 2)}`)
-            Slack.SellMessage(this)
         } catch (error) {
             Logger.error(`Error when trying to sell: ${error}`)
             this.stop()
@@ -414,12 +414,14 @@ class Trader implements Trading {
         this.trades.push({ ...this.lastBuyTrade })
         this.prepareForNewTrade()
         this.state = TraderState.WAITING_TO_SELL
+        this.slack.buyMessage()
     }
 
     private actionsPostSellTrade() {
         this.trades.push({ ...this.lastSellTrade })
         this.prepareForNewTrade()
         this.state = TraderState.WAITING_TO_BUY
+        this.slack.sellMessage()
     }
 
     private getLastWork(): ChartWork {

@@ -27,23 +27,23 @@ const binanceConfig: Config = {
 
         // Max threshold
         sellWhenPriceExceedsMaxThresholdOfProfitability: true,
-        maxThresholdOfProfitability: 0.7, // in %
+        maxThresholdOfProfitability: 0.8, // in %
         
         // Min threshold
         sellWhenPriceExceedsMinThresholdOfProfitability: true,
-        minThresholdOfProfitability: 0.3, // how many % profitability wanted when selling
+        minThresholdOfProfitability: 0.4, // how many % profitability wanted when selling
         quantityToSellWhenPriceExceedsMinThresholdOfProfitability: 25, // in %
 
         useExitStrategyInCaseOfLosses: true,
         sellWhenLossRateReaches: 3 // in %
     },
     market: {
-        currency: Currency.IOSTBTC,
+        currency: Currency.POEBTC,
         orderFees: 0.0003 // <=> 0.1%
     },
     account: {
         quoteCurrency: Currency.BTC, // €, $, BTC
-        baseCurrency: Currency.IOST // BTC, ETH, LTC, ...
+        baseCurrency: Currency.POE // BTC, ETH, LTC, ...
     },
     chart: {
         tickerInterval: 1000 * 15, // ms
