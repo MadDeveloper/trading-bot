@@ -18,7 +18,7 @@ class Slack {
 
     buyMessage() {
         this.webhook.send({
-            text: `I have buyed ${this.trader.lastBuyTrade.quantity} ${this.trader.baseCurrency} at ${this.trader.lastBuyTrade.price} ${this.trader.quoteCurrency}`,
+            text: `I bought ${this.trader.lastBuyTrade.quantity} ${this.trader.baseCurrency} at ${this.trader.lastBuyTrade.price} ${this.trader.quoteCurrency}`,
             username: 'Theddy The Ruin',
             icon_emoji: ':scream_cat:'
         })
@@ -26,7 +26,7 @@ class Slack {
 
     sellMessage() {
         this.webhook.send({
-            text: `I have selled  ${this.trader.lastBuyTrade.quantity} ${this.trader.baseCurrency} at ${this.trader.lastBuyTrade.price} ${this.trader.quoteCurrency} - Benefits : ${this.trader.lastSellTrade.benefits}`,
+            text: `I sold ${this.trader.lastSellTrade.quantity} ${this.trader.baseCurrency} at ${this.trader.lastSellTrade.price} ${this.trader.quoteCurrency} - Benefits: ${this.trader.lastSellTrade.benefits}%`,
             username: 'Theddy The Ruin',
             icon_emoji: ':scream_cat:'
         })
