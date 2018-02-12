@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Theddy the bot
 
 ## Installation
@@ -42,3 +43,33 @@ npm run chart
 ```
 
 And then you can go to http://localhost:3000 and watch the magic happening!
+
+## Docker
+### Setup
+
+```
+touch envfile
+```
+
+Then edit envfile like this:
+
+```bash
+cat envfile
+BINANCE_API_KEY=xxxxxx
+BINANCE_API_SECRET=xxxxx
+GDAX_API_KEY=xxxx
+GDAX_API_SECRET=xxxxx
+GDAX_API_PASSPHRASE=xxxxx
+```
+
+### Build
+
+```bash
+docker build -t theddy .
+```
+
+### Run
+
+```bash
+docker run --env-file envfile -p 3000:3000 theddy
+```
