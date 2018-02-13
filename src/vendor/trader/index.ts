@@ -29,8 +29,10 @@ class Trader implements Trading {
     chartAnalyzer: ChartAnalyzer
     quoteCurrency: Currency
     quoteCurrencyBalance: number // €, $, £, etc.
+    initialQuoteCurrencyBalance: number
     baseCurrency: Currency
     baseCurrencyBalance: number // BTC, ETH, LTC, etc.
+    initialBaseCurrencyBalance: number
 
     trades: Trade[]
     lastBuyTrade: Trade
@@ -40,6 +42,7 @@ class Trader implements Trading {
     private lastWork: ChartWork
     private clearWorksAfterTrade: boolean
     private slack: Slack
+    private startTime: Date
 
     constructor(market: Market) {
         this.market = market
@@ -58,14 +61,24 @@ class Trader implements Trading {
         // Currencies
         this.quoteCurrency = config.account.quoteCurrency
         this.quoteCurrencyBalance = 0
+        this.initialQuoteCurrencyBalance = null
         this.baseCurrency = config.account.baseCurrency
         this.baseCurrencyBalance = 0
+        this.initialBaseCurrencyBalance = null
     }
 
     async updateBalances() {
         this.quoteCurrencyBalance = await this.accounts.availableFunds(this.quoteCurrency)
         this.baseCurrencyBalance = await this.accounts.availableFunds(this.baseCurrency)
         this.verifyBalances()
+
+        if (null === this.initialBaseCurrencyBalance) {
+            this.initialBaseCurrencyBalance = this.baseCurrencyBalance
+        }
+
+        if (null === this.initialQuoteCurrencyBalance) {
+            this.initialQuoteCurrencyBalance = this.quoteCurrencyBalance
+        }
     }
 
     private verifyBalances() {
@@ -86,6 +99,8 @@ class Trader implements Trading {
 
             return
         }
+
+        this.startTime = new Date()
 
         try {
             await this.loadData()
@@ -466,6 +481,9 @@ class Trader implements Trading {
                 const data: DataStorage = JSON.parse(dataString)
 
                 this.trades = data.trades
+                this.startTime = new Date(data.startTime)
+                this.initialBaseCurrencyBalance = data.initialBaseCurrencyBalance
+                this.initialQuoteCurrencyBalance = data.initialQuoteCurrencyBalance
                 
                 const lastTrade = this.trades.length > 0 ? this.trades[this.trades.length - 1] : null
                 const restartFromTime = lastTrade ? lastTrade.time : 0
@@ -524,8 +542,11 @@ class Trader implements Trading {
             nextMaxProfitablePrice: this.state === TraderState.WAITING_TO_SELL ? Equation.maxThresholdPriceOfProfitability(this.lastBuyTrade.price) : null,
             baseCurrency: this.baseCurrency,
             baseCurrencyBalance: this.baseCurrencyBalance,
+            initialBaseCurrencyBalance: this.initialBaseCurrencyBalance,
             quoteCurrency: this.quoteCurrency,
-            quoteCurrencyBalance: this.quoteCurrencyBalance
+            quoteCurrencyBalance: this.quoteCurrencyBalance,
+            initialQuoteCurrencyBalance: this.initialQuoteCurrencyBalance,
+            startTime: this.startTime
         }
     }
 }

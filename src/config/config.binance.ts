@@ -14,7 +14,7 @@ const binanceConfig: Config = {
     },
     api: {
         ...keysBinance,
-        sandbox: false
+        sandbox: true
     },
     trader: {
         // Quantities strategy
@@ -38,19 +38,19 @@ const binanceConfig: Config = {
         sellWhenLossRateReaches: 1.5 // in %
     },
     market: {
-        currency: Currency.DLTBTC,
+        currency: Currency.NEBLBTC,
         orderFees: 0.0003 // <=> 0.1%
     },
     account: {
         quoteCurrency: Currency.BTC, // €, $, BTC
-        baseCurrency: Currency.DLT // BTC, ETH, LTC, ...
+        baseCurrency: Currency.NEBL // BTC, ETH, LTC, ...
     },
     chart: {
         tickerInterval: 1000 * 15, // ms
         reductionOfTheTickerIntervalOnSpeedMode: 0.5, // <=> we reduce by 50% the ticker interval
 
         minPriceDifferenceToApproveNewPoint: 0.09, // in %. <=> 0.1%
-        smoothing: Smoothing.SAMPLE,
+        smoothing: Smoothing.MOVING_AVERAGE,
 
         // Pump & dump
         thresholdRateToApproveInversion: 0.6, // in % (Pump/Dump)

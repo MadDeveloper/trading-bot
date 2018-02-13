@@ -129,8 +129,10 @@ export enum Currency {
     IOST = 'IOST',
     STEEM = 'STEEM',
     CHAT = 'CHAT',
+    RPX = 'RPX',
 
     // CURRENCY EXCHANGE
+    RPXBTC = 'RPXBTC',
     CHATBTC = 'CHATBTC',
     STEEMBTC = 'STEEMBTC',
     STEEMETH = 'STEEMETH',

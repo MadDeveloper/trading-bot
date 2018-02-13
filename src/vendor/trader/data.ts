@@ -10,6 +10,9 @@ export interface DataStorage {
     nextMaxProfitablePrice: number
     baseCurrency: Currency
     baseCurrencyBalance: number
+    initialBaseCurrencyBalance: number
     quoteCurrency: Currency
     quoteCurrencyBalance: number
+    initialQuoteCurrencyBalance: number
+    startTime: Date
 }

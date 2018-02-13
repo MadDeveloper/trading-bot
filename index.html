@@ -29,11 +29,16 @@
     }
 
     #content .item {
-      margin: 0 20px;
+      padding: 10px;
+      border-right: 3px solid rgba(100, 100, 100, .1);
     }
 
     .flex {
       display: flex;
+    }
+
+    .flex.wrap {
+      flex-wrap: wrap;
     }
 
     .flex .align-start {
@@ -76,30 +81,80 @@
 
 <body>
   <canvas id="myChart"></canvas>
-  <section id="content" class="flex align-start">
-    <div class="item">
-      <h3 class="heading">Benefits</h3>
-      <span id="benefits"></span>%
-    </div>
+  <section id="content" class="flex wrap align-start">
+    <!-- PRICE -->
     <div class="item">
       <h3 class="heading">Last price</h3>
       <span id="last-price"></span>
     </div>
-    <div id="balances" class="item">
-      <h3 class="heading">Balances</h3>
+
+    <!-- TIMES -->
+    <div class="item">
+      <h3 class="heading">Times</h3>
       <div>
-        <span id="quote-currency-balance"></span>
-        <span id="quote-currency" class="currency"></span>
+        <span>Start time:</span>
+        <span id="start-time"></span>
       </div>
       <div>
-        <span id="base-currency-balance"></span>
-        <span id="base-currency" class="currency"></span>
+        <span>Duration:</span>
+        <span id="duration"></span>
+      </div>
+    </div>
+
+    <!-- BALANCES -->
+    <div id="balances" class="item">
+      <div>
+        <h3 class="heading">Balances</h3>
+        <div>
+          <span id="quote-currency-balance"></span>
+          <span id="quote-currency" class="currency"></span>
+        </div>
+        <div>
+          <span id="base-currency-balance"></span>
+          <span id="base-currency" class="currency"></span>
+        </div>
+      </div>
+      <div>
+        <h4 class="sub-heading">Initial balances</h4>
+        <div>
+          <span id="initial-quote-currency-balance"></span>
+          <span id="initial-quote-currency" class="currency"></span>
+        </div>
+        <div>
+          <span id="initial-base-currency-balance"></span>
+          <span id="initial-base-currency" class="currency"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BENEFITS -->
+    <div class="item">
+      <h3 class="heading">Benefits</h3>
+      <span id="benefits"></span>%
+    </div>
+
+    <!-- TRADES -->
+    <div class="item">
+      <h3 class="heading">Number of trades</h3>
+      <div>
+        <span id="number-of-buy-trades"></span>
+        <span class="italic">Buy</span>
+      </div>
+      <div>
+        <span id="number-of-sell-trades"></span>
+        <span class="italic">Sell</span>
+      </div>
+      <div>
+        <span id="number-of-trades"></span>
+        <span class="italic">Total</span>
       </div>
     </div>
     <div class="item">
       <h3 class="heading">Last trade</h3>
       <span id="lastTradeJson"></span>
     </div>
+
+    <!-- THRESHOLDS -->
     <div class="item">
       <h3 class="heading">Thresholds</h3>
       <div>
@@ -125,18 +180,26 @@
     const BUY_TRADE_TYPE = 2
     let quoteCurrency = ''
     let quoteCurrencyBalance = 0
+    let initialQuoteCurrencyBalance = 0
     let baseCurrency = ''
     let baseCurrencyBalance = 0
+    let initialBaseCurrencyBalance = 0
     let nextMinProfitablePrice
     let nextMaxProfitablePrice
+    let startTime
 
     async function extractData() {
       const data = await loadData()
 
       quoteCurrency = data.quoteCurrency
       quoteCurrencyBalance = data.quoteCurrencyBalance
+      initialQuoteCurrencyBalance = data.initialQuoteCurrencyBalance
+
       baseCurrency = data.baseCurrency
       baseCurrencyBalance = data.baseCurrencyBalance
+      initialBaseCurrencyBalance = data.initialBaseCurrencyBalance
+
+      startTime = new Date(data.startTime)
 
       data.works.forEach(work => {
         works.push(Object.assign({}, work, {
@@ -253,13 +316,23 @@
     function printBalances() {
       const $quoteCurrency = document.querySelector('#quote-currency')
       const $quoteCurrencyBalance = document.querySelector('#quote-currency-balance')
+      const $initialQuoteCurrency = document.querySelector('#initial-quote-currency')
+      const $initialQuoteCurrencyBalance = document.querySelector('#initial-quote-currency-balance')
+
       const $baseCurrency = document.querySelector('#base-currency')
       const $baseCurrencyBalance = document.querySelector('#base-currency-balance')
+      const $initialBaseCurrency = document.querySelector('#initial-base-currency')
+      const $initialBaseCurrencyBalance = document.querySelector('#initial-base-currency-balance')
 
       $quoteCurrency.innerHTML = quoteCurrency
       $quoteCurrencyBalance.innerHTML = quoteCurrencyBalance.toFixed(8)
+      $initialQuoteCurrency.innerHTML = quoteCurrency
+      $initialQuoteCurrencyBalance.innerHTML = initialQuoteCurrencyBalance.toFixed(8)
+
       $baseCurrency.innerHTML = baseCurrency
       $baseCurrencyBalance.innerHTML = baseCurrencyBalance.toFixed(8)
+      $initialBaseCurrency.innerHTML = baseCurrency
+      $initialBaseCurrencyBalance.innerHTML = initialBaseCurrencyBalance.toFixed(8)
     }
 
     function printLastPrice(works) {
@@ -277,15 +350,43 @@
         $nextMinPriceProfitability = document.querySelector('#next-min-price-profitability')
         $nextMinPriceProfitability.innerHTML = `${nextMinProfitablePrice.toFixed(8)} <span class="currency">${quoteCurrency}</span>`
       }
-      
+
       if (nextMaxProfitablePrice) {
         $nextMaxPriceProfitability = document.querySelector('#next-max-price-profitability')
         $nextMaxPriceProfitability.innerHTML = `${nextMaxProfitablePrice.toFixed(8)} <span class="currency">${quoteCurrency}</span>`
       }
     }
 
+    function printNumberOfTrades() {
+      $numberOfBuyTrades = document.querySelector('#number-of-buy-trades')
+      $numberOfSellTrades = document.querySelector('#number-of-sell-trades')
+      $numberOfTrades = document.querySelector('#number-of-trades')
+
+      $numberOfBuyTrades.innerHTML = buyTrades.length
+      $numberOfSellTrades.innerHTML = sellTrades.length
+      $numberOfTrades.innerHTML = buyTrades.length + sellTrades.length
+    }
+
+    function printTimes() {
+      const $startTime = document.querySelector('#start-time')
+      const $duration = document.querySelector('#duration')
+
+      $duration.innerHTML = transformSecondsAsDuration((Date.now() - startTime.getTime()) / 1000)
+      $startTime.innerHTML = formatDate(startTime)
+    }
+
     async function loadData() {
       return JSON.parse(await readTextFile('data.json'))
+    }
+
+    function transformSecondsAsDuration(time) {
+      return parseInt(time/86400)+'d '+(new Date(time%86400*1000)).toUTCString().replace(/.*(\d{2}):(\d{2}):(\d{2}).*/, "$1h $2m $3s")
+    }
+
+    function formatDate(date) {
+      const now = new Date()
+
+      return date.toUTCString().replace('GMT', '').replace(now.getFullYear(), '')
     }
 
     window.onload = async () => {
@@ -296,6 +397,8 @@
       printBalances()
       printLastPrice(works)
       printThresholdsOfProfitability()
+      printNumberOfTrades()
+      printTimes()
     }
   </script>
 </body>
