@@ -1,7 +1,4 @@
 node_modules/
 dist/
-keys.ts
-keys.gdax.ts
-keys.binance.ts
 data.json
 envfile

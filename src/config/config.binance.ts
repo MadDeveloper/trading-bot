@@ -1,4 +1,3 @@
-import keysBinance from './keys.binance';
 import { Config } from '../typings';
 import { Currency } from '../vendor/interfaces/currency.enum';
 import { Smoothing } from '../vendor/chart/smoothing';

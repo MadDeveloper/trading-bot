@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Theddy the bot
 
 ## Installation
@@ -10,15 +9,16 @@ npm install --global typescript lite-server
 npm install
 ```
 
-Create your API keys on the platform (binance, gdax, etc.) and create the file `keys.(platform).ts` associated in the folder `~/src/config/`.
-This file should have the following code:
+Create your API keys on the platform (binance, gdax, etc.) and export them as environment vars.
+For exemple, on Linux, add to your ~/.bashrc the following lines:
 
-```javascript
-export default {
-    secret: "...",
-    key: "...",
-    passphrase: "...",
-}
+```bash
+export BINANCE_API_KEY=lorem
+export BINANCE_API_SECRET=lorem
+export BINANCE_API_PASSPHRASE=lorem
+export GDAX_API_KEY=lorem
+export GDAX_API_SECRET=lorem
+export GDAX_API_PASSPHRASE=lorem
 ```
 
 ## Getting started
@@ -47,16 +47,16 @@ And then you can go to http://localhost:3000 and watch the magic happening!
 ## Docker
 ### Setup
 
-```
+```bash
 touch envfile
 ```
 
-Then edit envfile like this:
+Then add the following lines to the envfile:
 
 ```bash
-cat envfile
 BINANCE_API_KEY=xxxxxx
 BINANCE_API_SECRET=xxxxx
+BINANCE_API_PASSPHRASE=xxxxx
 GDAX_API_KEY=xxxx
 GDAX_API_SECRET=xxxxx
 GDAX_API_PASSPHRASE=xxxxx
@@ -71,5 +71,5 @@ docker build -t theddy .
 ### Run
 
 ```bash
-docker run --env-file envfile -p 3000:3000 theddy
+docker run -it --env-file envfile -p 3000:3000 theddy
 ```

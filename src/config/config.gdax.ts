@@ -1,4 +1,3 @@
-import keysGdax from './keys.gdax';
 import { Config } from '../typings';
 import { Currency } from '../vendor/interfaces/currency.enum';
 import { Smoothing } from '../vendor/chart/smoothing';

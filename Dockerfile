@@ -9,6 +9,9 @@ RUN npm i -g lite-server
 WORKDIR /app
 COPY . /app
 
+RUN rm -f data.json
+RUN rm -rf dist/
+
 EXPOSE 3000
 
 CMD npm run build:start & lite-server
