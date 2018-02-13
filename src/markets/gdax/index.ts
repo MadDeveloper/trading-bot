@@ -38,11 +38,11 @@ class GdaxService implements Market {
         const websocketAuth = this.sandbox ? null : {
             key: process.env.GDAX_API_KEY,
             secret: process.env.GDAX_API_SECRET,
-            passphrase: process.env.BINANCE_API_PASSPHRASE
+            passphrase: process.env.GDAX_API_PASSPHRASE
         }
 
         this.publicClient = new Gdax.PublicClient(restURI)
-        this.client = new Gdax.AuthenticatedClient(config.api.key, config.api.secret, config.api.passphrase, restURI)
+        this.client = new Gdax.AuthenticatedClient(process.env.GDAX_API_KEY, process.env.GDAX_API_SECRET, process.env.GDAX_API_PASSPHRASE, restURI)
         this.socket = new Gdax.WebsocketClient([this.currency], websocketURI, websocketAuth, { channels: this.channels })
         this.orders = new GdaxOrders(this.client, this.publicClient)
         this.accounts = new GdaxAccounts(this.client)
