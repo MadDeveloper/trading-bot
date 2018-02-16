@@ -18,7 +18,6 @@ class BinanceMarket implements Market {
     accounts: Accounts
     publicClient: any
     client: any
-    channels: string[]
     price$: Subject<number>
     lastPrice: number
     price: number
@@ -27,9 +26,8 @@ class BinanceMarket implements Market {
     initialized: boolean
     currencyInfo: CurrencyInfo
 
-    constructor(channels: string[] = ['ticker']) {
+    constructor() {
         this.currency = config.market.currency
-        this.channels = channels
         this.sandbox = config.api.sandbox
         this.price$ = new Subject()
     }
@@ -49,6 +47,11 @@ class BinanceMarket implements Market {
         await this.loadCurrencyInfo()
 
         this.initialized = true
+    }
+
+    async ping() {
+        // TODO: implement ping test here
+        return true
     }
 
     watchCurrencyPrice() {

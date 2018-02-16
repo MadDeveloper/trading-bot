@@ -1,13 +1,10 @@
-- faire des limit orders (au moins pour la vente)
-- quand on clear les works il faut garder le dernier work associé au dernier trade
+- faire un test d'api au lancement (ping test binance)
 - avant de vendre au market, il faut regarder le bids le plus haut pour voir si on va pas trop se faire enfler sur les % bénef (qu'on ne retombe pas en dessous du seuil min)
-- Pour la nouvelle strat d'achat (après x points de montée) il faudrait la maximiser à 2-3 fois max par montée, on bien si la montée excède un certains % depuis le dernier vrai creux
-- Eliminer les pics de plus de x%
+- quand on clear les works il faut garder le dernier work associé au dernier trade
 - recréer les tendances après filtrage, les lastPrice/trend aussi (relink les points entre eux)
-- Sélection auto de la monnaie par un worker externe (le trader viendra lui demander la crypto à trader à chaque fois qu'il a tout vendu)
-    - regarder les variations sur 24h du prix
-    - volume
-    - écart entre les pics (spread)
+- Sélection auto de la monnaie par un worker externe
+- Pour la nouvelle strat d'achat (après x points de montée) il faudrait la maximiser à 2-3 fois max par montée, on bien si la montée excède un certains % depuis le dernier vrai creux
+- faire des limit orders (au moins pour la vente)
+- Eliminer les pics de plus de x% (généralement ça retombe juste après, donc ne pas faire d'achats/ventes sur ce genre de pic)
 - mettre plus d'options pour controler le bot (socket ?) -> voir sur une page web ses trades, son état, le chart, etc.
-- amélorer l'algo de tendances
 - refactor

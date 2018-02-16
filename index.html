@@ -165,6 +165,10 @@
         <h4 class="sub-heading">Next max price of profitability</h4>
         <span id="next-max-price-profitability"></span>
       </div>
+      <div>
+        <h4 class="sub-heading">Next price of panic sell</h4>
+        <span id="next-panic-sell-price"></span>
+      </div>
     </div>
   </section>
 
@@ -186,6 +190,7 @@
     let initialBaseCurrencyBalance = 0
     let nextMinProfitablePrice
     let nextMaxProfitablePrice
+    let nextPanicSellPrice
     let startTime
 
     async function extractData() {
@@ -236,6 +241,10 @@
 
       if (data.nextMaxProfitablePrice) {
         nextMaxProfitablePrice = data.nextMaxProfitablePrice
+      }
+
+      if (data.nextPanicSellPrice) {
+        nextPanicSellPrice = data.nextPanicSellPrice
       }
     }
 
@@ -297,7 +306,7 @@
 
     function calculateBenefits(trades) {
       const $benefits = document.querySelector('#benefits')
-      const benefits = trades.reduce((total, trade) => total + trade.benefits, 0)
+      const benefits = ((quoteCurrencyBalance / initialQuoteCurrencyBalance) - 1) * 100
 
       $benefits.innerHTML = benefits.toFixed(8)
     }
@@ -345,7 +354,7 @@
       }
     }
 
-    function printThresholdsOfProfitability() {
+    function printThresholds() {
       if (nextMinProfitablePrice) {
         $nextMinPriceProfitability = document.querySelector('#next-min-price-profitability')
         $nextMinPriceProfitability.innerHTML = `${nextMinProfitablePrice.toFixed(8)} <span class="currency">${quoteCurrency}</span>`
@@ -354,6 +363,11 @@
       if (nextMaxProfitablePrice) {
         $nextMaxPriceProfitability = document.querySelector('#next-max-price-profitability')
         $nextMaxPriceProfitability.innerHTML = `${nextMaxProfitablePrice.toFixed(8)} <span class="currency">${quoteCurrency}</span>`
+      }
+
+      if (nextPanicSellPrice) {
+        $nextPanicSellPrice = document.querySelector('#next-panic-sell-price')
+        $nextPanicSellPrice.innerHTML = `${nextPanicSellPrice.toFixed(8)} <span class="currency">${quoteCurrency}</span>`
       }
     }
 
@@ -396,7 +410,7 @@
       printLastTrade(allTrades)
       printBalances()
       printLastPrice(works)
-      printThresholdsOfProfitability()
+      printThresholds()
       printNumberOfTrades()
       printTimes()
     }

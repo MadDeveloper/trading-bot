@@ -8,6 +8,7 @@ export interface DataStorage {
     trades: Trade[]
     nextMinProfitablePrice: number
     nextMaxProfitablePrice: number
+    nextPanicSellPrice: number
     baseCurrency: Currency
     baseCurrencyBalance: number
     initialBaseCurrencyBalance: number

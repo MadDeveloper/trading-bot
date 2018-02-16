@@ -17,8 +17,9 @@ export default interface Market {
     initialized: boolean
     sandbox: boolean
     currencyInfo?: CurrencyInfo
-
+    
     init(): void
     watchCurrencyPrice(): void
     getCurrencyPrice(): Promise<number>
+    ping?(): Promise<boolean>
 }

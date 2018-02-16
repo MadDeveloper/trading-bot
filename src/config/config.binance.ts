@@ -12,7 +12,7 @@ const binanceConfig: Config = {
         retryIntervalWhenConnectionIsLost: 3000 // ms
     },
     api: {
-        sandbox: true
+        sandbox: false
     },
     trader: {
         // Quantities strategy
@@ -25,23 +25,23 @@ const binanceConfig: Config = {
 
         // Max threshold
         sellWhenPriceExceedsMaxThresholdOfProfitability: true,
-        maxThresholdOfProfitability: 0.8, // in %
+        maxThresholdOfProfitability: 0.7, // in %
         
         // Min threshold
         sellWhenPriceExceedsMinThresholdOfProfitability: true,
-        minThresholdOfProfitability: 0.4, // how many % profitability wanted when selling
-        quantityToSellWhenPriceExceedsMinThresholdOfProfitability: 25, // in %
+        minThresholdOfProfitability: 0.3, // how many % profitability wanted when selling
+        quantityToSellWhenPriceExceedsMinThresholdOfProfitability: 30, // in %
 
         useExitStrategyInCaseOfLosses: true,
         sellWhenLossRateReaches: 1.5 // in %
     },
     market: {
-        currency: Currency.NEBLBTC,
+        currency: Currency.GVTBTC,
         orderFees: 0.0003 // <=> 0.1%
     },
     account: {
         quoteCurrency: Currency.BTC, // €, $, BTC
-        baseCurrency: Currency.NEBL // BTC, ETH, LTC, ...
+        baseCurrency: Currency.GVT // BTC, ETH, LTC, ...
     },
     chart: {
         tickerInterval: 1000 * 15, // ms

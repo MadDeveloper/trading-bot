@@ -400,7 +400,7 @@ class Trader implements Trading {
             this.lastSellTrade = {
                 price,
                 time: lastWorkBackup.time,
-                benefits: Equation.rateBetweenValues(this.lastBuyTrade.price, price) - (2 * (config.market.orderFees * 100)), // lastBuyTrade is a buy trade, and trade trade have a negative benefits
+                benefits: Equation.rateBetweenValues(this.lastBuyTrade.price, price) - (2 * (config.market.orderFees * 100)),
                 fees,
                 type: partial ? TradeType.SELL_PARTIAL : TradeType.SELL,
                 quantity: order.executedQuantity
@@ -540,6 +540,7 @@ class Trader implements Trading {
             trades: this.trades,
             nextMinProfitablePrice: this.state === TraderState.WAITING_TO_SELL ? Equation.thresholdPriceOfProfitability(this.lastBuyTrade.price) : null,
             nextMaxProfitablePrice: this.state === TraderState.WAITING_TO_SELL ? Equation.maxThresholdPriceOfProfitability(this.lastBuyTrade.price) : null,
+            nextPanicSellPrice: this.state === TraderState.WAITING_TO_SELL ? this.lastBuyTrade.price * (1 - config.trader.sellWhenLossRateReaches) : null,
             baseCurrency: this.baseCurrency,
             baseCurrencyBalance: this.baseCurrencyBalance,
             initialBaseCurrencyBalance: this.initialBaseCurrencyBalance,

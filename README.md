@@ -68,8 +68,20 @@ GDAX_API_PASSPHRASE=xxxxx
 docker build -t theddy .
 ```
 
+or
+
+```bash
+npm run docker:build
+```
+
 ### Run
 
 ```bash
 docker run -it --env-file envfile -p 3000:3000 theddy
+```
+
+or
+
+```bash
+npm run docker:run
 ```

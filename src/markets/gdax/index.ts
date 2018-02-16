@@ -1,14 +1,14 @@
 import * as Gdax from 'gdax';
-import { config } from '../../config';
-import { Subscription } from 'rxjs/Subscription';
-import { Currency } from '../../vendor/interfaces/currency.enum';
+import GdaxAccounts from './accounts';
+import GdaxOrders from './orders';
+import Logger from '../../vendor/logger/index';
 import Market from '../../vendor/interfaces/market';
 import Orders from '../../vendor/market/orders';
 import { Accounts } from '../../vendor/market/accounts';
+import { config } from '../../config';
+import { Currency } from '../../vendor/interfaces/currency.enum';
 import { Subject } from 'rxjs/Subject';
-import Logger from '../../vendor/logger/index';
-import GdaxAccounts from './accounts';
-import GdaxOrders from './orders';
+import { Subscription } from 'rxjs/Subscription';
 
 class GdaxService implements Market {
     currency: Currency
@@ -29,7 +29,7 @@ class GdaxService implements Market {
         this.currency = config.market.currency
         this.channels = channels
         this.sandbox = config.api.sandbox
-        this.price$ = new Subject()
+        this.price$ = new Subject();
     }
 
     async init() {
@@ -46,9 +46,14 @@ class GdaxService implements Market {
         this.socket = new Gdax.WebsocketClient([this.currency], websocketURI, websocketAuth, { channels: this.channels })
         this.orders = new GdaxOrders(this.client, this.publicClient)
         this.accounts = new GdaxAccounts(this.client)
-        
+
         this.listenSocketErrors()
         this.initialized = true
+    }
+
+    async ping() {
+        // TODO: implement ping test here
+        return true
     }
 
     watchCurrencyPrice() {
@@ -59,7 +64,7 @@ class GdaxService implements Market {
         this.socket.on('message', (data: any) => {
             if (data && 'ticker' === data.type) {
                 if (Number.isFinite(this.price)) {
-                    this.lastPrice = this.price    
+                    this.lastPrice = this.price
                 }
 
                 this.price = parseFloat(data.price)
