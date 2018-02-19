@@ -1,3 +1,4 @@
+- faire x temps d'analyse avant de commencer à trade
 - faire un test d'api au lancement (ping test binance)
 - avant de vendre au market, il faut regarder le bids le plus haut pour voir si on va pas trop se faire enfler sur les % bénef (qu'on ne retombe pas en dessous du seuil min)
 - quand on clear les works il faut garder le dernier work associé au dernier trade

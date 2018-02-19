@@ -1,8 +1,10 @@
-import { ChartWork } from "../chart/chart-work";
-import { Trade } from './trade';
+import { ChartWork } from '../chart/chart-work';
 import { Currency } from '../interfaces/currency.enum';
+import { Trade } from './trade';
+import { TraderState } from './trader-state';
 
 export interface DataStorage {
+    state: TraderState
     works: ChartWork[]
     worksSmoothed: ChartWork[]
     trades: Trade[]

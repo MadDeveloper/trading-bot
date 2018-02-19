@@ -535,12 +535,13 @@ class Trader implements Trading {
 
     private forgeData(): DataStorage {
         return {
+            state: this.state,
             works: this.chartWorker.allWorks,
             worksSmoothed: this.chartWorker.filterNoise(this.chartWorker.copyWorks(this.chartWorker.allWorks)),
             trades: this.trades,
             nextMinProfitablePrice: this.state === TraderState.WAITING_TO_SELL ? Equation.thresholdPriceOfProfitability(this.lastBuyTrade.price) : null,
             nextMaxProfitablePrice: this.state === TraderState.WAITING_TO_SELL ? Equation.maxThresholdPriceOfProfitability(this.lastBuyTrade.price) : null,
-            nextPanicSellPrice: this.state === TraderState.WAITING_TO_SELL ? this.lastBuyTrade.price * (1 - config.trader.sellWhenLossRateReaches) : null,
+            nextPanicSellPrice: this.state === TraderState.WAITING_TO_SELL ? this.lastBuyTrade.price * (100 - config.trader.sellWhenLossRateReaches) : null,
             baseCurrency: this.baseCurrency,
             baseCurrencyBalance: this.baseCurrencyBalance,
             initialBaseCurrencyBalance: this.initialBaseCurrencyBalance,

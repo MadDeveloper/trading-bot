@@ -87,6 +87,12 @@
       <h3 class="heading">Last price</h3>
       <span id="last-price"></span>
     </div>
+    
+    <!-- STATE -->
+    <div class="item">
+      <h3 class="heading">State</h3>
+      <span id="state"></span>
+    </div>
 
     <!-- TIMES -->
     <div class="item">
@@ -182,6 +188,9 @@
     const SELL_TRADE_TYPE = 0
     const SELL_PARTIAL_TRADE_TYPE = 1
     const BUY_TRADE_TYPE = 2
+    const SELL_STATE = 0
+    const BUY_STATE = 1
+    const WAITING_API_RESPONSE_STATE = 2
     let quoteCurrency = ''
     let quoteCurrencyBalance = 0
     let initialQuoteCurrencyBalance = 0
@@ -192,6 +201,7 @@
     let nextMaxProfitablePrice
     let nextPanicSellPrice
     let startTime
+    let state
 
     async function extractData() {
       const data = await loadData()
@@ -246,6 +256,8 @@
       if (data.nextPanicSellPrice) {
         nextPanicSellPrice = data.nextPanicSellPrice
       }
+
+      state = data.state
     }
 
     function drawChart() {
@@ -306,7 +318,16 @@
 
     function calculateBenefits(trades) {
       const $benefits = document.querySelector('#benefits')
-      const benefits = ((quoteCurrencyBalance / initialQuoteCurrencyBalance) - 1) * 100
+      const quoteCurrencyEarned = trades.reduce((quantity, trade) => {
+        const quoteCurrencyQuantity = trade.quantity * trade.price
+
+        if (BUY_TRADE_TYPE === trade.type) {
+          return quantity - quoteCurrencyQuantity
+        }
+        
+        return quantity + quoteCurrencyQuantity
+      }, 0)
+      const benefits = (quoteCurrencyEarned / initialQuoteCurrencyBalance) * 100
 
       $benefits.innerHTML = benefits.toFixed(8)
     }
@@ -389,6 +410,28 @@
       $startTime.innerHTML = formatDate(startTime)
     }
 
+    function printState() {
+      $state = document.querySelector('#state')
+
+      switch (state) {
+        case BUY_STATE:
+          $state.innerHTML = 'Waiting a buy signal'
+          break
+
+        case SELL_STATE:
+          $state.innerHTML = 'Waiting a sell signal'
+          break
+
+        case WAITING_API_RESPONSE_STATE:
+          $state.innerHTML = 'Waiting for API response'
+          break
+      
+        default:
+          $state.innerHTML = `Unkown state: ${state}`
+          break;
+      }
+    }
+
     async function loadData() {
       return JSON.parse(await readTextFile('data.json'))
     }
@@ -406,13 +449,14 @@
     window.onload = async () => {
       await extractData()
       drawChart()
-      calculateBenefits(sellTrades)
+      calculateBenefits(allTrades)
       printLastTrade(allTrades)
       printBalances()
       printLastPrice(works)
       printThresholds()
       printNumberOfTrades()
       printTimes()
+      printState()
     }
   </script>
 </body>
