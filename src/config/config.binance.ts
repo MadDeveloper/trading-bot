@@ -12,7 +12,7 @@ const binanceConfig: Config = {
         retryIntervalWhenConnectionIsLost: 3000 // ms
     },
     api: {
-        sandbox: false
+        sandbox: true
     },
     trader: {
         // Quantities strategy
@@ -25,29 +25,29 @@ const binanceConfig: Config = {
 
         // Max threshold
         sellWhenPriceExceedsMaxThresholdOfProfitability: true,
-        maxThresholdOfProfitability: 0.7, // in %
+        maxThresholdOfProfitability: 0.8, // in %
         
         // Min threshold
         sellWhenPriceExceedsMinThresholdOfProfitability: true,
-        minThresholdOfProfitability: 0.3, // how many % profitability wanted when selling
+        minThresholdOfProfitability: 0.4, // how many % profitability wanted when selling
         quantityToSellWhenPriceExceedsMinThresholdOfProfitability: 30, // in %
 
         useExitStrategyInCaseOfLosses: true,
-        sellWhenLossRateReaches: 1.5 // in %
+        sellWhenLossRateReaches: 1 // in %
     },
     market: {
-        currency: Currency.GVTBTC,
+        currency: Currency.BCPTBTC,
         orderFees: 0.0003 // <=> 0.1%
     },
     account: {
         quoteCurrency: Currency.BTC, // €, $, BTC
-        baseCurrency: Currency.GVT // BTC, ETH, LTC, ...
+        baseCurrency: Currency.BCPT // BTC, ETH, LTC, ...
     },
     chart: {
-        tickerInterval: 1000 * 15, // ms
+        tickerInterval: 1000 * 30, // ms
         reductionOfTheTickerIntervalOnSpeedMode: 0.5, // <=> we reduce by 50% the ticker interval
 
-        minPriceDifferenceToApproveNewPoint: 0.09, // in %. <=> 0.1%
+        minPriceDifferenceToApproveNewPoint: 0.1, // in %. <=> 0.1%
         smoothing: Smoothing.MOVING_AVERAGE,
 
         // Pump & dump
