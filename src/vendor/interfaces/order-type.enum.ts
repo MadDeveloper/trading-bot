@@ -1,6 +1,13 @@
+export enum OrderSide {
+  BUY = "BUY",
+  SELL = "SELL",
+  // @deprecated
+  CANCEL = "CANCEL",
+  // @deprecated
+  DONE = "DONE",
+}
+
 export enum OrderType {
-    BUY = 'buy',
-    SELL = 'sell',
-    CANCEL = 'cancel',
-    DONE = 'done'
+  MARKET = "MARKET",
+  LIMIT = "LIMIT",
 }

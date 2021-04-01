@@ -1,4 +1,4 @@
 export enum WorkerSpeed {
-    NORMAL,
-    FAST
+  NORMAL,
+  FAST,
 }

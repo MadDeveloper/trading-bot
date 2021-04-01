@@ -1,10 +1,10 @@
-import { TradeType } from './trade-type';
+import { TradeType } from "./trade-type"
 
 export interface Trade {
-    price: number
-    quantity: number
-    time: number
-    benefits: number
-    fees: number
-    type: TradeType
+  price: number
+  quantity: number
+  time: number
+  benefits: number
+  fees: number
+  type: TradeType
 }

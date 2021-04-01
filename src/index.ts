@@ -1,20 +1,23 @@
-import './rxjs.extensions'
-import Trader from './vendor/trader/index';
-import {  config } from './config';
-import { Platform } from './config/platform';
-import Market from './vendor/interfaces/market';
-import Slack from './vendor/slack/index';
+import { config } from "./config"
+import { Platform } from "./config/platform"
+import BinanceMarket from "./markets/binance"
+import "./rxjs.extensions"
+import Trader from "./vendor/trader/index"
 
 async function start() {
-    // Load market
-    const market: Market = new (require(`./markets/${config.app.platform}`).default)()
+  // Load market
+  if (!Object.values(Platform).includes(config.app.platform)) {
+    throw new Error(`Invalid market platform: ${config.app.platform}`)
+  }
 
-    await market.init()
+  const market = new BinanceMarket()
 
-    // Make trader trade
-    const trader = new Trader(market)
+  await market.init()
 
-    trader.trade()
+  // Make trader trade
+  const trader = new Trader(market)
+
+  trader.trade()
 }
 
 start()

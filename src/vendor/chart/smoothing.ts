@@ -1,4 +1,4 @@
 export enum Smoothing {
-    SAMPLE,
-    MOVING_AVERAGE
+  SAMPLE,
+  MOVING_AVERAGE,
 }

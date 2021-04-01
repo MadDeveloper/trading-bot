@@ -1,29 +1,26 @@
-import Market from '../../vendor/interfaces/market';
-import * as Gdax from 'gdax';
-import { Currency } from '../../vendor/interfaces/currency.enum';
-import { Account, CoinbaseAccount } from 'gdax';
-import { Accounts } from '../../vendor/market/accounts';
-import { promisify } from 'util';
+import { Binance } from "binance-api-node"
+import { Currency } from "../../vendor/interfaces/currency.enum"
+import { Accounts } from "../../vendor/market/accounts"
 
 class BinanceAccounts implements Accounts {
-    allMarketAccounts: any[]
+  client: Binance
 
-    client: any
+  constructor(client: Binance) {
+    this.client = client
+  }
 
-    constructor(client: Gdax.AuthenticatedClient) {
-        this.client = client
+  async availableFunds(currency: Currency): Promise<number> {
+    const { balances } = await this.client.accountInfo()
+    const currencyBalance = balances.find(
+      (balance) => balance.asset === currency
+    )
+
+    if (!currencyBalance) {
+      throw new Error(`Currency ${currency} was not found in the balances`)
     }
 
-    async availableFunds(currency: Currency): Promise<number> {
-        const getBalances = promisify(this.client.balance)
-        const balances = await getBalances()
-
-        if (!balances[currency]) {
-            throw new Error(`Currency ${currency} was not found in the balances`)
-        }
-
-        return parseFloat(balances[currency].available)
-    }
+    return parseFloat(currencyBalance.free)
+  }
 }
 
 export default BinanceAccounts

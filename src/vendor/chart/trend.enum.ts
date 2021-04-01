@@ -1,5 +1,5 @@
 export enum Trend {
-    UPWARD,
-    DOWNWARD,
-    FLAT
+  UPWARD,
+  DOWNWARD,
+  FLAT,
 }

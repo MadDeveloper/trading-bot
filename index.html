@@ -18,8 +18,6 @@
     }
 
     #myChart {
-      width: 99% !important;
-      max-height: 700px !important;
       margin: 0;
       padding: 0;
     }
@@ -261,7 +259,18 @@
     }
 
     function drawChart() {
-      const context = document.querySelector("#myChart").getContext('2d')
+      const chart = document.querySelector("#myChart")
+      const context = chart.getContext('2d')
+      const scale = window.devicePixelRatio
+      const width = window.innerWidth;
+      const height = 700;
+
+      chart.style.width = `${width}px`;
+      chart.style.height = `${height}px`;
+      chart.width = Math.floor(width * scale);
+      chart.height = Math.floor(height * scale);
+      context.scale(scale, scale);
+
       const newChart = new Chart(context, {
         type: 'scatter',
         data: {
