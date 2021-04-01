@@ -391,32 +391,32 @@ class Trader implements Trading {
         funds,
         lastWorkBackup.price
       )
-      const price = order.price || lastWorkBackup.price
-      const fundsUsed = price * order.executedQuantity
+      const price = order.price ?? lastWorkBackup.price.toString()
+      const fundsUsed = parseFloat(price) * parseFloat(order.executedQty)
       const fees = fundsUsed * config.market.orderFees
 
       if (config.api.sandbox) {
         this.quoteCurrencyBalance -= fundsUsed
-        this.baseCurrencyBalance += order.executedQuantity
+        this.baseCurrencyBalance += parseFloat(order.executedQty)
       } else {
         await this.updateBalances()
       }
 
       Logger.debug(`Order formatted: ${JSON.stringify(order, null, 2)}`)
 
-      if (lastWorkBackup.price !== price) {
+      if (lastWorkBackup.price.toString() !== price) {
         Logger.debug(`WARN: prices have diverged when bot wanted to buy.`)
         Logger.debug(`Bot buy price desired: ${lastWorkBackup.price}`)
         Logger.debug(`Real order price: ${price} ${this.quoteCurrency}`)
       }
 
       this.lastBuyTrade = {
-        price,
+        price: parseFloat(price),
         time: lastWorkBackup.time,
         benefits: -fundsUsed,
         fees,
         type: TradeType.BUY,
-        quantity: order.executedQuantity,
+        quantity: parseFloat(order.executedQty),
       }
 
       this.actionsPostBuyTrade()
@@ -434,10 +434,10 @@ class Trader implements Trading {
       Logger.debug(
         `Would be able to sell when the price will be above ${Equation.thresholdPriceOfProfitability(
           this.lastBuyTrade.price
-        ).toFixed(8)}${this.quoteCurrency}`
+        ).toFixed(8)} ${this.quoteCurrency}`
       )
-      Logger.debug(`Funds desired to invest: ${funds}${this.quoteCurrency}`)
-      Logger.debug(`Funds really invested: ${fundsUsed}${this.quoteCurrency}`)
+      Logger.debug(`Funds desired to invest: ${funds} ${this.quoteCurrency}`)
+      Logger.debug(`Funds really invested: ${fundsUsed} ${this.quoteCurrency}`)
     } catch (error) {
       Logger.error(
         `Error when trying to buy: ${JSON.stringify(error, null, 2)}`
@@ -466,13 +466,14 @@ class Trader implements Trading {
         size,
         lastWorkBackup.price
       )
-      const price = order.price || lastWorkBackup.price
-      const fees = price * order.executedQuantity * config.market.orderFees
-      const quoteCurrencyQuantity = price * order.executedQuantity - fees
+      const price = order.price ? parseFloat(order.price) : lastWorkBackup.price
+      const quantity = parseFloat(order.executedQty)
+      const fees = price * quantity * config.market.orderFees
+      const quoteCurrencyQuantity = price * quantity - fees
 
       if (config.api.sandbox) {
         this.quoteCurrencyBalance += quoteCurrencyQuantity
-        this.baseCurrencyBalance -= order.executedQuantity
+        this.baseCurrencyBalance -= quantity
       } else {
         await this.updateBalances()
       }
@@ -493,7 +494,7 @@ class Trader implements Trading {
           2 * (config.market.orderFees * 100),
         fees,
         type: partial ? TradeType.SELL_PARTIAL : TradeType.SELL,
-        quantity: order.executedQuantity,
+        quantity,
       }
 
       this.actionsPostSellTrade()

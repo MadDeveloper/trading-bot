@@ -8,16 +8,13 @@ cd theddy
 npm install
 ```
 
-Create your API keys on the platform (binance, gdax, etc.) and export them as environment vars.
+Create your API keys on the platform (binance, etc.) and export them as environment vars.
 For exemple, on Linux, add to your ~/.bashrc the following lines:
 
 ```bash
 export BINANCE_API_KEY=
 export BINANCE_API_SECRET=
 export BINANCE_API_PASSPHRASE=
-export GDAX_API_KEY=
-export GDAX_API_SECRET=
-export GDAX_API_PASSPHRASE=
 ```
 
 ## Getting started
@@ -57,9 +54,6 @@ Then add the following lines to the .env file:
 BINANCE_API_KEY=xxxxxx
 BINANCE_API_SECRET=xxxxx
 BINANCE_API_PASSPHRASE=xxxxx
-GDAX_API_KEY=xxxx
-GDAX_API_SECRET=xxxxx
-GDAX_API_PASSPHRASE=xxxxx
 ```
 
 ### Build

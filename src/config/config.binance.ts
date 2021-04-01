@@ -36,7 +36,7 @@ const binanceConfig: Config = {
     sellWhenLossRateReaches: 1, // in %
   },
   market: {
-    currency: (process.env.MARKET_CURRENCY ?? Currency.BTC_EUR) as Currency,
+    currency: (process.env.MARKET_CURRENCY ?? Currency.BTCEUR) as Currency,
     orderFees: 0.0003, // <=> 0.1%
   },
   account: {
@@ -44,10 +44,10 @@ const binanceConfig: Config = {
     baseCurrency: (process.env.BASE_CURRENCY ?? Currency.BTC) as Currency, // BTC, ETH, LTC, ...
   },
   chart: {
-    tickerInterval: 1000 * 30, // ms
+    tickerInterval: 1000 * 2, // ms
     reductionOfTheTickerIntervalOnSpeedMode: 0.5, // <=> we reduce by 50% the ticker interval
 
-    minPriceDifferenceToApproveNewPoint: 0.1, // in %. <=> 0.1%
+    minPriceDifferenceToApproveNewPoint: 0, // in %. <=> 0.1%
     smoothing: Smoothing.MOVING_AVERAGE,
 
     // Pump & dump
