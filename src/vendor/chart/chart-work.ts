@@ -1,10 +1,10 @@
-import { Trend } from './trend.enum'
+import { Trend } from "./trend.enum"
 
 export interface ChartWork {
-    id: number
-    trend: Trend
-    lastTrend: Trend
-    lastPrice: number
-    price: number
-    time: number
+  id: number
+  trend: Trend
+  lastTrend: Trend
+  lastPrice: number
+  price: number
+  time: number
 }

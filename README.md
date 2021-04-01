@@ -3,9 +3,8 @@
 ## Installation
 
 ```bash
-git clone https://gitlab.com/MadDeveloper/bot-warhead.git theddy
+git clone https://gitlab.com/MadDeveloper/trading-bot.git theddy
 cd theddy
-npm install --global typescript lite-server
 npm install
 ```
 
@@ -13,12 +12,12 @@ Create your API keys on the platform (binance, gdax, etc.) and export them as en
 For exemple, on Linux, add to your ~/.bashrc the following lines:
 
 ```bash
-export BINANCE_API_KEY=lorem
-export BINANCE_API_SECRET=lorem
-export BINANCE_API_PASSPHRASE=lorem
-export GDAX_API_KEY=lorem
-export GDAX_API_SECRET=lorem
-export GDAX_API_PASSPHRASE=lorem
+export BINANCE_API_KEY=
+export BINANCE_API_SECRET=
+export BINANCE_API_PASSPHRASE=
+export GDAX_API_KEY=
+export GDAX_API_SECRET=
+export GDAX_API_PASSPHRASE=
 ```
 
 ## Getting started
@@ -34,7 +33,7 @@ Or one by step:
 
 ```bash
 npm run build && npm start
-````
+```
 
 If you want to see in realtime the chart:
 
@@ -45,13 +44,14 @@ npm run chart
 And then you can go to http://localhost:3000 and watch the magic happening!
 
 ## Docker
+
 ### Setup
 
 ```bash
-touch envfile
+touch .env
 ```
 
-Then add the following lines to the envfile:
+Then add the following lines to the .env file:
 
 ```bash
 BINANCE_API_KEY=xxxxxx
@@ -77,7 +77,7 @@ npm run docker:build
 ### Run
 
 ```bash
-docker run -it --env-file envfile -p 3000:3000 theddy
+docker run -it --env-file .env -p 3000:3000 theddy
 ```
 
 or

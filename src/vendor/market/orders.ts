@@ -1,38 +1,57 @@
-import { OrderType } from '../interfaces/order-type.enum';
-import { Currency } from '../interfaces/currency.enum';
-import { OrderResult } from './order';
+import { CancelOrderResult, Order } from "binance-api-node"
+import { Currency } from "../interfaces/currency.enum"
+import { OrderSide } from "../interfaces/order-type.enum"
+import { OrderResult } from "./order"
 
 export interface Orders {
-    pending: OrderResult[]
-    done: OrderResult[]
-    canceled: OrderResult[]
-    lastOrder: OrderResult
+  pending: Order[]
+  done: Order[]
+  canceled: Order[]
+  lastOrder: Order
 
-    all(): Promise<OrderResult[]>
+  all(): Promise<OrderResult[]>
 
-    find?(id: string, status: OrderType): OrderResult
+  find?(id: string, status: OrderSide): Order
 
-    buyOrders(): OrderResult[]
+  buyOrders(): Order[]
 
-    sellOrders(): OrderResult[]
+  sellOrders(): Order[]
 
-    buyLimit(currency: Currency, quantity: number, price: number, allowTaker: boolean): Promise<any>
+  buyLimit(
+    currency: Currency,
+    quantity: number,
+    price: number,
+    allowTaker: boolean
+  ): Promise<Order>
 
-    buyMarket(currency: Currency, funds: number, marketPrice?: number): Promise<OrderResult>
+  buyMarket(
+    currency: Currency,
+    funds: number,
+    marketPrice?: number
+  ): Promise<Order>
 
-    buyStop(currency: Currency, price: number, funds: number): Promise<any>
+  buyStop(currency: Currency, price: number, funds: number): Promise<Order>
 
-    sellLimit(currency: Currency, quantity: number, price: number, allowTaker: boolean): Promise<any>
+  sellLimit(
+    currency: Currency,
+    quantity: number,
+    price: number,
+    allowTaker: boolean
+  ): Promise<Order>
 
-    sellMarket(currency: Currency, size: number, marketPrice?: number): Promise<OrderResult>
+  sellMarket(
+    currency: Currency,
+    size: number,
+    marketPrice?: number
+  ): Promise<Order>
 
-    sellStop(currency: Currency, price: number, size: number): Promise<any>
-    
-    normalizeQuantity?(quantity: number): number
+  sellStop(currency: Currency, price: number, size: number): Promise<Order>
 
-    getMinQuantity?(): number;
+  normalizeQuantity?(quantity: number): number
 
-    cancel(order: OrderResult): any
+  getMinQuantity?(): number
+
+  cancel(order: Order): Promise<CancelOrderResult>
 }
 
 export default Orders

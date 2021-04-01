@@ -1,6 +1,13 @@
-import { Config } from "../typings";
-import { Platform } from './platform';
+import { Config } from "../typings"
+import binanceConfig from "./config.binance"
+import gdaxConfig from "./config.gdax"
+import { Platform } from "./platform"
 
-const platform = Platform.BINANCE
+const platform = process.env.PLATFORM ?? Platform.BINANCE
 
-export const config: Config = require(`./config.${platform}`).default
+export const config: Config =
+  platform === Platform.BINANCE
+    ? binanceConfig
+    : platform === Platform.GDAX
+    ? gdaxConfig
+    : null

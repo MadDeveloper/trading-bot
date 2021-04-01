@@ -5,27 +5,33 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "docker:build": "docker build -t theddy .",
-    "docker:run": "docker run -it --env-file envfile -p 3000:3000 theddy",
-    "start": "node ./dist/index.js",
     "build:start": "npm run build && npm start",
     "build:start:scratch": "rm -f data.json && npm run build:start",
     "chart": "lite-server",
-    "watch": "tsc-watch --onSuccess \"nodemon -w dist/ dist/index.js\""
+    "docker:build": "docker build -t theddy .",
+    "docker:run": "docker run -it --env-file .env -p 3000:3000 theddy",
+    "load:env-var": "set -o allexport; source .env; set +o allexport",
+    "start": "node ./dist/index.js",
+    "dev": "tsc-watch --onSuccess \"nodemon -w dist/ dist/index.js\""
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "delay": "^2.0.0",
+    "binance-api-node": "^0.10.34",
+    "delay": "^5.0.0",
     "gdax": "^0.5.1",
-    "node-binance-api": "^0.4.8",
-    "rxjs": "^5.5.6",
-    "slack-webhook": "^1.0.0"
+    "lite-server": "^2.6.1",
+    "node-binance-api": "^0.12.5",
+    "nodemon": "^2.0.7",
+    "rxjs": "^6.6.7",
+    "slack-webhook": "^1.0.0",
+    "typescript": "^4.2.3"
   },
   "devDependencies": {
-    "@types/node": "^8.5.2",
-    "@types/rx": "^4.1.1",
-    "tsc-watch": "^1.0.13"
+    "@types/node": "^14.14.37",
+    "@types/rx": "^4.1.2",
+    "prettier": "^2.2.1",
+    "tsc-watch": "^4.2.9"
   }
 }
